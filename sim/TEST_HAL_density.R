@@ -9,23 +9,12 @@ D <- set.DAG(D, n.test = 10)
 datO <- sim(D, n = 1e3, rndseed = 12345)
 
 x <- datO$sA
-longDataOut <- longiData$new(x = datO$sA, bin_width = .1)
-longDFOut <- longDataOut$longiDF
 
-
-verbose <- FALSE
-library(SuperLearner)
-library(hal9001)
-# tune HAL for density
-SL_fit <- SuperLearner(Y = longDFOut$Y, X = longDFOut[,'box',F], newX = data.frame(box = longDataOut$x),
-                       family = 'binomial',
-                       SL.library = "SL.hal9001",
-                       cvControl = list(V = 3),
-                       verbose = verbose)
-Q_HAL_tuned <- SL_fit$fitLibrary$SL.hal9001_All$object
-Q_HAL_tuned <- squash_hal_fit(Q_HAL_tuned)
-
-density_intial <- empiricalDensity$new(p_density = SL_fit$SL.predict, x = x)
-density_intial$normalize()
+tmleOut <- avgDensityTMLE$new(x = datO$sA, verbose = FALSE)
+tmleOut$fit_density()
 foo2 <- function(x) {(.5*dnorm(x, mean = 2) + .5*dnorm(x, mean = -2))}
-density_intial$display(foo2)
+tmleOut$p_hat$display(foo2)
+tmleOut$calc_Psi()
+tmleOut$calc_EIC()
+tmleOut$Psi
+

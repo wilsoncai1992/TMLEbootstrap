@@ -1,4 +1,4 @@
-library(R6)
+# library(R6)
 #' @export
 empiricalDensity <- R6Class("empiricalDensity",
   public = list(
@@ -20,6 +20,7 @@ empiricalDensity <- R6Class("empiricalDensity",
       dummy_df$p_density <- dummy_df$p_density/sum(dummy_df$p_density * dx)
       dummy_df <- dummy_df[order(dummy_df$id),]
       self$p_density <- dummy_df$p_density
+      return(self)
     },
     display = function(p_truth = NULL, ...) {
       plot(self$p_density ~ self$x, ...)

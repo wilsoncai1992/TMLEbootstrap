@@ -16,6 +16,8 @@ LazyData: true
 Imports:
   tmle,
   SuperLearner,
+  R6,
+  hal9001
 Suggests:
   knitr,
   testthat,
