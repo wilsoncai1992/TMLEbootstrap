@@ -1,0 +1,33 @@
+library(R6)
+#' @export
+empiricalDensity <- R6Class("empiricalDensity",
+  public = list(
+    p_density = NULL,
+    x = NULL,
+    initialize = function(p_density, x) {
+      self$p_density <- p_density
+      self$x <- x
+    },
+    normalize = function() {
+      # self$p_density <- self$p_density/sum(self$p_density)
+
+      # self$p_density <- self$p_density/sum(self$p_density*dx)
+
+      # browser()
+      dummy_df <- data.frame(id = 1:length(self$x), x = self$x, p_density = self$p_density)
+      dummy_df <- dummy_df[order(dummy_df$x),]
+      dx <- c(0,diff(dummy_df$x))
+      dummy_df$p_density <- dummy_df$p_density/sum(dummy_df$p_density * dx)
+      dummy_df <- dummy_df[order(dummy_df$id),]
+      self$p_density <- dummy_df$p_density
+    },
+    display = function(p_truth = NULL, ...) {
+      plot(self$p_density ~ self$x, ...)
+      # overlay a true p function on the plot
+      if (!is.null(p_truth)) curve(p_truth, from = -10, to = 10, n = 1e3, add = TRUE)
+    }
+    )
+)
+
+
+# empiricalDensity$new(p_density)
