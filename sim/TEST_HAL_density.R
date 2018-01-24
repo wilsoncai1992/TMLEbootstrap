@@ -19,4 +19,9 @@ tmleOut$calc_EIC()
 tmleOut$Psi
 
 bootOut <- avgDensityBootstrap$new(x = x)
-bootOut$bootstrap()
+bootOut$bootstrap(REPEAT_BOOTSTRAP = 1e3)
+bootOut$CI_all
+
+foo <- function(x) {(.5*dnorm(x, mean = 2) + .5*dnorm(x, mean = -2))^2}
+true_Psi <-sum(foo(seq(-10, 10, 1e-3))*1e-3)
+true_Psi

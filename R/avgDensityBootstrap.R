@@ -13,7 +13,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       self$x <- x
       if(!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       onestepFit <- avgDensityTMLE$new(x = self$x, epsilon_step = self$epsilon_step, verbose  = TRUE)
-      onestepFit$fit_density()
+      onestepFit$fit_density(bin_width = .3)
       onestepFit$calc_Psi()
       onestepFit$calc_EIC()
       onestepFit$onestepTarget()
@@ -40,7 +40,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
                                family = 'binomial',
                                SL.library = "HAL_wrapper",
                                cvControl = list(V = 3),
-                               verbose = verbose)
+                               verbose = FALSE)
         density_intial <- empiricalDensity$new(p_density = SL_fit$SL.predict, x = d)
         bootstrapOnestepFit$p_hat <- density_intial$normalize()
         # target new fit
@@ -66,7 +66,6 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       # registerDoMPI(cl)
       # clusterSize(cl) # just to check
 
-
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
                                          .inorder = FALSE,
                                          .packages = c('R6'),
@@ -74,15 +73,13 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
                                          .export = c('self'),
                                          .verbose = F) %do% {
                                          # .verbose = T) %dopar% {
-        # source("./averageDensityValueTMLE.R")
-        # source("./empiricalDensityR6.R")
         if(it2 %% 10 == 0) print(it2)
         betfun(self$x, self$epsilon_step)
       }
 
       # save(all_bootstrap_estimates, file = 'all_bootstrap_estimates.rda')
       # closeCluster(cl)
-      stopCluster(cl)
+      # stopCluster(cl)
 
       ALPHA <- 0.05
       # remove errors
