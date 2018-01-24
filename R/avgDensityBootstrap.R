@@ -52,32 +52,32 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
 
       library(foreach)
 
-      library(doSNOW)
-      library(tcltk)
-      nw <- parallel:::detectCores()  # number of workers
-      cl <- makeSOCKcluster(nw)
-      registerDoSNOW(cl)
+      # library(doSNOW)
+      # library(tcltk)
+      # nw <- parallel:::detectCores()  # number of workers
+      # cl <- makeSOCKcluster(nw)
+      # registerDoSNOW(cl)
 
       # library(Rmpi)
       # library(doMPI)
       # cl = startMPIcluster()
       # registerDoMPI(cl)
       # clusterSize(cl) # just to check
-      
+
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
                                          .inorder = FALSE,
                                          .packages = c('R6', 'SuperLearner'),
                                          # .errorhandling = 'remove',
                                          .errorhandling = 'pass',
                                          .export = c('self'),
-                                         # .verbose = F) %do% {
-                                         .verbose = T) %dopar% {
+                                         .verbose = F) %do% {
+                                         # .verbose = T) %dopar% {
         if(it2 %% 10 == 0) print(it2)
         betfun(self$x, self$epsilon_step)
       }
       # save(all_bootstrap_estimates, file = 'all_bootstrap_estimates.rda')
       # closeCluster(cl)
-      stopCluster(cl)
+      # stopCluster(cl)
 
       ALPHA <- 0.05
       # remove errors

@@ -38,7 +38,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       HAL_tuned <- SL_fit$fitLibrary$SL.hal9001_All$object
       self$HAL_tuned <- squash_hal_fit(HAL_tuned)
 
-      density_intial <- empiricalDensity$new(p_density = SL_fit$SL.predict, x = x)
+      density_intial <- empiricalDensity$new(p_density = SL_fit$SL.predict, x = self$x)
       self$p_hat <- density_intial$normalize()
 
       # foo2 <- function(x) {(.5*dnorm(x, mean = 2) + .5*dnorm(x, mean = -2))}
@@ -75,7 +75,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         n_iter <- n_iter + 1
         if (abs(mean(self$EIC)) > meanEIC_prev){
           self$epsilon_step <- -self$epsilon_step
-          message('not stable!')
+          # message('not stable!')
         }
         if (n_iter >= self$max_iter){
           break()
