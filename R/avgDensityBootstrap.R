@@ -23,7 +23,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       self$Psi <- onestepFit$Psi
     },
     bootstrap = function(REPEAT_BOOTSTRAP = 2e2){
-      # browser()
+      browser()
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
 
       betfun <- function(data, epsilon_step = self$epsilon_step){
@@ -69,7 +69,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
 
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
                                          .inorder = FALSE,
-                                         .packages = c('sl3', 'condensier', 'R6'),
+                                         .packages = c('R6'),
                                          .errorhandling = 'remove',
                                          .export = c('self'),
                                          .verbose = F) %do% {

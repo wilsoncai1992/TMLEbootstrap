@@ -18,3 +18,5 @@ tmleOut$calc_Psi()
 tmleOut$calc_EIC()
 tmleOut$Psi
 
+bootOut <- avgDensityBootstrap$new(x = x)
+bootOut$bootstrap()
