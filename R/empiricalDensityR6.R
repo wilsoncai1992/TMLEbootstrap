@@ -10,10 +10,8 @@ empiricalDensity <- R6Class("empiricalDensity",
     },
     normalize = function() {
       # self$p_density <- self$p_density/sum(self$p_density)
-
       # self$p_density <- self$p_density/sum(self$p_density*dx)
 
-      # browser()
       dummy_df <- data.frame(id = 1:length(self$x), x = self$x, p_density = self$p_density)
       dummy_df <- dummy_df[order(dummy_df$x),]
       dx <- c(0,diff(dummy_df$x))

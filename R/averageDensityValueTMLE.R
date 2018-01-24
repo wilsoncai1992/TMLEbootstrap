@@ -15,7 +15,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     tol = NULL,
     CI = NULL,
     verbose = FALSE,
-    max_iter = 1e3,
+    max_iter = 1e2,
     longDataOut = NULL,
     HAL_tuned = NULL,
     initialize = function(x, epsilon_step = NULL, verbose = NULL) {
@@ -62,15 +62,21 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     },
     onestepTarget = function(verbose = FALSE) {
       n_iter <- 0
+      meanEIC_prev <- abs(mean(self$EIC))
       while(abs(mean(self$EIC)) >= self$tol){
       # while(abs(mean(self$EIC)) >= 1e-20){
       # while(TRUE){
+        meanEIC_prev <- abs(mean(self$EIC))
         self$calc_Psi()
         self$calc_EIC()
         # self$p_hat$display()
         self$updateOnce()
         if (self$verbose | verbose) print(c(mean(self$EIC), self$Psi))
         n_iter <- n_iter + 1
+        if (abs(mean(self$EIC)) > meanEIC_prev){
+          self$epsilon_step <- -self$epsilon_step
+          message('not stable!')
+        }
         if (n_iter >= self$max_iter){
           break()
           message('max iteration number reached!')

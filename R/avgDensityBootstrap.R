@@ -23,7 +23,6 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       self$Psi <- onestepFit$Psi
     },
     bootstrap = function(REPEAT_BOOTSTRAP = 2e2){
-      browser()
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
 
       betfun <- function(data, epsilon_step = self$epsilon_step){
@@ -41,45 +40,44 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
                                SL.library = "HAL_wrapper",
                                cvControl = list(V = 3),
                                verbose = FALSE)
-        density_intial <- empiricalDensity$new(p_density = SL_fit$SL.predict, x = d)
-        bootstrapOnestepFit$p_hat <- density_intial$normalize()
+        density_boot <- empiricalDensity$new(p_density = SL_fit$SL.predict[,1], x = d)
+        bootstrapOnestepFit$p_hat <- density_boot$normalize()
         # target new fit
         bootstrapOnestepFit$calc_Psi()
         bootstrapOnestepFit$calc_EIC()
         bootstrapOnestepFit$onestepTarget()
-        # bootstrapOnestepFit$inference()
 
         return(c(bootstrapOnestepFit$Psi))
       }
 
       library(foreach)
 
-      # library(doSNOW)
-      # library(tcltk)
-      # nw <- parallel:::detectCores()  # number of workers
-      # cl <- makeSOCKcluster(nw)
-      # registerDoSNOW(cl)
+      library(doSNOW)
+      library(tcltk)
+      nw <- parallel:::detectCores()  # number of workers
+      cl <- makeSOCKcluster(nw)
+      registerDoSNOW(cl)
 
       # library(Rmpi)
       # library(doMPI)
       # cl = startMPIcluster()
       # registerDoMPI(cl)
       # clusterSize(cl) # just to check
-
+      
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
                                          .inorder = FALSE,
-                                         .packages = c('R6'),
-                                         .errorhandling = 'remove',
+                                         .packages = c('R6', 'SuperLearner'),
+                                         # .errorhandling = 'remove',
+                                         .errorhandling = 'pass',
                                          .export = c('self'),
-                                         .verbose = F) %do% {
-                                         # .verbose = T) %dopar% {
+                                         # .verbose = F) %do% {
+                                         .verbose = T) %dopar% {
         if(it2 %% 10 == 0) print(it2)
         betfun(self$x, self$epsilon_step)
       }
-
       # save(all_bootstrap_estimates, file = 'all_bootstrap_estimates.rda')
       # closeCluster(cl)
-      # stopCluster(cl)
+      stopCluster(cl)
 
       ALPHA <- 0.05
       # remove errors
