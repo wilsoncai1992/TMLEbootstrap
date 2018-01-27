@@ -25,16 +25,17 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       if (!is.null(verbose)) self$verbose <- verbose
     },
     fit_density = function(bin_width = .2) {
+      browser()
       library(SuperLearner)
       library(hal9001)
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
-      longDFOut <- self$longDataOut$generate_df()
+      longDFOut <- self$longDataOut$generate_df_compress()
 
       verbose <- FALSE
       # tune HAL for density
       HAL_tuned <- hal9001::fit_hal(X = longDFOut[,'box'],
         Y = longDFOut$Y,
-        # weights = wgt,
+        weights = longDFOut$Freq,
         use_min = TRUE,
         yolo = FALSE,
         fit_type = 'glmnet',

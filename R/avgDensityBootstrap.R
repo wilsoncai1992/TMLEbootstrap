@@ -33,7 +33,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
 
         bootstrapOnestepFit <- avgDensityTMLE$new(x = d, epsilon_step = epsilon_step)
         # fit new density
-        longDFOut_new <- self$pointTMLE$longDataOut$generate_df(x = d)
+        longDFOut_new <- self$pointTMLE$longDataOut$generate_df_compress(x = d)
         HAL_boot <- fit_fixed_HAL(Y = longDFOut_new$Y,
           X = longDFOut_new[,'box'],
           hal9001_object = self$pointTMLE$HAL_tuned,
