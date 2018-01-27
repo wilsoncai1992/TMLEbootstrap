@@ -24,7 +24,6 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     },
     bootstrap = function(REPEAT_BOOTSTRAP = 2e2){
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
-
       betfun <- function(data, epsilon_step = self$epsilon_step){
         # browser()
         # indices is the random indexes for the bootstrap sample
@@ -49,7 +48,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         # verbose = FALSE)
         # density_boot <- empiricalDensity$new(p_density = SL_fit$SL.predict[,1], x = d)
 
-        yhat_boot[yhat_boot > sort(yhat_boot, decreasing = T)[2]] <- 0 # temporarily fix hal9001 extrapolation error
+        yhat_boot[yhat_boot > 2*quantile(yhat_boot, probs = .75)] <- 0 # temporarily fix hal9001 extrapolation error
         density_boot <- empiricalDensity$new(p_density = yhat_boot, x = d)
         bootstrapOnestepFit$p_hat <- density_boot$normalize()
         # target new fit
@@ -59,6 +58,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
 
         return(c(bootstrapOnestepFit$Psi))
       }
+      # browser()
 
       library(foreach)
 
