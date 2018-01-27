@@ -36,7 +36,8 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         use_min = TRUE,
         yolo = FALSE,
         fit_type = 'glmnet',
-        family="binomial")
+        family="binomial",
+        n_folds = 3)
       yhat <- rje::expit(predict(HAL_tuned, new_data = longDFOut[,'box']))
       # SL_fit <- SuperLearner(Y = longDFOut$Y, X = longDFOut[,'box',F], newX = data.frame(box = self$longDataOut$x),
                              # family = 'binomial',
