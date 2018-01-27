@@ -1,8 +1,4 @@
 library(R6)
-# source("./empiricalDensityR6.R")
-# library(fixedHAL)
-# library(SuperLearner)
-# library(hal9001)
 
 #' @export
 avgDensityTMLE <- R6Class("avgDensityTMLE",
@@ -105,17 +101,3 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     }
   )
 )
-
-# onestepFit <- avgDensityTMLE$new(x = datO$sA)
-# onestepFit$fit_density()
-# onestepFit$calc_Psi()
-# onestepFit$calc_EIC()
-# # onestepFit$Psi
-# # onestepFit$p_hat$display()
-# # onestepFit$updateOnce()
-# onestepFit$onestepTarget()
-
-# foo <- function(x) {dnorm(x)^2}
-# sum(foo(seq(-10, 10, 1e-3))*1e-3)
-
-
