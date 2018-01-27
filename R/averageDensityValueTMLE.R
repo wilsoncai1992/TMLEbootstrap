@@ -24,7 +24,9 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       if (!is.null(verbose)) self$verbose <- verbose
     },
-    fit_density = function(bin_width = .1) {
+    fit_density = function(bin_width = .2) {
+      library(SuperLearner)
+      library(hal9001)
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
       longDFOut <- self$longDataOut$generate_df()
 
@@ -36,19 +38,22 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         use_min = TRUE,
         yolo = FALSE,
         fit_type = 'glmnet',
-        family="binomial",
+        family = "binomial",
         n_folds = 3)
-      yhat <- rje::expit(predict(HAL_tuned, new_data = longDFOut[,'box']))
-      # SL_fit <- SuperLearner(Y = longDFOut$Y, X = longDFOut[,'box',F], newX = data.frame(box = self$longDataOut$x),
-                             # family = 'binomial',
-                             # SL.library = "SL.hal9001",
-                             # cvControl = list(V = 3),
-                             # verbose = verbose)
-      # HAL_tuned <- SL_fit$fitLibrary$SL.hal9001_All$object
-      self$HAL_tuned <- squash_hal_fit(HAL_tuned)
-
+      yhat <- rje::expit(predict(HAL_tuned, new_data = self$longDataOut$x))
       density_intial <- empiricalDensity$new(p_density = yhat, x = self$x)
       self$p_hat <- density_intial$normalize()
+
+      # SL_fit <- SuperLearner(Y = longDFOut$Y, X = longDFOut[,'box',F], newX = data.frame(box = self$longDataOut$x),
+      # family = 'binomial',
+      # SL.library = "SL.hal9001",
+      # cvControl = list(V = 3),
+      # verbose = verbose)
+      # HAL_tuned <- SL_fit$fitLibrary$SL.hal9001_All$object
+      self$HAL_tuned <- hal9001::squash_hal_fit(HAL_tuned)
+
+      # density_intial <- empiricalDensity$new(p_density = SL_fit$SL.predict, x = self$x)
+      # self$p_hat <- density_intial$normalize()
 
       # foo2 <- function(x) {(.5*dnorm(x, mean = 2) + .5*dnorm(x, mean = -2))}
       # density_intial$display(foo2)

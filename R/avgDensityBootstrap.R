@@ -26,26 +26,30 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
 
       betfun <- function(data, epsilon_step = self$epsilon_step){
+        # browser()
         # indices is the random indexes for the bootstrap sample
         indices <- sample(1:length(data), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
         d = data[indices]
 
         bootstrapOnestepFit <- avgDensityTMLE$new(x = d, epsilon_step = epsilon_step)
         # fit new density
+        longDFOut_new <- self$pointTMLE$longDataOut$generate_df(x = d)
         HAL_boot <- fit_fixed_HAL(Y = longDFOut_new$Y,
           X = longDFOut_new[,'box'],
           hal9001_object = self$pointTMLE$HAL_tuned,
           family = stats::binomial())
-        yhat_boot <- predict.fixed_HAL(HAL_boot, new_data = longDFOut_new[,'box'])
+        yhat_boot <- predict.fixed_HAL(HAL_boot, new_data = d)
+
         # HAL_wrapper <<- generate_SL.fixed_HAL(hal9001_object = self$pointTMLE$HAL_tuned)
         # HAL_wrapper
-        longDFOut_new <- self$pointTMLE$longDataOut$generate_df(x = d)
         # SL_fit <- SuperLearner(Y = longDFOut_new$Y, X = longDFOut_new[,'box',F], newX = data.frame(box = d),
-                               # family = 'binomial',
-                               # SL.library = "HAL_wrapper",
-                               # cvControl = list(V = 3),
-                               # verbose = FALSE)
+        # family = 'binomial',
+        # SL.library = "HAL_wrapper",
+        # cvControl = list(V = 3),
+        # verbose = FALSE)
         # density_boot <- empiricalDensity$new(p_density = SL_fit$SL.predict[,1], x = d)
+
+        yhat_boot[yhat_boot > sort(yhat_boot, decreasing = T)[2]] <- 0 # temporarily fix hal9001 extrapolation error
         density_boot <- empiricalDensity$new(p_density = yhat_boot, x = d)
         bootstrapOnestepFit$p_hat <- density_boot$normalize()
         # target new fit

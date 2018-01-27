@@ -1,6 +1,6 @@
 Package: fixedHAL
 Title: TEMP
-Version: 0.2
+Version: 0.3
 Authors@R: c(
   person("Weixin", "Cai", email = "wcai@berkeley.edu",
          role = c("aut", "cre", "cph"),
@@ -17,7 +17,7 @@ Imports:
   tmle,
   SuperLearner,
   R6,
-  hal9001
+  hal9001 (>= 0.0.6)
 Suggests:
   knitr,
   testthat,
