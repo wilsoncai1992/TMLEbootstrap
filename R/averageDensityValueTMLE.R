@@ -30,15 +30,23 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
 
       verbose <- FALSE
       # tune HAL for density
-      SL_fit <- SuperLearner(Y = longDFOut$Y, X = longDFOut[,'box',F], newX = data.frame(box = self$longDataOut$x),
-                             family = 'binomial',
-                             SL.library = "SL.hal9001",
-                             cvControl = list(V = 3),
-                             verbose = verbose)
-      HAL_tuned <- SL_fit$fitLibrary$SL.hal9001_All$object
+      HAL_tuned <- hal9001::fit_hal(X = longDFOut[,'box'],
+        Y = longDFOut$Y,
+        # weights = wgt,
+        use_min = TRUE,
+        yolo = FALSE,
+        fit_type = 'glmnet',
+        family="binomial")
+      yhat <- rje::expit(predict(HAL_tuned, new_data = longDFOut[,'box']))
+      # SL_fit <- SuperLearner(Y = longDFOut$Y, X = longDFOut[,'box',F], newX = data.frame(box = self$longDataOut$x),
+                             # family = 'binomial',
+                             # SL.library = "SL.hal9001",
+                             # cvControl = list(V = 3),
+                             # verbose = verbose)
+      # HAL_tuned <- SL_fit$fitLibrary$SL.hal9001_All$object
       self$HAL_tuned <- squash_hal_fit(HAL_tuned)
 
-      density_intial <- empiricalDensity$new(p_density = SL_fit$SL.predict, x = self$x)
+      density_intial <- empiricalDensity$new(p_density = yhat, x = self$x)
       self$p_hat <- density_intial$normalize()
 
       # foo2 <- function(x) {(.5*dnorm(x, mean = 2) + .5*dnorm(x, mean = -2))}

@@ -32,15 +32,21 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
 
         bootstrapOnestepFit <- avgDensityTMLE$new(x = d, epsilon_step = epsilon_step)
         # fit new density
-        HAL_wrapper <<- generate_SL.fixed_HAL(hal9001_object = self$pointTMLE$HAL_tuned)
-        HAL_wrapper
+        HAL_boot <- fit_fixed_HAL(Y = longDFOut_new$Y,
+          X = longDFOut_new[,'box'],
+          hal9001_object = self$pointTMLE$HAL_tuned,
+          family = stats::binomial())
+        yhat_boot <- predict.fixed_HAL(HAL_boot, new_data = longDFOut_new[,'box'])
+        # HAL_wrapper <<- generate_SL.fixed_HAL(hal9001_object = self$pointTMLE$HAL_tuned)
+        # HAL_wrapper
         longDFOut_new <- self$pointTMLE$longDataOut$generate_df(x = d)
-        SL_fit <- SuperLearner(Y = longDFOut_new$Y, X = longDFOut_new[,'box',F], newX = data.frame(box = d),
-                               family = 'binomial',
-                               SL.library = "HAL_wrapper",
-                               cvControl = list(V = 3),
-                               verbose = FALSE)
-        density_boot <- empiricalDensity$new(p_density = SL_fit$SL.predict[,1], x = d)
+        # SL_fit <- SuperLearner(Y = longDFOut_new$Y, X = longDFOut_new[,'box',F], newX = data.frame(box = d),
+                               # family = 'binomial',
+                               # SL.library = "HAL_wrapper",
+                               # cvControl = list(V = 3),
+                               # verbose = FALSE)
+        # density_boot <- empiricalDensity$new(p_density = SL_fit$SL.predict[,1], x = d)
+        density_boot <- empiricalDensity$new(p_density = yhat_boot, x = d)
         bootstrapOnestepFit$p_hat <- density_boot$normalize()
         # target new fit
         bootstrapOnestepFit$calc_Psi()
