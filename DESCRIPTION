@@ -17,7 +17,8 @@ Imports:
   tmle,
   SuperLearner,
   R6,
-  hal9001 (>= 0.0.6)
+  hal9001 (>= 0.0.6),
+  rje
 Suggests:
   knitr,
   testthat,
