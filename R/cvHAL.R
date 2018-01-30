@@ -24,7 +24,14 @@ densityHAL <- R6Class("densityHAL",
       # self$hal_fit$lambda_star
     },
     predict = function(new_x = NULL){
+      if(length(new_x) > 1e4) return(self$predict_long(new_x = new_x))
       return(rje::expit(predict(self$hal_fit, new_data = new_x)))
+    },
+    predict_long = function(new_x = NULL){
+      message('use long prediction routine...')
+      x_list <- split(new_x, ceiling(seq_along(new_x)/20))
+      out <- lapply(x_list, function(x) self$predict(new_x = x))
+      return(do.call('c', out))
     },
     eval_misclass_loss = function(new_x = NULL){
       df_valid <- self$longiData$generate_df_compress(x = new_x)
@@ -59,8 +66,9 @@ cv_densityHAL <- R6Class("cv_densityHAL",
     assign_fold = function(n_fold = 3){
       self$folds <- origami::make_folds(n = length(self$x), V = n_fold)
     },
-    cv = function(lambda = 2e-5){
-      cv_once <- function(fold, data, longiData, lambda){
+    cv = function(lambda = 2e-5, verbose = TRUE){
+      cv_once <- function(fold, data, longiData, lambda, verbose = FALSE){
+        if(verbose) message(paste('fitting lambda =', lambda))
         # define training and validation sets based on input object of class "folds"
         train_data <- origami::training(data)
         valid_data <- origami::validation(data)
@@ -72,7 +80,8 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       }
       cv_results <- origami::cross_validate(
         cv_fun = cv_once, folds = self$folds,
-        data = self$x, longiData = self$longiData, lambda = lambda
+        data = self$x, longiData = self$longiData, lambda = lambda,
+        verbose = verbose
       )
       return(mean(cv_results$loss))
     },

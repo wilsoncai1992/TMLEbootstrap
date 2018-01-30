@@ -5,20 +5,28 @@ D <-
   node("sA.mu", distr = "rconst", const = 4*W1 - 2) +
   node("sA", distr = "rnorm", mean = sA.mu, sd = 1)
 D <- set.DAG(D, n.test = 10)
-# datO <- sim(D, n = 1e4, rndseed = 12345)
-datO <- sim(D, n = 1e3, rndseed = 12345)
-
+# datO <- sim(D, n = 1e5, rndseed = 12345)
+datO <- sim(D, n = 1e4, rndseed = 12345)
+# datO <- sim(D, n = 1e3, rndseed = 12345)
 x <- datO$sA
 
-bin_width <- .3
+bin_width <- .2
 longDataOut <- longiData$new(x = x, bin_width = bin_width)
 longDFOut <- longDataOut$generate_df_compress()
 
 
 cvHAL_fit <- cv_densityHAL$new(x = x, longiData = longDataOut)
 cvHAL_fit$assign_fold(n_fold = 3)
-# cvHAL_fit$cv(lambda = 2e-5)
-cvHAL_fit$cv_lambda_grid(lambda_grid = c(1e-6,2e-5))
+cvHAL_fit$cv_lambda_grid(lambda_grid = c(1e-6,2e-5, 1e-4, 1e-3, 1e-2, 1e-1))
+hal_out <- cvHAL_fit$compute_best_model()
+yhat <- hal_out$predict(new_x = x)
+density_intial <- empiricalDensity$new(p_density = yhat, x = x)
+p_hat <- density_intial$normalize()
+foo2 <- function(x) {(.5*dnorm(x, mean = 2) + .5*dnorm(x, mean = -2))}
+p_hat$display(foo2)
+
+hal_out$hal_fit
+
 # longDFResample <- longiData_resample$new(df_compressed = longDFOut)
 # df_boot_with_replace <- longDFResample$bootstrap_with_replacement()
 # folds_out <- longDFResample$create_folds(n_fold = 10)
