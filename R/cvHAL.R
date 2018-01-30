@@ -24,20 +24,9 @@ densityHAL <- R6Class("densityHAL",
       # self$hal_fit$lambda_star
     },
     predict = function(new_x = NULL){
-      # new_longiData <- self$longiData$generate_df(x = new_x)
       return(rje::expit(predict(self$hal_fit, new_data = new_x)))
     },
-    # eval_misclass_loss = function(new_x = NULL, new_y = NULL, weights = NULL){
-      # if(is.na(weights)) weights <- rep(1, length(new_x))
-      # yhat <- self$predict(new_x = new_x)
-      # yhat_class <- (yhat > .5) + 0L
-      # return(mean(abs(yhat - new_y)))
-    # },
     eval_misclass_loss = function(new_x = NULL){
-      # if(is.na(weights)) weights <- rep(1, length(new_x))
-      # yhat <- self$predict(new_x = new_x)
-      # yhat_class <- (yhat > .5) + 0L
-      # return(mean(abs(yhat - new_y)))
       df_valid <- self$longiData$generate_df_compress(x = new_x)
       yhat <- self$predict(new_x = df_valid$box)
       yhat_class <- (yhat > .5) + 0L
@@ -81,10 +70,8 @@ cv_once <- function(fold, data, longiData, lambda){
   train_data <- origami::training(data)
   valid_data <- origami::validation(data)
 
-  # df_valid <- longiData$generate_df(x = valid_data)
   HALfit <- densityHAL$new(x = train_data, longiData = longiData)
   HALfit$fit(lambda = lambda)
-  # HALfit$eval_misclass_loss(new_x = df_valid$box, new_y = df_valid$Y)
   HALfit$eval_misclass_loss(new_x = valid_data)
   return()
 }
