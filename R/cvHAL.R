@@ -31,7 +31,15 @@ densityHAL <- R6Class("densityHAL",
       yhat <- self$predict(new_x = df_valid$box)
       yhat_class <- (yhat > .5) + 0L
       return(sum(abs(yhat_class - df_valid$Y) * df_valid$Freq) / sum(df_valid$Freq))
+    },
+    eval_crossentropy_loss = function(new_x = NULL){
+      df_valid <- self$longiData$generate_df_compress(x = new_x)
+      yhat <- self$predict(new_x = df_valid$box)
+      not_weighted <- cross_entropy(y = df_valid$Y, yhat = yhat)
+      return(sum(not_weighted * df_valid$Freq) / sum(df_valid$Freq))
     }
+    # density_intial <- empiricalDensity$new(p_density = yhat, x = x)
+    # p_hat <- density_intial$normalize()
   )
 )
 
@@ -46,17 +54,10 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       self$x <- x
     },
     assign_fold = function(n_fold = 3){
-      # sample_per_fold <- ceiling(length(self$x) / n_fold)
-      # fold_assign <- sample(head(rep(1:n_fold, each = sample_per_fold), n = length(self$x)))
-      # x_folds <- list()
-      # for (i in 1:n_fold) {
-      #   x_folds[[i]] <- self$x[fold_assign == i]
-      # }
-      # self$folds <- x_folds
-
       self$folds <- origami::make_folds(n = length(self$x), V = n_fold)
     },
     cv = function(lambda = 2e-5){
+      browser()
       cv_once <- function(fold, data, longiData, lambda){
         # define training and validation sets based on input object of class "folds"
         train_data <- origami::training(data)
@@ -64,13 +65,18 @@ cv_densityHAL <- R6Class("cv_densityHAL",
 
         HALfit <- densityHAL$new(x = train_data, longiData = longiData)
         HALfit$fit(lambda = lambda)
-        return(HALfit$eval_misclass_loss(new_x = valid_data))
+        # return(HALfit$eval_misclass_loss(new_x = valid_data))
+        return(list(loss = HALfit$eval_crossentropy_loss(new_x = valid_data)))
       }
       cv_results <- origami::cross_validate(
         cv_fun = cv_once, folds = self$folds,
         data = self$x, longiData = self$longiData, lambda = lambda
       )
+      mean(cv_results$loss)
 
     }
   )
 )
+
+#' @export
+cross_entropy <- function(y, yhat) -log(yhat) * as.numeric(y == 1) -log(1 - yhat) * as.numeric(y == 0)

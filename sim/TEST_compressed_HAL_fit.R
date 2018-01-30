@@ -14,39 +14,44 @@ bin_width <- .3
 longDataOut <- longiData$new(x = x, bin_width = bin_width)
 longDFOut <- longDataOut$generate_df_compress()
 
-longDFResample <- longiData_resample$new(df_compressed = longDFOut)
-df_boot_with_replace <- longDFResample$bootstrap_with_replacement()
-folds_out <- longDFResample$create_folds(n_fold = 10)
 
-summed <- sum_longiData_resample(folds_out)
-all.equal(summed$df_compressed, longDFResample$df_compressed)
-all.equal(summed, longDFResample)
+cvHAL_fit <- cv_densityHAL$new(x = x, longiData = longDataOut)
+cvHAL_fit$assign_fold(n_fold = 3)
+cvHAL_fit$cv(lambda = 2e-5)
+
+# longDFResample <- longiData_resample$new(df_compressed = longDFOut)
+# df_boot_with_replace <- longDFResample$bootstrap_with_replacement()
+# folds_out <- longDFResample$create_folds(n_fold = 10)
+
+# summed <- sum_longiData_resample(folds_out)
+# all.equal(summed$df_compressed, longDFResample$df_compressed)
+# all.equal(summed, longDFResample)
 
 # train_1 <- sum_longiData_resample(folds_out[1:2])
 # train_1$n_sample
 
-for(fold in 1:length(folds_out)){
-  train_here <- sum_longiData_resample(folds_out[which_are_train])
-  # train_here$n_sample
-  test_here <- sum_longiData_resample(folds_out[fold])
-  # test_here$n_sample
-  
-  cvHAL$new()
-}
+# for(fold in 1:length(folds_out)){
+#   train_here <- sum_longiData_resample(folds_out[which_are_train])
+#   # train_here$n_sample
+#   test_here <- sum_longiData_resample(folds_out[fold])
+#   # test_here$n_sample
+#   
+#   cvHAL$new()
+# }
 
-hal_fit <- hal9001::fit_hal_single_lambda(X = longDFOut[,'box'],
-  Y = longDFOut$Y,
-  weights = longDFOut$Freq,
-  family="binomial",
-  lambda = 2e-5,
-  fit_type = 'glmnet',
-  use_min = TRUE, #useless
-  yolo = FALSE)
-yhat <- rje::expit(predict(hal_fit, new_data = longDataOut$x))
-density_intial <- empiricalDensity$new(p_density = yhat, x = x)
-p_hat <- density_intial$normalize()
-foo2 <- function(x) {(.5*dnorm(x, mean = 2) + .5*dnorm(x, mean = -2))}
-p_hat$display(foo2)
+# hal_fit <- hal9001::fit_hal_single_lambda(X = longDFOut[,'box'],
+#   Y = longDFOut$Y,
+#   weights = longDFOut$Freq,
+#   family="binomial",
+#   lambda = 2e-5,
+#   fit_type = 'glmnet',
+#   use_min = TRUE, #useless
+#   yolo = FALSE)
+# yhat <- rje::expit(predict(hal_fit, new_data = longDataOut$x))
+# density_intial <- empiricalDensity$new(p_density = yhat, x = x)
+# p_hat <- density_intial$normalize()
+# foo2 <- function(x) {(.5*dnorm(x, mean = 2) + .5*dnorm(x, mean = -2))}
+# p_hat$display(foo2)
 
 
 

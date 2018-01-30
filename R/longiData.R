@@ -24,6 +24,7 @@ longiData <- R6Class("longiData",
         b <- b+1
       }
       all_df <- do.call("rbind", all_df)
+      all_df$Y <- as.numeric(as.character(all_df$Y)) # turn factor to numeric
       # self$longiDF <- all_df[order( all_df[,1], all_df[,3] ),2:3]
       return(all_df[order( all_df[,1], all_df[,3] ),2:3])
     },
@@ -38,6 +39,7 @@ longiData <- R6Class("longiData",
         b <- b+1
       }
       all_df <- do.call("rbind", all_df)
+      all_df$Y <- as.numeric(as.character(all_df$Y)) # turn factor to numeric
       return(all_df)
     }
   )
@@ -85,7 +87,7 @@ sum_longiData_resample <- function(list) {
   # input: list of longiData_resample
   # output: a new longiData_resample
   library(dplyr)
-  # library(tidyr)    
+  # library(tidyr)
   list_df <- lapply(list, function(x) x$df_compressed)
   df_long <- do.call(rbind, list_df)
   out <- data.frame(df_long %>% group_by(box, Y) %>% summarise(Freq = sum(Freq)) %>% ungroup())
