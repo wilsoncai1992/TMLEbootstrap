@@ -36,6 +36,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         longDFOut_new <- self$pointTMLE$longDataOut$generate_df_compress(x = d)
         HAL_boot <- fit_fixed_HAL(Y = longDFOut_new$Y,
           X = longDFOut_new[,'box'],
+          weights = longDFOut_new$Freq, # for df_compress only
           hal9001_object = self$pointTMLE$HAL_tuned,
           family = stats::binomial())
         yhat_boot <- predict.fixed_HAL(HAL_boot, new_data = d)

@@ -1,5 +1,6 @@
 #' @export
-fit_fixed_HAL <- function(Y, X, hal9001_object, family = stats::gaussian(), inflate_lambda = 1) {
+fit_fixed_HAL <- function(Y, X, weights = NULL, hal9001_object, family = stats::gaussian(), inflate_lambda = 1) {
+  if(is.null(weights)) weights <- rep(1, length(Y))
   basis_list <- hal9001_object$basis_list
   copy_map <- hal9001_object$copy_map
   if(!is.matrix(X)) X = as.matrix(X)
@@ -33,6 +34,7 @@ fit_fixed_HAL <- function(Y, X, hal9001_object, family = stats::gaussian(), infl
       lasso_fit <- tryCatch({
                             lasso_fit <- glmnet::glmnet(x = x_basis, y = Y,
                                  family = family,
+                                 weights = weights,
                                  alpha = 1,
                                  lambda = lambda,
                                  intercept = FALSE,
