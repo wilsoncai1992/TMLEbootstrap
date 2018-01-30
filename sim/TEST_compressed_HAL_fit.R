@@ -6,11 +6,11 @@ D <-
   node("sA", distr = "rnorm", mean = sA.mu, sd = 1)
 D <- set.DAG(D, n.test = 10)
 # datO <- sim(D, n = 1e5, rndseed = 12345)
-datO <- sim(D, n = 1e4, rndseed = 12345)
-# datO <- sim(D, n = 1e3, rndseed = 12345)
+# datO <- sim(D, n = 1e4, rndseed = 12345)
+datO <- sim(D, n = 1e3, rndseed = 12345)
 x <- datO$sA
 
-bin_width <- .2
+bin_width <- .3
 longDataOut <- longiData$new(x = x, bin_width = bin_width)
 longDFOut <- longDataOut$generate_df_compress()
 
