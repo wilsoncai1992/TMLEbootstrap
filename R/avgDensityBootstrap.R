@@ -112,6 +112,10 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     center_boot_CI = function(){
       new_CI <- self$CI_all[[2]] - mean(self$CI_all[[2]]) + self$Psi
       return(list(self$CI_all[[1]], self$CI_all[[2]], new_CI))
+    },
+    compensate_boot_CI = function(){
+      new_CI <- self$CI_all[[2]] - 2*(mean(self$CI_all[[2]]) - self$Psi)
+      return(list(self$CI_all[[1]], self$CI_all[[2]], new_CI))
     }
   )
 )
