@@ -49,6 +49,9 @@ cv_densityHAL <- R6Class("cv_densityHAL",
     longiData = NULL,
     x = NULL,
     folds = NULL,
+    # results
+    results = NULL,
+    lambda.min = NULL,
     initialize = function(x, longiData) {
       self$longiData <- longiData
       self$x <- x
@@ -57,7 +60,6 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       self$folds <- origami::make_folds(n = length(self$x), V = n_fold)
     },
     cv = function(lambda = 2e-5){
-      browser()
       cv_once <- function(fold, data, longiData, lambda){
         # define training and validation sets based on input object of class "folds"
         train_data <- origami::training(data)
@@ -72,8 +74,25 @@ cv_densityHAL <- R6Class("cv_densityHAL",
         cv_fun = cv_once, folds = self$folds,
         data = self$x, longiData = self$longiData, lambda = lambda
       )
-      mean(cv_results$loss)
-
+      return(mean(cv_results$loss))
+    },
+    cv_lambda_grid = function(lambda_grid = c(1e-6,2e-5)){
+      list_df <- list()
+      b <- 1
+      for (i in lambda_grid) {
+        loss <- self$cv(lambda = i)
+        list_df[[b]] <- c(i, loss)
+        b <- b+1
+      }
+      results <- as.data.frame(do.call(rbind, list_df))
+      colnames(results) <- c('lambda', 'loss')
+      self$results <- results
+      self$lambda.min <- results$lambda[which.min(results$loss)]
+    },
+    compute_best_model = function(){
+      HALfit_out <- densityHAL$new(x = self$x, longiData = self$longiData)
+      HALfit_out$fit(lambda = self$lambda.min)
+      return(HALfit_out)
     }
   )
 )

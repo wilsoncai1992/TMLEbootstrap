@@ -17,8 +17,8 @@ longDFOut <- longDataOut$generate_df_compress()
 
 cvHAL_fit <- cv_densityHAL$new(x = x, longiData = longDataOut)
 cvHAL_fit$assign_fold(n_fold = 3)
-cvHAL_fit$cv(lambda = 2e-5)
-
+# cvHAL_fit$cv(lambda = 2e-5)
+cvHAL_fit$cv_lambda_grid(lambda_grid = c(1e-6,2e-5))
 # longDFResample <- longiData_resample$new(df_compressed = longDFOut)
 # df_boot_with_replace <- longDFResample$bootstrap_with_replacement()
 # folds_out <- longDFResample$create_folds(n_fold = 10)
