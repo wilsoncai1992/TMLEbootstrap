@@ -25,6 +25,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       library(SuperLearner)
       library(hal9001)
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
+      # longDFOut <- self$longDataOut$generate_df()
       longDFOut <- self$longDataOut$generate_df_compress()
 
       verbose <- FALSE
