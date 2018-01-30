@@ -46,32 +46,31 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       self$x <- x
     },
     assign_fold = function(n_fold = 3){
-      sample_per_fold <- ceiling(length(self$x) / n_fold)
-      fold_assign <- sample(head(rep(1:n_fold, each = sample_per_fold), n = length(self$x)))
-      x_folds <- list()
-      for (i in 1:n_fold) {
-        x_folds[[i]] <- self$x[fold_assign == i]
-      }
-      self$folds <- x_folds
+      # sample_per_fold <- ceiling(length(self$x) / n_fold)
+      # fold_assign <- sample(head(rep(1:n_fold, each = sample_per_fold), n = length(self$x)))
+      # x_folds <- list()
+      # for (i in 1:n_fold) {
+      #   x_folds[[i]] <- self$x[fold_assign == i]
+      # }
+      # self$folds <- x_folds
+
+      self$folds <- origami::make_folds(n = length(self$x), V = n_fold)
     },
-    cv = function(n_fold = 3){
-      folds <- origami::make_folds(n = length(self$x), V = n_fold)
+    cv = function(lambda = 2e-5){
+      cv_once <- function(fold, data, longiData, lambda){
+        # define training and validation sets based on input object of class "folds"
+        train_data <- origami::training(data)
+        valid_data <- origami::validation(data)
+
+        HALfit <- densityHAL$new(x = train_data, longiData = longiData)
+        HALfit$fit(lambda = lambda)
+        return(HALfit$eval_misclass_loss(new_x = valid_data))
+      }
       cv_results <- origami::cross_validate(
-        cv_fun = cv_once, folds = folds,
-        data = x
+        cv_fun = cv_once, folds = self$folds,
+        data = self$x, longiData = self$longiData, lambda = lambda
       )
 
     }
   )
 )
-
-cv_once <- function(fold, data, longiData, lambda){
-  # define training and validation sets based on input object of class "folds"
-  train_data <- origami::training(data)
-  valid_data <- origami::validation(data)
-
-  HALfit <- densityHAL$new(x = train_data, longiData = longiData)
-  HALfit$fit(lambda = lambda)
-  HALfit$eval_misclass_loss(new_x = valid_data)
-  return()
-}
