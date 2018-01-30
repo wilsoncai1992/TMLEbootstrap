@@ -9,11 +9,11 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     # tol = 1e-3,
     CI_all = NULL,
     bootstrap_estimates = NULL,
-    initialize = function(x, epsilon_step = NULL) {
+    initialize = function(x, epsilon_step = NULL, bin_width = .3) {
       self$x <- x
       if(!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       onestepFit <- avgDensityTMLE$new(x = self$x, epsilon_step = self$epsilon_step, verbose  = TRUE)
-      onestepFit$fit_density(bin_width = .3)
+      onestepFit$fit_density(bin_width = bin_width)
       onestepFit$calc_Psi()
       onestepFit$calc_EIC()
       onestepFit$onestepTarget()
@@ -107,6 +107,10 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       new_upper <- self$Psi + new_dist
       new_lower <- self$Psi - new_dist
       new_CI <- c(new_lower, new_upper)
+      return(list(self$CI_all[[1]], self$CI_all[[2]], new_CI))
+    },
+    center_boot_CI = function(){
+      new_CI <- self$CI_all[[2]] - mean(self$CI_all[[2]]) + self$Psi
       return(list(self$CI_all[[1]], self$CI_all[[2]], new_CI))
     }
   )
