@@ -66,7 +66,7 @@ cv_densityHAL <- R6Class("cv_densityHAL",
     assign_fold = function(n_fold = 3){
       self$folds <- origami::make_folds(n = length(self$x), V = n_fold)
     },
-    cv = function(lambda = 2e-5, verbose = TRUE){
+    cv = function(lambda = 2e-5, verbose = FALSE){
       cv_once <- function(fold, data, longiData, lambda, verbose = FALSE){
         if(verbose) message(paste('fitting lambda =', lambda))
         # define training and validation sets based on input object of class "folds"
