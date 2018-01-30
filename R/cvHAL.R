@@ -27,22 +27,64 @@ densityHAL <- R6Class("densityHAL",
       # new_longiData <- self$longiData$generate_df(x = new_x)
       return(rje::expit(predict(self$hal_fit, new_data = new_x)))
     },
-    eval_misclass_loss = function(new_x = NULL, new_y = NULL){
-      yhat <- self$predict(new_x = new_x)
+    # eval_misclass_loss = function(new_x = NULL, new_y = NULL, weights = NULL){
+      # if(is.na(weights)) weights <- rep(1, length(new_x))
+      # yhat <- self$predict(new_x = new_x)
+      # yhat_class <- (yhat > .5) + 0L
+      # return(mean(abs(yhat - new_y)))
+    # },
+    eval_misclass_loss = function(new_x = NULL){
+      # if(is.na(weights)) weights <- rep(1, length(new_x))
+      # yhat <- self$predict(new_x = new_x)
+      # yhat_class <- (yhat > .5) + 0L
+      # return(mean(abs(yhat - new_y)))
+      df_valid <- self$longiData$generate_df_compress(x = new_x)
+      yhat <- self$predict(new_x = df_valid$box)
       yhat_class <- (yhat > .5) + 0L
-      return(mean(abs(yhat - new_y)))
+      return(sum(abs(yhat_class - df_valid$Y) * df_valid$Freq) / sum(df_valid$Freq))
     }
   )
 )
 
-# #' @export
-# cv_densityHAL <- R6Class("cv_densityHAL",
-#   public = list(
-#     longiData = NULL,
-#     x = NULL,
-#     initialize = function(x, longiData) {
-#       self$longiData <- longiData
-#       self$x <- x
-#     }
-#   )
-# )
+#' @export
+cv_densityHAL <- R6Class("cv_densityHAL",
+  public = list(
+    longiData = NULL,
+    x = NULL,
+    folds = NULL,
+    initialize = function(x, longiData) {
+      self$longiData <- longiData
+      self$x <- x
+    },
+    assign_fold = function(n_fold = 3){
+      sample_per_fold <- ceiling(length(self$x) / n_fold)
+      fold_assign <- sample(head(rep(1:n_fold, each = sample_per_fold), n = length(self$x)))
+      x_folds <- list()
+      for (i in 1:n_fold) {
+        x_folds[[i]] <- self$x[fold_assign == i]
+      }
+      self$folds <- x_folds
+    },
+    cv = function(n_fold = 3){
+      folds <- origami::make_folds(n = length(self$x), V = n_fold)
+      cv_results <- origami::cross_validate(
+        cv_fun = cv_once, folds = folds,
+        data = x
+      )
+
+    }
+  )
+)
+
+cv_once <- function(fold, data, longiData, lambda){
+  # define training and validation sets based on input object of class "folds"
+  train_data <- origami::training(data)
+  valid_data <- origami::validation(data)
+
+  # df_valid <- longiData$generate_df(x = valid_data)
+  HALfit <- densityHAL$new(x = train_data, longiData = longiData)
+  HALfit$fit(lambda = lambda)
+  # HALfit$eval_misclass_loss(new_x = df_valid$box, new_y = df_valid$Y)
+  HALfit$eval_misclass_loss(new_x = valid_data)
+  return()
+}
