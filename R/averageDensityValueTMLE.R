@@ -24,19 +24,26 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       library(SuperLearner)
       library(hal9001)
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
-      longDFOut <- self$longDataOut$generate_df()
+      # longDFOut <- self$longDataOut$generate_df()
+      longDFOut <- self$longDataOut$generate_df_compress()
 
       verbose <- FALSE
       # tune HAL for density
-      HAL_tuned <- hal9001::fit_hal(X = longDFOut[,'box'],
-        Y = longDFOut$Y,
-        # weights = wgt,
-        use_min = TRUE,
-        yolo = FALSE,
-        fit_type = 'glmnet',
-        family = "binomial",
-        n_folds = 3)
-      yhat <- rje::expit(predict(HAL_tuned, new_data = self$longDataOut$x))
+      cvHAL_fit <- cv_densityHAL$new(x = self$x, longiData = self$longDataOut)
+      cvHAL_fit$assign_fold(n_fold = 3)
+      cvHAL_fit$cv_lambda_grid(lambda_grid = c(1e-6,2e-5, 1e-4, 1e-3, 1e-2, 1e-1))
+      hal_out <- cvHAL_fit$compute_best_model()
+      HAL_tuned <- hal_out$hal_fit
+      yhat <- hal_out$predict(new_x = self$longDataOut$x)
+      # HAL_tuned <- hal9001::fit_hal(X = longDFOut[,'box'],
+      #   Y = longDFOut$Y,
+      #   weights = longDFOut$Freq,
+      #   use_min = TRUE,
+      #   yolo = FALSE,
+      #   fit_type = 'glmnet',
+      #   family = "binomial",
+      #   n_folds = 3)
+      # yhat <- rje::expit(predict(HAL_tuned, new_data = self$longDataOut$x))
       density_intial <- empiricalDensity$new(p_density = yhat, x = self$x)
       self$p_hat <- density_intial$normalize()
 

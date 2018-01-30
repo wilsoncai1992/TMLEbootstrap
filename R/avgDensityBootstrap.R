@@ -9,11 +9,11 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     # tol = 1e-3,
     CI_all = NULL,
     bootstrap_estimates = NULL,
-    initialize = function(x, epsilon_step = NULL) {
+    initialize = function(x, epsilon_step = NULL, bin_width = .3) {
       self$x <- x
       if(!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       onestepFit <- avgDensityTMLE$new(x = self$x, epsilon_step = self$epsilon_step, verbose  = TRUE)
-      onestepFit$fit_density(bin_width = .3)
+      onestepFit$fit_density(bin_width = bin_width)
       onestepFit$calc_Psi()
       onestepFit$calc_EIC()
       onestepFit$onestepTarget()
@@ -32,9 +32,11 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
 
         bootstrapOnestepFit <- avgDensityTMLE$new(x = d, epsilon_step = epsilon_step)
         # fit new density
-        longDFOut_new <- self$pointTMLE$longDataOut$generate_df(x = d)
+        # longDFOut_new <- self$pointTMLE$longDataOut$generate_df(x = d)
+        longDFOut_new <- self$pointTMLE$longDataOut$generate_df_compress(x = d)
         HAL_boot <- fit_fixed_HAL(Y = longDFOut_new$Y,
           X = longDFOut_new[,'box'],
+          weights = longDFOut_new$Freq, # for df_compress only
           hal9001_object = self$pointTMLE$HAL_tuned,
           family = stats::binomial())
         yhat_boot <- predict.fixed_HAL(HAL_boot, new_data = d)
@@ -105,6 +107,14 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       new_upper <- self$Psi + new_dist
       new_lower <- self$Psi - new_dist
       new_CI <- c(new_lower, new_upper)
+      return(list(self$CI_all[[1]], self$CI_all[[2]], new_CI))
+    },
+    center_boot_CI = function(){
+      new_CI <- self$CI_all[[2]] - mean(self$CI_all[[2]]) + self$Psi
+      return(list(self$CI_all[[1]], self$CI_all[[2]], new_CI))
+    },
+    compensate_boot_CI = function(){
+      new_CI <- self$CI_all[[2]] - 2*(mean(self$CI_all[[2]]) - self$Psi)
       return(list(self$CI_all[[1]], self$CI_all[[2]], new_CI))
     }
   )

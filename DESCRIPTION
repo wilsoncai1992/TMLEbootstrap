@@ -1,6 +1,6 @@
 Package: fixedHAL
 Title: TEMP
-Version: 0.3
+Version: 0.4
 Authors@R: c(
   person("Weixin", "Cai", email = "wcai@berkeley.edu",
          role = c("aut", "cre", "cph"),
@@ -18,7 +18,8 @@ Imports:
   SuperLearner,
   R6,
   hal9001 (>= 0.0.6),
-  rje
+  rje,
+  origami (>= 0.8.0)
 Suggests:
   knitr,
   testthat,
