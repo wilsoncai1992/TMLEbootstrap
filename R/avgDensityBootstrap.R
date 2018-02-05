@@ -41,15 +41,6 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
           family = stats::binomial())
         yhat_boot <- predict.fixed_HAL(HAL_boot, new_data = d)
 
-        # HAL_wrapper <<- generate_SL.fixed_HAL(hal9001_object = self$pointTMLE$HAL_tuned)
-        # HAL_wrapper
-        # SL_fit <- SuperLearner(Y = longDFOut_new$Y, X = longDFOut_new[,'box',F], newX = data.frame(box = d),
-        # family = 'binomial',
-        # SL.library = "HAL_wrapper",
-        # cvControl = list(V = 3),
-        # verbose = FALSE)
-        # density_boot <- empiricalDensity$new(p_density = SL_fit$SL.predict[,1], x = d)
-
         yhat_boot[yhat_boot > 2*quantile(yhat_boot, probs = .75)] <- 0 # temporarily fix hal9001 extrapolation error
         density_boot <- empiricalDensity$new(p_density = yhat_boot, x = d)
         bootstrapOnestepFit$p_hat <- density_boot$normalize()
@@ -102,11 +93,11 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       self$CI_all <- list(normal_CI, boot1_CI)
     },
     wider_boot_CI = function(){
-      bootCI_minus_Psi <- self$CI_all[[2]] - self$Psi
-      new_dist <- max(abs(bootCI_minus_Psi))
-      new_upper <- self$Psi + new_dist
-      new_lower <- self$Psi - new_dist
-      new_CI <- c(new_lower, new_upper)
+      bootCI <- self$CI_all[[2]]
+      delta <- mean(bootCI) - self$Psi
+      bootCI[2] <- bootCI[2] + abs(delta)
+      bootCI[1] <- bootCI[1] - abs(delta)
+      new_CI <- bootCI
       return(list(self$CI_all[[1]], self$CI_all[[2]], new_CI))
     },
     center_boot_CI = function(){

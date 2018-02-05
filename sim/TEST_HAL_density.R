@@ -11,7 +11,7 @@ datO <- sim(D, n = 1e3, rndseed = 12345)
 x <- datO$sA
 
 tmleOut <- avgDensityTMLE$new(x = datO$sA, verbose = FALSE)
-tmleOut$fit_density(bin_width = .3)
+tmleOut$fit_density(bin_width = .1)
 foo2 <- function(x) {(.5*dnorm(x, mean = 2) + .5*dnorm(x, mean = -2))}
 tmleOut$p_hat$display(foo2)
 tmleOut$calc_Psi()
