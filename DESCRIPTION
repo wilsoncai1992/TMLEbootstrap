@@ -27,7 +27,7 @@ Suggests:
   gam,
   nnls
 Remotes:
-  github::jeremyrcoyle/origami
+  github::jeremyrcoyle/origami,
   github::wilsoncai1992/hal9001
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1.9000
