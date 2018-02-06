@@ -138,19 +138,19 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       }
 
       library(foreach)
-      library(doSNOW)
-      library(tcltk)
-      nw <- parallel:::detectCores()  # number of workers
-      cl <- makeSOCKcluster(nw)
-      registerDoSNOW(cl)
+      # library(doSNOW)
+      # library(tcltk)
+      # nw <- parallel:::detectCores()  # number of workers
+      # cl <- makeSOCKcluster(nw)
+      # registerDoSNOW(cl)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
                                          .inorder = FALSE,
                                          .packages = c('R6', 'SuperLearner'),
                                          # .errorhandling = 'remove',
                                          .errorhandling = 'pass',
                                          .export = c('self'),
-                                         # .verbose = F) %do% {
-                                         .verbose = T) %dopar% {
+                                         .verbose = F) %do% {
+                                         # .verbose = T) %dopar% {
         if(it2 %% 10 == 0) print(it2)
         betfun(self$x,
                epsilon_step = self$epsilon_step,
