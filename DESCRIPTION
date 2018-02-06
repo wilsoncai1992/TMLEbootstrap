@@ -1,6 +1,6 @@
 Package: fixedHAL
 Title: TEMP
-Version: 0.4.1
+Version: 0.5
 Authors@R: c(
   person("Weixin", "Cai", email = "wcai@berkeley.edu",
          role = c("aut", "cre", "cph"),
@@ -28,5 +28,6 @@ Suggests:
   nnls
 Remotes:
   github::jeremyrcoyle/origami
+  github::wilsoncai1992/hal9001
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1.9000

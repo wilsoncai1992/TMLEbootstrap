@@ -20,7 +20,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       if (!is.null(verbose)) self$verbose <- verbose
     },
-    fit_density = function(bin_width = .2) {
+    fit_density = function(bin_width = .1) {
       library(SuperLearner)
       library(hal9001)
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
