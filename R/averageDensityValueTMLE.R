@@ -31,8 +31,8 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       # tune HAL for density
       cvHAL_fit <- cv_densityHAL$new(x = self$x, longiData = self$longDataOut)
       cvHAL_fit$assign_fold(n_fold = 3)
-      # cvHAL_fit$cv_lambda_grid(lambda_grid = c(1e-6,2e-5, 1e-4, 1e-3, 1e-2, 1e-1)) # manual lambda
-      cvHAL_fit$cv_lambda_grid(lambda_grid = NULL) # auto lambda
+      cvHAL_fit$cv_lambda_grid(lambda_grid = c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1)) # manual lambda
+      # cvHAL_fit$cv_lambda_grid(lambda_grid = NULL) # auto lambda
       hal_out <- cvHAL_fit$compute_best_model()
       HAL_tuned <- hal_out$hal_fit
       yhat <- hal_out$predict(new_x = self$longDataOut$x)

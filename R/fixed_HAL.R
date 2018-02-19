@@ -31,29 +31,26 @@ fit_fixed_HAL <- function(Y, X, weights = NULL, hal9001_object, family = stats::
   # glmnet only takes character for family input
   if(class(family) == 'family') family <- family$family
   if(!IS_GLM){
-      lasso_fit <- tryCatch({
-                            lasso_fit <- glmnet::glmnet(x = x_basis, y = Y,
-                                 family = family,
-                                 weights = weights,
-                                 alpha = 1,
-                                 lambda = lambda,
-                                 intercept = FALSE,
-                                 standardize = FALSE)
-                            },
-                             error=function(cond) {
-                               message("glmnet errors. use glm instead")
-                               message("Here's the original error message:")
-                               message(cond)
-                               # Choose a return value in case of error
-                               # lasso_fit <- glmnet::glmnet(x = x_basis, y = Y,
-                               #      family = family,
-                               #      weights = weights,
-                               #      alpha = 1,
-                               #      lambda = lambda,
-                               #      intercept = FALSE,
-                               #      standardize = FALSE)
-
-                           })
+    lasso_fit <- tryCatch({
+                          lasso_fit <- glmnet::glmnet(x = x_basis, y = Y,
+                               family = family,
+                               weights = weights,
+                               alpha = 1,
+                               lambda = lambda,
+                               intercept = FALSE,
+                               standardize = FALSE)
+                          },
+                           error=function(cond) {
+                             message("glmnet errors. use glm instead")
+                             message("Here's the original error message:")
+                             message(cond)
+                             # Choose a return value in case of error
+                             # lasso_fit <- stats::lm(x = x_basis, y = Y,
+                             #      family = family,
+                             #      weights = weights,
+                             #      alpha = 1)
+                             # IS_GLM <- TRUE
+                         })
   }
 
   object <- list(lasso_fit = lasso_fit,
