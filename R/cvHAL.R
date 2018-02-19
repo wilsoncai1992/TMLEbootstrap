@@ -85,7 +85,21 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       )
       return(mean(cv_results$loss))
     },
-    cv_lambda_grid = function(lambda_grid = c(1e-6,2e-5)){
+    cv_lambda_grid = function(lambda_grid = NULL){
+      # c(1e-6,2e-5)
+      # OPTIONAL: glmnet to get lambda_grid
+      if(is.null(lambda_grid)){
+        df_compressed <- self$longiData$generate_df_compress(x = self$x)
+        hal_for_lambda <- hal9001::fit_hal(X = df_compressed[,'box'],
+          Y = df_compressed$Y,
+          weights = df_compressed$Freq,
+          family = "binomial",
+          fit_type = 'glmnet',
+          use_min = TRUE,
+          yolo = FALSE)
+        lambda_grid <- hal_for_lambda$lambda_grid
+      }
+
       list_df <- list()
       b <- 1
       for (i in lambda_grid) {

@@ -45,6 +45,14 @@ fit_fixed_HAL <- function(Y, X, weights = NULL, hal9001_object, family = stats::
                                message("Here's the original error message:")
                                message(cond)
                                # Choose a return value in case of error
+                               # lasso_fit <- glmnet::glmnet(x = x_basis, y = Y,
+                               #      family = family,
+                               #      weights = weights,
+                               #      alpha = 1,
+                               #      lambda = lambda,
+                               #      intercept = FALSE,
+                               #      standardize = FALSE)
+
                            })
   }
 
