@@ -20,7 +20,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       if (!is.null(verbose)) self$verbose <- verbose
     },
-    fit_density = function(bin_width = .1) {
+    fit_density = function(bin_width = .1, lambda_grid = c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1)) {
       library(SuperLearner)
       library(hal9001)
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
@@ -31,7 +31,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       # tune HAL for density
       cvHAL_fit <- cv_densityHAL$new(x = self$x, longiData = self$longDataOut)
       cvHAL_fit$assign_fold(n_fold = 3)
-      cvHAL_fit$cv_lambda_grid(lambda_grid = c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1)) # manual lambda
+      cvHAL_fit$cv_lambda_grid(lambda_grid = lambda_grid)
       # cvHAL_fit$cv_lambda_grid(lambda_grid = NULL) # auto lambda
       hal_out <- cvHAL_fit$compute_best_model()
       HAL_tuned <- hal_out$hal_fit

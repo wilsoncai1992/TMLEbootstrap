@@ -9,11 +9,11 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     # tol = 1e-3,
     CI_all = NULL,
     bootstrap_estimates = NULL,
-    initialize = function(x, epsilon_step = NULL, bin_width = .3) {
+    initialize = function(x, epsilon_step = NULL, bin_width = .3, lambda_grid = c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1)) {
       self$x <- x
       if(!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       onestepFit <- avgDensityTMLE$new(x = self$x, epsilon_step = self$epsilon_step, verbose  = TRUE)
-      onestepFit$fit_density(bin_width = bin_width)
+      onestepFit$fit_density(bin_width = bin_width, lambda_grid = lambda_grid)
       onestepFit$calc_Psi()
       onestepFit$calc_EIC()
       onestepFit$onestepTarget()
@@ -51,8 +51,6 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
 
         return(c(bootstrapOnestepFit$Psi))
       }
-      # browser()
-
       library(foreach)
 
       # library(doSNOW)
@@ -60,13 +58,6 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       # nw <- parallel:::detectCores()  # number of workers
       # cl <- makeSOCKcluster(nw)
       # registerDoSNOW(cl)
-
-      # library(Rmpi)
-      # library(doMPI)
-      # cl = startMPIcluster()
-      # registerDoMPI(cl)
-      # clusterSize(cl) # just to check
-
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
                                          .inorder = FALSE,
                                          .packages = c('R6', 'SuperLearner'),
@@ -122,7 +113,6 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         bootstrapOnestepFit$onestepTarget()
 
         # get R2 term
-        # browser()
         yhat_population <- predict.fixed_HAL(HAL_boot, new_data = population_x)
         yhat_population[yhat_population > 2*quantile(yhat_population, probs = .75)] <- 0 # temporarily fix hal9001 extrapolation error
         density_population <- empiricalDensity$new(p_density = yhat_population, x = population_x)
@@ -134,7 +124,6 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         R_2 <- -sum((dummy_df$p_pound - dummy_df$p_n)^2 * dx)
 
         return(c(bootstrapOnestepFit$Psi - R_2))
-        # return(c(bootstrapOnestepFit$Psi - 2*R_2))
       }
 
       library(foreach)
@@ -208,16 +197,10 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         dx <- c(0,diff(dummy_df$x))
         R_2 <- -sum((dummy_df$p_pound - dummy_df$p_n)^2 * dx)
 
-        # return(c(bootstrapOnestepFit$Psi - R_2))
         return(c(bootstrapOnestepFit$Psi - 2*R_2))
       }
 
       library(foreach)
-      # library(doSNOW)
-      # library(tcltk)
-      # nw <- parallel:::detectCores()  # number of workers
-      # cl <- makeSOCKcluster(nw)
-      # registerDoSNOW(cl)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
                                          .inorder = FALSE,
                                          .packages = c('R6', 'SuperLearner'),
