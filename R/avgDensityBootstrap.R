@@ -251,10 +251,14 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     },
     bias_corrected_boot_CI_shift1 = function(){
       new_CI <- self$CI_all[[2]] - mean(self$CI_all[[2]]) + self$Psi
+      # only shift positively
+      # new_CI <- self$CI_all[[2]] + max(0, - mean(self$CI_all[[2]]) + self$Psi)
       return(new_CI)
     },
     bias_corrected_boot_CI_shift2 = function(){
       new_CI <- self$CI_all[[2]] + 2*(- mean(self$CI_all[[2]]) + self$Psi)
+      # only shift positively
+      # new_CI <- self$CI_all[[2]] + max(0, 2*(- mean(self$CI_all[[2]]) + self$Psi))
       return(new_CI)
     },
     all_boot_CI = function(){
