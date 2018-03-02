@@ -12,6 +12,7 @@ fit_fixed_HAL <- function(Y, X, weights = NULL, hal9001_object, family = stats::
   }
   if(length(basis_list) == 0) x_basis <- matrix(1, ncol = 2, nrow = nrow(X))
   x_basis <- as.matrix(x_basis)
+  # browser()
   # make glmnet dim >= 2
   IS_GLM <- FALSE
   if(dim(x_basis)[2] <= 1) {
@@ -45,11 +46,12 @@ fit_fixed_HAL <- function(Y, X, weights = NULL, hal9001_object, family = stats::
                              message("Here's the original error message:")
                              message(cond)
                              # Choose a return value in case of error
-                             # lasso_fit <- stats::lm(x = x_basis, y = Y,
-                             #      family = family,
-                             #      weights = weights,
-                             #      alpha = 1)
-                             # IS_GLM <- TRUE
+                             lasso_fit <- stats::glm.fit(x = x_basis, 
+                                                         y = Y,
+                                                         family = binomial(),
+                                                         weights = weights)
+                             IS_GLM <- TRUE
+                             return(lasso_fit)
                          })
   }
 
