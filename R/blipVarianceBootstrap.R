@@ -141,7 +141,8 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
                                          .packages = c('R6', 'hal9001', 'fixedHAL'),
                                          .errorhandling = 'pass',
                                          .export = c('self'),
-                                         .verbose = F) %do% {
+                                         # .verbose = F) %do% {
+                                         .verbose = F) %dopar% {
                                            if(it2 %% 10 == 0) print(it2)
                                            betfun(data = self$data, population_tmle = self$pointTMLE)
                                          }

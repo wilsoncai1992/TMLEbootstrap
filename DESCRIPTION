@@ -19,7 +19,8 @@ Imports:
   R6,
   hal9001 (>= 0.0.7),
   rje,
-  origami (>= 0.8.2)
+  origami (>= 0.8.2),
+  gentmle2
 Suggests:
   knitr,
   testthat,
