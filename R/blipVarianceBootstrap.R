@@ -156,6 +156,36 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       boot1_CI <- quantile(all_bootstrap_estimates, probs = c(ALPHA/2, 1 - ALPHA/2))
       normal_CI <- self$pointTMLE$CI
       self$CI_all <- list(normal_CI, boot1_CI)
+    },
+    penalized_boot_CI = function(){
+      bootCI <- self$CI_all[[2]]
+      delta <- mean(bootCI) - self$Psi
+      bootCI[2] <- bootCI[2] + abs(delta)
+      bootCI[1] <- bootCI[1] - abs(delta)
+      new_CI <- bootCI
+      return(new_CI)
+    },
+    bias_corrected_boot_CI_shift1 = function(){
+      new_CI <- self$CI_all[[2]] - mean(self$CI_all[[2]]) + self$Psi
+      # only shift positively
+      # new_CI <- self$CI_all[[2]] + max(0, - mean(self$CI_all[[2]]) + self$Psi)
+      return(new_CI)
+    },
+    bias_corrected_boot_CI_shift2 = function(){
+      new_CI <- self$CI_all[[2]] + 2*(- mean(self$CI_all[[2]]) + self$Psi)
+      # only shift positively
+      # new_CI <- self$CI_all[[2]] + max(0, 2*(- mean(self$CI_all[[2]]) + self$Psi))
+      return(new_CI)
+    },
+    all_boot_CI = function(){
+      penalized <- self$penalized_boot_CI()
+      shift1 <- self$bias_corrected_boot_CI_shift1()
+      shift2 <- self$bias_corrected_boot_CI_shift2()
+      return(list(normal = self$CI_all[[1]],
+                  boot = self$CI_all[[2]],
+                  penalized = penalized,
+                  shift1 = shift1,
+                  shift2 = shift2))
     }
 ))
 
