@@ -51,8 +51,8 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         bootstrapTmleFit$Q_AW <- Q_AW_boot
         bootstrapTmleFit$Q_1W <- Q_1W_boot
         bootstrapTmleFit$Q_0W <- Q_0W_boot
-        # bootstrapTmleFit$Q_fit <- Q_HAL_boot
-        # bootstrapTmleFit$g_fit <- g_HAL_boot
+        bootstrapTmleFit$Q_fit <- Q_HAL_boot
+        bootstrapTmleFit$g_fit <- g_HAL_boot
         bootstrapTmleFit$target()
 
         return(c(bootstrapTmleFit$Psi))
@@ -141,8 +141,8 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
                                          .packages = c('R6', 'hal9001', 'fixedHAL'),
                                          .errorhandling = 'pass',
                                          .export = c('self'),
-                                         # .verbose = F) %do% {
-                                         .verbose = F) %dopar% {
+                                         .verbose = F) %do% {
+                                         # .verbose = F) %dopar% {
                                            if(it2 %% 10 == 0) print(it2)
                                            betfun(data = self$data, population_tmle = self$pointTMLE)
                                          }
