@@ -161,6 +161,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       waldCI <- self$CI_all[[1]]
       bootCI <- self$CI_all[[2]]
       bootCenter <- mean(bootCI)
+      r <- 1
       if(diff(bootCI) < diff(waldCI)) r <- diff(bootCI)/diff(waldCI)
       # keep center the same, increase the width of the bootCI
       bootCI <- (bootCI - bootCenter)/r + bootCenter
