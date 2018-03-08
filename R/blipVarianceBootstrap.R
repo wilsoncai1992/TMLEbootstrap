@@ -21,7 +21,6 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
     bootstrap = function(REPEAT_BOOTSTRAP = 2e2){
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
       betfun <- function(data){
-        # browser()
         # indices is the random indexes for the bootstrap sample
         indices <- sample(1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
         d <- list(Y = data$Y[indices],
@@ -127,7 +126,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi)^2
         # population_tmle$gentmle_object$tmledata$Q1k
         term2 <- mean((population_tmle$Q_1W - population_tmle$Q_0W - B_pound)^2)
-        cross_prod <- (population_tmle$g_1W - g_pound_1)/g_pound_1*(population_tmle$Q_1W - Q_pound_1) - 
+        cross_prod <- (population_tmle$g_1W - g_pound_1)/g_pound_1*(population_tmle$Q_1W - Q_pound_1) -
           (1-population_tmle$g_1W - (1-g_pound_1))/(1-g_pound_1)*(population_tmle$Q_0W - Q_pound_0)
         term3 <- mean(2*(B_pound - bootstrapTmleFit$Psi) * cross_prod)
         # compute R2
@@ -156,6 +155,17 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       boot1_CI <- quantile(all_bootstrap_estimates, probs = c(ALPHA/2, 1 - ALPHA/2))
       normal_CI <- self$pointTMLE$CI
       self$CI_all <- list(normal_CI, boot1_CI)
+    },
+    bootstrap_exact_widthadjusted = function(REPEAT_BOOTSTRAP = 2e2){
+      self$bootstrap_exact(REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP)
+      waldCI <- self$CI_all[[1]]
+      bootCI <- self$CI_all[[2]]
+      bootCenter <- mean(bootCI)
+      if(diff(bootCI) < diff(waldCI)) r <- diff(bootCI)/diff(waldCI)
+      # keep center the same, increase the width of the bootCI
+      bootCI <- (bootCI - bootCenter)/r + bootCenter
+
+      self$CI_all <- list(waldCI, bootCI)
     },
     penalized_boot_CI = function(){
       bootCI <- self$CI_all[[2]]
