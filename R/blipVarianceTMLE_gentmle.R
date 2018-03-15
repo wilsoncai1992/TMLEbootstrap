@@ -69,31 +69,19 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
   inherit = blipVarianceTMLE_gentmle,
   public = list(
     # continuous Y
-    # min_Y = NULL,
-    # max_Y = NULL,
-    # range_Y = NULL,
     scale_Y = NULL,
     Y_rescale = NULL,
 
-    # min_Q = NULL,
-    # max_Q = NULL,
-    # range_Q = NULL,
     scale_Q = NULL,
     Q_AW_rescale = NULL,
     Q_1W_rescale = NULL,
     Q_0W_rescale = NULL,
     scaleY = function(){
       # scale Y to (0,1)
-      # self$min_Y <- min(self$data$Y)
-      # self$max_Y <- max(self$data$Y)
-      # self$range_Y <- self$max_Y - self$min_Y
-      # self$Y_rescale <- (self$data$Y - self$min_Y)/self$range_Y
-
       self$scale_Y <- scaleX$new(X = self$data$Y)
       self$Y_rescale <- self$scale_Y$scale01(newX = self$data$Y)
     },
     scaleBack_afterTMLE = function(){
-
       self$Psi <- self$Psi * self$scale_Y$rangeX^2 # variance is rescaled
       self$se_Psi <- self$se_Psi * self$scale_Y$rangeX^2 # EIC is scaled by the same amount
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
@@ -125,12 +113,6 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
       self$Q_AW_rescale <- self$scale_Q$scale01(newX = self$Q_AW)
       self$Q_1W_rescale <- self$scale_Q$scale01(newX = self$Q_1W)
       self$Q_0W_rescale <- self$scale_Q$scale01(newX = self$Q_0W)
-      # self$min_Q <- min(self$Q_1W, self$Q_0W)
-      # self$max_Q <- max(self$Q_1W, self$Q_0W)
-      # self$range_Q <- self$max_Q - self$min_Q
-      # self$Q_AW_rescale <- (self$Q_AW - self$min_Q) / self$range_Q
-      # self$Q_1W_rescale <- (self$Q_1W - self$min_Q) / self$range_Q
-      # self$Q_0W_rescale <- (self$Q_0W - self$min_Q) / self$range_Q
     },
     target = function() {
       # message('continuous Y')
