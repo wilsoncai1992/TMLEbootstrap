@@ -76,8 +76,6 @@ blipVarianceTMLE <- R6Class("blipVarianceTMLE",
       self$H_0W_ATE <- (0 - 1) / (1-self$g_1W) #g_0W
     },
     target_once = function(){
-      # browser()
-      # sd(self$EIC)/sqrt(length(self$data$A))
       # fit epsilon; linear fluctuation model
       fluctuation_fit <- glm.fit(x = self$H_AW, y = self$data$Y, offset = self$Q_AW, family = gaussian(), intercept = FALSE)
       self$epsilon_n <- fluctuation_fit$coefficients
@@ -88,18 +86,6 @@ blipVarianceTMLE <- R6Class("blipVarianceTMLE",
       self$Q_1W <- self$Q_1W - self$H_1W * self$epsilon_n
       self$Q_0W <- self$Q_0W - self$H_0W * self$epsilon_n
     },
-    # target_once_include_ATE = function(){
-    #   # browser()
-    #   # fit epsilon; linear fluctuation model
-    #   fluctuation_fit <- glm.fit(x = cbind(self$H_AW, self$H_AW_ATE), y = self$data$Y, offset = self$Q_AW, family = gaussian(), intercept = FALSE)
-    #   self$epsilon_n <- fluctuation_fit$coefficients
-    #   # update Q_n using TMLE
-    #   self$Q_1W <- self$Q_1W - self$H_1W * self$epsilon_n[1] - self$H_1W_ATE * self$epsilon_n[2]
-    #   self$Q_0W <- self$Q_0W - self$H_0W * self$epsilon_n[1] - self$H_0W_ATE * self$epsilon_n[2]
-    #   # WRONG
-    #   # self$Q_1W <- self$Q_1W - self$H_1W * self$epsilon_n
-    #   # self$Q_0W <- self$Q_0W - self$H_0W * self$epsilon_n
-    # },
     compute_stopping = function(){
       return(mean(self$EIC))
     }
