@@ -81,10 +81,8 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       self$CI_all <- list(normal_CI, boot1_CI)
     },
     bootstrap_exact = function(REPEAT_BOOTSTRAP = 2e2){
-      browser()
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
       betfun <- function(data, population_tmle){
-        # browser()
         # indices is the random indexes for the bootstrap sample
         indices <- sample(1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
         d <- list(Y = data$Y[indices],
