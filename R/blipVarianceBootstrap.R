@@ -81,6 +81,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       self$CI_all <- list(normal_CI, boot1_CI)
     },
     bootstrap_exact = function(REPEAT_BOOTSTRAP = 2e2){
+      browser()
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
       betfun <- function(data, population_tmle){
         # browser()
@@ -109,7 +110,6 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         g_1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
         # plug into tmle
         bootstrapTmleFit$g_1W <- g_1W_boot
-        bootstrapTmleFit$g_AW <- g_1W_boot
         bootstrapTmleFit$Q_AW <- Q_AW_boot
         bootstrapTmleFit$Q_1W <- Q_1W_boot
         bootstrapTmleFit$Q_0W <- Q_0W_boot
