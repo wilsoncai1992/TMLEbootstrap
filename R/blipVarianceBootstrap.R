@@ -9,6 +9,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
     CI_all = NULL,
     bootstrap_estimates = NULL,
     initialize = function(data, verbose = NULL) {
+      # bootstraping blip variance TMLE (binary Y)
       self$data <- data
       if(class(data$W) != 'data.frame') message('W not data.frame')
       if (!is.null(verbose)) self$verbose <- verbose
@@ -19,6 +20,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       self$Psi <- self$pointTMLE$Psi
     },
     bootstrap = function(REPEAT_BOOTSTRAP = 2e2){
+      # regular bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
       betfun <- function(data){
         # indices is the random indexes for the bootstrap sample
@@ -81,6 +83,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       self$CI_all <- list(normal_CI, boot1_CI)
     },
     bootstrap_exact = function(REPEAT_BOOTSTRAP = 2e2){
+      # exact second order expansion bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
       betfun <- function(data, population_tmle){
         # indices is the random indexes for the bootstrap sample
@@ -155,6 +158,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       self$CI_all <- list(normal_CI, boot1_CI)
     },
     bootstrap_exact_widthadjusted = function(REPEAT_BOOTSTRAP = 2e2){
+      # make width of bootstrap CI at least as wide as wald CI; bootstrap CI center don't shift
       self$bootstrap_exact(REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP)
       waldCI <- self$CI_all[[1]]
       bootCI <- self$CI_all[[2]]
@@ -168,6 +172,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       self$CI_all <- list(waldCI, bootCI)
     },
     penalized_boot_CI = function(){
+      # bias penalized bootstrap
       bootCI <- self$CI_all[[2]]
       delta <- mean(bootCI) - self$Psi
       bootCI[2] <- bootCI[2] + abs(delta)
@@ -176,18 +181,21 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       return(new_CI)
     },
     bias_corrected_boot_CI_shift1 = function(){
+      # bias-corrected bootstrap (shift 1)
       new_CI <- self$CI_all[[2]] - mean(self$CI_all[[2]]) + self$Psi
       # only shift positively
       # new_CI <- self$CI_all[[2]] + max(0, - mean(self$CI_all[[2]]) + self$Psi)
       return(new_CI)
     },
     bias_corrected_boot_CI_shift2 = function(){
+      # bias-corrected bootstrap (shift 2)
       new_CI <- self$CI_all[[2]] + 2*(- mean(self$CI_all[[2]]) + self$Psi)
       # only shift positively
       # new_CI <- self$CI_all[[2]] + max(0, 2*(- mean(self$CI_all[[2]]) + self$Psi))
       return(new_CI)
     },
     all_boot_CI = function(){
+      # output, wald, bootstrap, bias-penalized, shift1, shift2 CI
       penalized <- self$penalized_boot_CI()
       shift1 <- self$bias_corrected_boot_CI_shift1()
       shift2 <- self$bias_corrected_boot_CI_shift2()
@@ -207,6 +215,9 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
   public = list(
     Q_0W_rescale = NULL,
     initialize = function(data, verbose = NULL) {
+      # subclass of `blipVarianceBootstrap` for continuous Y;
+      # pointTMLE replaced by `blipVarianceTMLE_gentmle_contY` class
+      # bootstrap method replaced by continuous hal fit; feed into `blipVarianceTMLE_gentmle_contY` class
       self$data <- data
       if(class(data$W) != 'data.frame') message('W not data.frame')
       if (!is.null(verbose)) self$verbose <- verbose
@@ -219,6 +230,7 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
       self$Psi <- self$pointTMLE$Psi
     },
     bootstrap_exact = function(REPEAT_BOOTSTRAP = 2e2){
+      # exact second order expansion of the bootstrap; use continuous HAL bootstrap fit
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
       betfun <- function(data, population_tmle){
         # indices is the random indexes for the bootstrap sample

@@ -4,14 +4,16 @@ densityHAL <- R6Class("densityHAL",
   public = list(
     longiData = NULL,
     x = NULL,
-    hal_fit = NULL,
+    hal_fit = NULL, # hal9001 object; fit using optimal lambda; for output
     initialize = function(x, longiData) {
+      # for fixed lambda; fit a hal fit on longitudinal dataframe; outout density estimate
       # input: longiData on whole data, for split schema
       # output: tuned HAL
       self$longiData <- longiData
       self$x <- x
     },
     fit = function(lambda = 2e-5){
+      # use `longiData` to transform `x`; fit a single lambda HAL on the data
       df_compressed <- self$longiData$generate_df_compress(x = self$x)
       self$hal_fit <- hal9001::fit_hal_single_lambda(X = df_compressed[,'box'],
         Y = df_compressed$Y,
@@ -24,22 +26,26 @@ densityHAL <- R6Class("densityHAL",
       # self$hal_fit$lambda_star
     },
     predict = function(new_x = NULL){
+      # predict density p_hat on `new_x`
       if(length(new_x) > 1e4) return(self$predict_long(new_x = new_x))
       return(rje::expit(predict(self$hal_fit, new_data = new_x)))
     },
     predict_long = function(new_x = NULL){
+      # make prediction faster routine
       message('use long prediction routine...')
       x_list <- split(new_x, ceiling(seq_along(new_x)/20))
       out <- lapply(x_list, function(x) self$predict(new_x = x))
       return(do.call('c', out))
     },
     eval_misclass_loss = function(new_x = NULL){
+      # evaluate misclassification error loss on `new_x`
       df_valid <- self$longiData$generate_df_compress(x = new_x)
       yhat <- self$predict(new_x = df_valid$box)
       yhat_class <- (yhat > .5) + 0L
       return(sum(abs(yhat_class - df_valid$Y) * df_valid$Freq) / sum(df_valid$Freq))
     },
     eval_crossentropy_loss = function(new_x = NULL){
+      # evaluate cross-entropy loss on `new_x`
       df_valid <- self$longiData$generate_df_compress(x = new_x)
       yhat <- self$predict(new_x = df_valid$box)
       not_weighted <- cross_entropy(y = df_valid$Y, yhat = yhat)
@@ -60,13 +66,16 @@ cv_densityHAL <- R6Class("cv_densityHAL",
     results = NULL,
     lambda.min = NULL,
     initialize = function(x, longiData) {
+      # cross validate a grid of `densityHAL` with a grid of lambda
       self$longiData <- longiData
       self$x <- x
     },
     assign_fold = function(n_fold = 3){
+      # create `origami` fold; subsample `x`
       self$folds <- origami::make_folds(n = length(self$x), V = n_fold)
     },
     cv = function(lambda = 2e-5, verbose = FALSE){
+      # fix one lambda; evaluate the validation loss on folds; take the mean loss
       cv_once <- function(fold, data, longiData, lambda, verbose = FALSE){
         if(verbose) message(paste('fitting lambda =', lambda))
         # define training and validation sets based on input object of class "folds"
@@ -86,6 +95,7 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       return(mean(cv_results$loss))
     },
     cv_lambda_grid = function(lambda_grid = NULL){
+      # repeat `cv` with a grid of lambda; store the error for each lambda; pick the lambda minimizer of validation loss
       # c(1e-6,2e-5)
       # OPTIONAL: glmnet to get lambda_grid
       if(is.null(lambda_grid)){
@@ -113,6 +123,7 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       self$lambda.min <- results$lambda[which.min(results$loss)]
     },
     compute_best_model = function(){
+      # re-fit the best lambda model on the entire dataset; output the `densityHAL` object
       HALfit_out <- densityHAL$new(x = self$x, longiData = self$longiData)
       HALfit_out$fit(lambda = self$lambda.min)
       return(HALfit_out)

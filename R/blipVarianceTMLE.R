@@ -30,6 +30,7 @@ blipVarianceTMLE <- R6Class("blipVarianceTMLE",
     verbose = FALSE,
     max_iter = 1e2,
     initialize = function(data, epsilon_step = NULL, verbose = NULL) {
+      # FAIL: wilson's attempt on blip variance TMLE (iterative); diverging
       self$data <- data
       if(class(data$W) != 'data.frame') message('W not data.frame')
       self$tol <- 1/nrow(data)

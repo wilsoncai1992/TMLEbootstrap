@@ -5,6 +5,7 @@ empiricalDensity <- R6Class("empiricalDensity",
     p_density = NULL,
     x = NULL,
     initialize = function(p_density, x) {
+      # class for convenient normalizing density estimate to 1
       self$p_density <- p_density
       self$x <- x
     },
@@ -18,6 +19,7 @@ empiricalDensity <- R6Class("empiricalDensity",
       return(self)
     },
     display = function(p_truth = NULL, ...) {
+      # plot the density; can give another function to overlay two densities
       plot(self$p_density ~ self$x, ...)
       # overlay a true p function on the plot
       if (!is.null(p_truth)) curve(p_truth, from = -10, to = 10, n = 1e3, add = TRUE)

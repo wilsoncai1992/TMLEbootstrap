@@ -18,11 +18,13 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
     CI = NULL,
     verbose = FALSE,
     initialize = function(data, epsilon_step = NULL, verbose = NULL) {
+      # HAL initial fit for blip variance TMLE (iterative); targeting is done in gentmle2
       self$data <- data
       if(class(data$W) != 'data.frame') message('W not data.frame')
       if (!is.null(verbose)) self$verbose <- verbose
     },
     initial_fit = function(){
+      # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
       library(hal9001)
       # Q fit
       self$Q_fit <- hal9001::fit_hal(X = data.frame(self$data$A, self$data$W),
@@ -45,6 +47,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
       self$g_1W <- plogis(hal9001:::predict.hal9001(self$g_fit, new_data = data.frame(self$data$W)))
     },
     target = function() {
+      # use the logistic submodel to target blip variance; output Psi, EIC, CI
       library(gentmle2)
       initdata <- data.frame(A = self$data$A,
                              Y = self$data$Y,
@@ -77,6 +80,10 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
     Q_1W_rescale = NULL,
     Q_0W_rescale = NULL,
     scaleY = function(){
+      # sub-class of `blipVarianceTMLE_gentmle`;
+      # replace initial fit with continuous hal9001;
+      # rescales Y into (0,1) before TMLE;
+      # scales the Psi, EIC, CI back to the original scale after the TMLE
       # scale Y to (0,1)
       self$scale_Y <- scaleX$new(X = self$data$Y)
       self$Y_rescale <- self$scale_Y$scale01(newX = self$data$Y)

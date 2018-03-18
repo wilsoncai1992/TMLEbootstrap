@@ -4,12 +4,11 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     x = NULL,
     pointTMLE = NULL,
     Psi = NULL,
-    # EIC = NULL,
     epsilon_step = 1e-2,
-    # tol = 1e-3,
     CI_all = NULL,
     bootstrap_estimates = NULL,
     initialize = function(x, epsilon_step = NULL, bin_width = .3, lambda_grid = c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1)) {
+      # bootstrap average density parameter; first do a pointTMLE;
       self$x <- x
       if(!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       onestepFit <- avgDensityTMLE$new(x = self$x, epsilon_step = self$epsilon_step, verbose  = TRUE)
@@ -23,9 +22,9 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       self$Psi <- onestepFit$Psi
     },
     bootstrap = function(REPEAT_BOOTSTRAP = 2e2){
+      # regular bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
       betfun <- function(data, epsilon_step = self$epsilon_step){
-        # browser()
         # indices is the random indexes for the bootstrap sample
         indices <- sample(1:length(data), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
         d = data[indices]
@@ -63,8 +62,6 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         betfun(self$x, self$epsilon_step)
       }
       # save(all_bootstrap_estimates, file = 'all_bootstrap_estimates.rda')
-      # closeCluster(cl)
-
       ALPHA <- 0.05
       # remove errors
       if( !all(sapply(all_bootstrap_estimates, class) == 'numeric') ) message(paste('Error happens.', sum(sapply(all_bootstrap_estimates, class) == 'numeric'), 'bootstraps are correct'))
@@ -76,6 +73,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       self$CI_all <- list(normal_CI, boot1_CI)
     },
     bootstrap_2 = function(REPEAT_BOOTSTRAP = 2e2){
+      # exact second order expansion bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
       betfun <- function(data,
                          epsilon_step = self$epsilon_step,
@@ -143,6 +141,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       self$CI_all <- list(normal_CI, boot1_CI)
     },
     penalized_boot_CI = function(){
+      # bias-penalized bootstrap
       bootCI <- self$CI_all[[2]]
       delta <- mean(bootCI) - self$Psi
       bootCI[2] <- bootCI[2] + abs(delta)
@@ -151,18 +150,21 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       return(new_CI)
     },
     bias_corrected_boot_CI_shift1 = function(){
+      # bias-corrected bootstrap (shift 1 time)
       new_CI <- self$CI_all[[2]] - mean(self$CI_all[[2]]) + self$Psi
       # only shift positively
       # new_CI <- self$CI_all[[2]] + max(0, - mean(self$CI_all[[2]]) + self$Psi)
       return(new_CI)
     },
     bias_corrected_boot_CI_shift2 = function(){
+      # bias-corrected bootstrap (shift 2 times)
       new_CI <- self$CI_all[[2]] + 2*(- mean(self$CI_all[[2]]) + self$Psi)
       # only shift positively
       # new_CI <- self$CI_all[[2]] + max(0, 2*(- mean(self$CI_all[[2]]) + self$Psi))
       return(new_CI)
     },
     all_boot_CI = function(){
+      # output wald, bootstrap, penalized, shift1, shift2 intervals
       penalized <- self$penalized_boot_CI()
       shift1 <- self$bias_corrected_boot_CI_shift1()
       shift2 <- self$bias_corrected_boot_CI_shift2()
