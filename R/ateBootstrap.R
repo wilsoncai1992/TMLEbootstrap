@@ -11,7 +11,7 @@ ateBootstrap <- R6Class("ateBootstrap",
     initialize = function(data) {
       self$data <- data
       if(class(data$W) != 'data.frame') message('W not data.frame')
-      tmleOut <- ateTMLE$new(data = data_sim)
+      tmleOut <- ateTMLE$new(data = self$data)
       tmleOut$initial_fit()
       tmleOut$target()
 
