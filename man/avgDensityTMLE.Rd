@@ -4,7 +4,7 @@
 \name{avgDensityTMLE}
 \alias{avgDensityTMLE}
 \title{onestep TMLE of average density parameter}
-\format{An object of class \code{R6ClassGenerator} of length 24.}
+\format{\code{\link{R6Class}} object.}
 \usage{
 avgDensityTMLE
 }

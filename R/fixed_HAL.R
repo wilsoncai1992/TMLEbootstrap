@@ -1,3 +1,7 @@
+# fitting fixed_HAL. outputs an object of the fit
+# use the old basis
+# use the old lambda
+# OPTIONAL: if the old object is squashed, only use the non-zero basis
 #' @export
 fit_fixed_HAL <- function(Y, X, weights = NULL, hal9001_object, family = stats::gaussian(), inflate_lambda = 1) {
   if(is.null(weights)) weights <- rep(1, length(Y))
@@ -12,8 +16,8 @@ fit_fixed_HAL <- function(Y, X, weights = NULL, hal9001_object, family = stats::
   }
   if(length(basis_list) == 0) x_basis <- matrix(1, ncol = 2, nrow = nrow(X))
   x_basis <- as.matrix(x_basis)
-  # browser()
-  # make glmnet dim >= 2
+
+  # if the design matrix has too few columns, make glmnet dim >= 2
   IS_GLM <- FALSE
   if(dim(x_basis)[2] <= 1) {
     message('dim of X_basis < 2. make it larger')
@@ -29,8 +33,7 @@ fit_fixed_HAL <- function(Y, X, weights = NULL, hal9001_object, family = stats::
   if (!is.numeric(inflate_lambda)) warning('non-numeric `inflate_lambda`!'); inflate_lambda <- 1
   lambda <- inflate_lambda * hal9001_object$lambda_star
 
-  # glmnet only takes character for family input
-  if(class(family) == 'family') family <- family$family
+  if(class(family) == 'family') family <- family$family # glmnet only takes character for family input
   if(!IS_GLM){
     lasso_fit <- tryCatch({
                           lasso_fit <- glmnet::glmnet(x = x_basis, y = Y,
@@ -46,7 +49,7 @@ fit_fixed_HAL <- function(Y, X, weights = NULL, hal9001_object, family = stats::
                              message("Here's the original error message:")
                              message(cond)
                              # Choose a return value in case of error
-                             lasso_fit <- stats::glm.fit(x = x_basis, 
+                             lasso_fit <- stats::glm.fit(x = x_basis,
                                                          y = Y,
                                                          family = binomial(),
                                                          weights = weights)
@@ -64,6 +67,7 @@ fit_fixed_HAL <- function(Y, X, weights = NULL, hal9001_object, family = stats::
   return(object)
 }
 
+# prediciton function for fixed_HAL object
 predict.fixed_HAL <- function(object, ..., new_data) {
   if (class(object) != 'fixed_HAL') stop('object class not right!')
 
@@ -96,14 +100,8 @@ predict.fixed_HAL <- function(object, ..., new_data) {
     preds <- as.numeric(as.matrix(pred_x_basis) %*% beta_hat)
   }
 
-  if(object$family == 'gaussian'){
-    # do nothing if gaussian glm
-  }
-  if(object$family == 'binomial'){
-    # transform if binomial glm
-    preds <- plogis(preds)
-  }
-
+  if(object$family == 'gaussian') {} # do nothing if gaussian glm
+  if(object$family == 'binomial') preds <- plogis(preds) # transform if binomial glm
   return(preds)
 }
 
@@ -111,6 +109,8 @@ predict.fixed_HAL <- function(object, ..., new_data) {
 # SL wrappers
 # ---------------------------------------------------------------------------------------
 
+# most general form of wrapper.
+# depend on an hal9001 object. which is the fit on the whole data.
 #' @export
 basic_fixed_HAL <- function(Y,
                             X,
@@ -142,12 +142,13 @@ basic_fixed_HAL <- function(Y,
 }
 
 # generator of SL wrappers
+# outputs a SL wrapper, that no longer depend on the hal9001 object. the output arguments conform with `SL` library convention
 #' @export
 generate_SL.fixed_HAL <- function(hal9001_object = NULL, inflate_lambda = 1) {
   function(...) basic_fixed_HAL(..., hal9001_object = hal9001_object, inflate_lambda = inflate_lambda)
 }
 
-# generic SL prediction function
+# SL prediction function for the SL wrapper created
 #' @export
 predict.SL.fixed_HAL <- function(object, newX, ...) {
   # generate predictions and return
