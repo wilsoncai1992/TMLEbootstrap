@@ -72,7 +72,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       normal_CI <- self$pointTMLE$CI
       self$CI_all <- list(normal_CI, boot1_CI)
     },
-    bootstrap_2 = function(REPEAT_BOOTSTRAP = 2e2){
+    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2){
       # exact second order expansion bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
       betfun <- function(data,
