@@ -62,6 +62,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       density_intial <- empiricalDensity$new(p_density = yhat, x = self$x)
       self$p_hat <- density_intial$normalize()
 
+      self$HAL_tuned <- HAL_tuned
       # self$HAL_tuned <- hal9001::squash_hal_fit(HAL_tuned)
     },
     calc_Psi = function(){
