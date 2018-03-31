@@ -140,6 +140,20 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       normal_CI <- self$pointTMLE$CI
       self$CI_all <- list(normal_CI, boot1_CI)
     },
+    exact_bootstrap_widthadjusted = function(REPEAT_BOOTSTRAP = 2e2){
+      # make width of bootstrap CI at least as wide as wald CI; bootstrap CI center don't shift
+      self$exact_bootstrap(REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP)
+      waldCI <- self$CI_all[[1]]
+      bootCI <- self$CI_all[[2]]
+      bootCenter <- mean(bootCI)
+      r <- 1
+      if(diff(bootCI) == 0) r <- 1 # catch when bootstrap Psi# are all identical
+      if(diff(bootCI) < diff(waldCI)) r <- diff(bootCI)/diff(waldCI)
+      # keep center the same, increase the width of the bootCI
+      bootCI <- (bootCI - bootCenter)/r + bootCenter
+
+      self$CI_all <- list(waldCI, bootCI)
+    },
     penalized_boot_CI = function(){
       # bias-penalized bootstrap
       bootCI <- self$CI_all[[2]]

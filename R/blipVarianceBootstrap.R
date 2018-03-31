@@ -82,7 +82,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       normal_CI <- self$pointTMLE$CI
       self$CI_all <- list(normal_CI, boot1_CI)
     },
-    bootstrap_exact = function(REPEAT_BOOTSTRAP = 2e2){
+    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2){
       # exact second order expansion bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
       betfun <- function(data, population_tmle){
@@ -157,9 +157,9 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       normal_CI <- self$pointTMLE$CI
       self$CI_all <- list(normal_CI, boot1_CI)
     },
-    bootstrap_exact_widthadjusted = function(REPEAT_BOOTSTRAP = 2e2){
+    exact_bootstrap_widthadjusted = function(REPEAT_BOOTSTRAP = 2e2){
       # make width of bootstrap CI at least as wide as wald CI; bootstrap CI center don't shift
-      self$bootstrap_exact(REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP)
+      self$exact_bootstrap(REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP)
       waldCI <- self$CI_all[[1]]
       bootCI <- self$CI_all[[2]]
       bootCenter <- mean(bootCI)
@@ -229,7 +229,7 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
 
       self$Psi <- self$pointTMLE$Psi
     },
-    bootstrap_exact = function(REPEAT_BOOTSTRAP = 2e2){
+    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2){
       # exact second order expansion of the bootstrap; use continuous HAL bootstrap fit
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
       betfun <- function(data, population_tmle){
