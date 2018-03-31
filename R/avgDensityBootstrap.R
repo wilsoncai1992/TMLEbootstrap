@@ -93,6 +93,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
           family = stats::binomial())
         yhat_boot <- predict.fixed_HAL(HAL_boot, new_data = d)
 
+        # browser()
         yhat_boot[yhat_boot > 2*quantile(yhat_boot, probs = .75)] <- 0 # temporarily fix hal9001 extrapolation error
         density_boot <- empiricalDensity$new(p_density = yhat_boot, x = d)
         bootstrapOnestepFit$p_hat <- density_boot$normalize()
