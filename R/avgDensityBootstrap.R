@@ -141,23 +141,23 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       normal_CI <- self$pointTMLE$CI
       self$CI_all <- list(normal_CI, boot1_CI)
     },
-    exact_bootstrap_widthadjusted = function(REPEAT_BOOTSTRAP = 2e2){
-      # make width of bootstrap CI at least as wide as wald CI; bootstrap CI center don't shift
-      self$exact_bootstrap(REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP)
+    scale_adjust_boot_CI = function(bootCI = NULL){
       waldCI <- self$CI_all[[1]]
-      bootCI <- self$CI_all[[2]]
+      # if user don't provide bootCI, use existing bootCI;
+      if(is.null(bootCI)) bootCI <- self$CI_all[[2]]
       bootCenter <- mean(bootCI)
       r <- 1
       if(diff(bootCI) == 0) r <- 1 # catch when bootstrap Psi# are all identical
       if(diff(bootCI) < diff(waldCI)) r <- diff(bootCI)/diff(waldCI)
       # keep center the same, increase the width of the bootCI
-      bootCI <- (bootCI - bootCenter)/r + bootCenter
-
-      self$CI_all <- list(waldCI, bootCI)
+      newCI <- (bootCI - bootCenter)/r + bootCenter
+      return(newCI)
     },
-    penalized_boot_CI = function(){
-      # bias-penalized bootstrap
-      bootCI <- self$CI_all[[2]]
+    penalized_boot_CI = function(bootCI = NULL){
+      # bias penalized bootstrap
+      # if user don't provide bootCI, use existing bootCI;
+      # if user input scale_adjust CI, this will output scale + penalized bootCI
+      if(is.null(bootCI)) bootCI <- self$CI_all[[2]]
       delta <- mean(bootCI) - self$Psi
       bootCI[2] <- bootCI[2] + abs(delta)
       bootCI[1] <- bootCI[1] - abs(delta)
@@ -179,13 +179,17 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       return(new_CI)
     },
     all_boot_CI = function(){
-      # output wald, bootstrap, penalized, shift1, shift2 intervals
+      # output, wald, bootstrap, bias-penalized, shift1, shift2 CI
       penalized <- self$penalized_boot_CI()
+      scale <- self$scale_adjust_boot_CI()
+      scale_penalized <- self$penalized_boot_CI(bootCI = scale)
       shift1 <- self$bias_corrected_boot_CI_shift1()
       shift2 <- self$bias_corrected_boot_CI_shift2()
       return(list(normal = self$CI_all[[1]],
                   boot = self$CI_all[[2]],
                   penalized = penalized,
+                  scale = scale,
+                  scale_penalized = scale_penalized,
                   shift1 = shift1,
                   shift2 = shift2))
     }
