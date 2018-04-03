@@ -187,7 +187,7 @@ ateBootstrap <- R6Class("ateBootstrap",
       scale_penalized <- self$penalized_boot_CI(bootCI = scale)
       shift1 <- self$bias_corrected_boot_CI_shift1()
       shift2 <- self$bias_corrected_boot_CI_shift2()
-      return(list(normal = self$CI_all[[1]],
+      return(list(wald = self$CI_all[[1]],
                   boot = self$CI_all[[2]],
                   penalized = penalized,
                   scale = scale,
