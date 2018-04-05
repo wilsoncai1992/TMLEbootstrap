@@ -1,6 +1,6 @@
 Package: fixedHAL
 Title: TEMP
-Version: 1.5
+Version: 1.6
 Authors@R: c(
   person("Weixin", "Cai", email = "wcai@berkeley.edu",
          role = c("aut", "cre", "cph"),
