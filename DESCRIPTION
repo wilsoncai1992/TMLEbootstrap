@@ -24,6 +24,7 @@ Imports:
 Suggests:
   knitr,
   testthat,
+  truncnorm,
   nnls
 Remotes:
   github::jeremyrcoyle/origami,
