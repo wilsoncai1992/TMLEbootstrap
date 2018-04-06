@@ -21,10 +21,12 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       self$pointTMLE <- onestepFit
       self$Psi <- onestepFit$Psi
     },
-    bootstrap = function(REPEAT_BOOTSTRAP = 2e2){
+    bootstrap = function(REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1){
       # regular bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
-      betfun <- function(data, epsilon_step = self$epsilon_step){
+      betfun <- function(data,
+                        epsilon_step = self$epsilon_step,
+                        inflate_lambda){
         # indices is the random indexes for the bootstrap sample
         indices <- sample(1:length(data), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
         d = data[indices]
@@ -36,7 +38,8 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
           X = longDFOut_new[,'box'],
           weights = longDFOut_new$Freq, # for df_compress only
           hal9001_object = self$pointTMLE$HAL_tuned,
-          family = stats::binomial())
+          family = stats::binomial(),
+          inflate_lambda = inflate_lambda)
         yhat_boot <- predict.fixed_HAL(HAL_boot, new_data = d)
 
         yhat_boot[yhat_boot > 2*quantile(yhat_boot, probs = .75)] <- 0 # temporarily fix hal9001 extrapolation error
@@ -59,7 +62,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
                                          .verbose = F) %do% {
                                          # .verbose = T) %dopar% {
         if(it2 %% 10 == 0) print(it2)
-        betfun(self$x, self$epsilon_step)
+        betfun(self$x, self$epsilon_step, inflate_lambda = inflate_lambda)
       }
       # save(all_bootstrap_estimates, file = 'all_bootstrap_estimates.rda')
       ALPHA <- 0.05
@@ -72,13 +75,14 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       normal_CI <- self$pointTMLE$CI
       self$CI_all <- list(normal_CI, boot1_CI)
     },
-    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2){
+    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1){
       # exact second order expansion bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
       betfun <- function(data,
                          epsilon_step = self$epsilon_step,
                          population_x = self$x,
-                         population_tmle = self$pointTMLE){
+                         population_tmle = self$pointTMLE,
+                         inflate_lambda){
         # indices is the random indexes for the bootstrap sample
         indices <- sample(1:length(data), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
         d = data[indices]
@@ -90,7 +94,8 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
           X = longDFOut_new[,'box'],
           weights = longDFOut_new$Freq, # for df_compress only
           hal9001_object = self$pointTMLE$HAL_tuned,
-          family = stats::binomial())
+          family = stats::binomial(),
+          inflate_lambda = inflate_lambda)
         yhat_boot <- predict.fixed_HAL(HAL_boot, new_data = d)
 
         # browser()
@@ -129,7 +134,8 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         betfun(self$x,
                epsilon_step = self$epsilon_step,
                population_x = self$x,
-               population_tmle = self$pointTMLE)
+               population_tmle = self$pointTMLE,
+               inflate_lambda = inflate_lambda)
       }
       ALPHA <- 0.05
       # remove errors
