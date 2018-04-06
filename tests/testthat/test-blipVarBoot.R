@@ -2,7 +2,6 @@
 # setup
 ################################################################################
 # set.seed(628957)
-# library(adaptest)
 context("blipVarianceBoot results should not be NA")
 simulate_data <- function(n_sim, n_mode = 1, a1 = 2) {
   dmixture <- function(x, modes, sigma) {

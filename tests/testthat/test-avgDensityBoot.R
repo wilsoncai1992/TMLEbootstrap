@@ -2,7 +2,6 @@
 # setup
 ################################################################################
 # set.seed(628957)
-# library(adaptest)
 context("avgDensityBootstrap results should not be NA")
 simulate_data <- function(n_sim, n_mode) {
   modes <- seq(from = -4, to = 4, length.out = n_mode)

@@ -2,7 +2,6 @@
 # setup
 ################################################################################
 # set.seed(628957)
-# library(adaptest)
 library(truncnorm)
 context("ateBootstrap results should not be NA")
 simulate_data <- function(n_sim, a1, a2, b1) {
