@@ -63,11 +63,11 @@ generalBootstrap <- R6Class("generalBootstrap",
       shift2 <- self$shift2()
       # centered versions
       center <- self$center_CI()
-      center_penalized <- self$penalized_CI(bootCI = center)
-      center_penalized_half <- self$penalized_CI_half(bootCI = center)
-      center_scale <- self$scale_adjust_CI(bootCI = center)
-      center_scale_penalized <- self$penalized_CI(self$scale_adjust_CI(bootCI = center))
-      center_scale_penalized_half <- self$penalized_CI_half(self$scale_adjust_CI(bootCI = center))
+      penalized_center <- self$center_CI(bootCI = penalized)
+      penalized_half_center <- self$center_CI(bootCI = penalized_half)
+      scale_center <- self$center_CI(bootCI = scale)
+      scale_penalized_center <- self$center_CI(bootCI = scale_penalized)
+      scale_penalized_half_center <- self$center_CI(bootCI = scale_penalized_half)
       return(list(wald = self$CI_all[[1]],
 
                   boot = self$CI_all[[2]],
@@ -78,11 +78,11 @@ generalBootstrap <- R6Class("generalBootstrap",
                   scale_penalized_half = scale_penalized_half,
 
                   ctr = center,
-                  ctr_penalized = center_penalized,
-                  ctr_penalized_half = center_penalized_half,
-                  ctr_scale = center_scale,
-                  ctr_scale_penalized = center_scale_penalized,
-                  ctr_scale_penalized_half = center_scale_penalized_half,
+                  penalized_ctr = penalized_center,
+                  penalized_half_ctr = penalized_half_center,
+                  scale_ctr = scale_center,
+                  scale_penalized_ctr = scale_penalized_center,
+                  scale_penalized_half_ctr = scale_penalized_half_center,
                   shift2 = shift2))
     }
     )
