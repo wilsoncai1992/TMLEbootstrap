@@ -104,7 +104,6 @@ ateBootstrap <- R6Class("ateBootstrap",
         bootstrapTMLEFit$g1_W <- g1_W_boot
         # target new fit
         bootstrapTMLEFit$target()
-        # browser()
 
         # get R2 term
         # predict Q#, g# on population data

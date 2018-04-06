@@ -54,7 +54,6 @@ generalBootstrap <- R6Class("generalBootstrap",
       return(new_CI)
     },
     all_boot_CI = function(){
-      # output, wald, bootstrap, bias-penalized, shift1, shift2 CI
       penalized <- self$penalized_CI()
       penalized_half <- self$penalized_CI_half()
       scale <- self$scale_adjust_CI()

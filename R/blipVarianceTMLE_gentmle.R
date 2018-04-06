@@ -113,7 +113,6 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
                                      fit_type = 'glmnet',
                                      family = 'binomial',
                                      yolo = FALSE)
-      # self$g_AW <- plogis(hal9001:::predict.hal9001(self$g_fit, new_data = data.frame(self$data$W)))
       self$g_1W <- plogis(hal9001:::predict.hal9001(self$g_fit, new_data = data.frame(self$data$W)))
       # scale Q to (0,1)
       self$scale_Q <- scaleX$new(X = c(self$Q_1W, self$Q_0W))
