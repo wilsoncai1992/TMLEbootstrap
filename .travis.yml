@@ -1,0 +1,37 @@
+language: r
+dist: trusty
+sudo: required
+cache: packages
+warnings_are_errors: true
+
+branches:
+  only:
+  - master
+
+env:
+  global:
+    - R_BUILD_ARGS="--no-build-vignettes --no-manual"
+    - R_CHECK_ARGS="--no-build-vignettes --no-manual"
+
+r:
+  - release
+  - devel
+
+r_packages:
+  - devtools
+  - covr
+
+r_github_packages:
+  - jimhester/covr
+  - jeremyrcoyle/origami
+  - jeremyrcoyle/gentmle2
+  - wilsoncai1992/hal9001
+
+## coverage
+after_success:
+  - Rscript -e "covr::codecov()"
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change

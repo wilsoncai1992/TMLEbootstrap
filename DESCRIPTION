@@ -24,8 +24,6 @@ Imports:
 Suggests:
   knitr,
   testthat,
-  earth,
-  gam,
   nnls
 Remotes:
   github::jeremyrcoyle/origami,
