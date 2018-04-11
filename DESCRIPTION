@@ -20,7 +20,8 @@ Imports:
   hal9001 (>= 0.0.7),
   rje,
   origami (>= 0.8.2),
-  gentmle2
+  gentmle2,
+  dict (>= 0.10.0)
 Suggests:
   knitr,
   testthat,
@@ -29,6 +30,7 @@ Suggests:
 Remotes:
   github::jeremyrcoyle/origami,
   github::wilsoncai1992/hal9001,
-  github::jeremyrcoyle/gentmle2
+  github::jeremyrcoyle/gentmle2,
+  github::mkuhn/dict
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1.9000
