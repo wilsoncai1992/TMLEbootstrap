@@ -39,19 +39,19 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
                           reg_scale_pen_ctr = regularCI$scale_penalized_ctr,
                           reg_scale_pen_half_ctr = regularCI$scale_penalized_half_ctr,
 
-                          taylor = taylorCI$boot,
-                          taylor_pen = taylorCI$penalized,
-                          taylor_pen_half = taylorCI$penalized_half,
-                          taylor_scale = taylorCI$scale,
-                          taylor_scale_pen = taylorCI$scale_penalized,
-                          taylor_scale_pen_half = taylorCI$scale_penalized_half,
+                          secOrd = taylorCI$boot,
+                          secOrd_pen = taylorCI$penalized,
+                          secOrd_pen_half = taylorCI$penalized_half,
+                          secOrd_scale = taylorCI$scale,
+                          secOrd_scale_pen = taylorCI$scale_penalized,
+                          secOrd_scale_pen_half = taylorCI$scale_penalized_half,
 
-                          taylor_ctr = taylorCI$ctr,
-                          taylor_pen_ctr = taylorCI$penalized_ctr,
-                          taylor_pen_half_ctr = taylorCI$penalized_half_ctr,
-                          taylor_scale_ctr = taylorCI$scale_ctr,
-                          taylor_scale_pen_ctr = taylorCI$scale_penalized_ctr,
-                          taylor_scale_pen_half_ctr = taylorCI$scale_penalized_half_ctr
+                          secOrd_ctr = taylorCI$ctr,
+                          secOrd_pen_ctr = taylorCI$penalized_ctr,
+                          secOrd_pen_half_ctr = taylorCI$penalized_half_ctr,
+                          secOrd_scale_ctr = taylorCI$scale_ctr,
+                          secOrd_scale_pen_ctr = taylorCI$scale_penalized_ctr,
+                          secOrd_scale_pen_half_ctr = taylorCI$scale_penalized_half_ctr
                           )
       # return(self$CI_all)
     },
