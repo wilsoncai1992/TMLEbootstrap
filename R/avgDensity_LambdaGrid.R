@@ -72,30 +72,7 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
       if(!is.null(Psi)) p <- p + geom_hline(yintercept = Psi, linetype = 2)
       return(p)
     },
-    plot_width = function(){
-      lambdas <- self$get_lambda()
-      CI_list <- self$get_value()
-      width_all <- lapply(CI_list, function(x) x$width_all)
-
-      df_ls <- list()
-      count <- 1
-      for (i in 1:length(width_all)) {
-        for (j in 1:length(width_all[[i]])) {
-          df_ls[[count]] <- data.frame(lambda = lambdas[i], width = width_all[[i]][[j]], kindCI = names(width_all[[i]][j]))
-          count <- count + 1
-        }
-      }
-      df2 <- do.call(rbind, df_ls)
-      df2 <- df2[grep('ctr', df2$kindCI, invert = TRUE),] # not plot centered version
-
-      library(ggplot2)
-      p <- ggplot(df2, aes(x = log10(lambda), y = width, group=kindCI, color=kindCI)) +
-        geom_point() +
-        geom_line() +
-        ylab('width of interval')
-      return(p)
-    },
-    select_lambda_pleateau = function(){
+    get_lambda_df = function(){
       lambdas <- self$get_lambda()
       CI_list <- self$get_value()
       width_all <- lapply(CI_list, function(x) x$width_all)
@@ -110,7 +87,50 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
       }
       df2 <- do.call(rbind, df_ls)
       self$df_lambda_width <- df2[grep('ctr', df2$kindCI, invert = TRUE),] # not use centered version
+    },
+    plot_width = function(){
+      library(ggplot2)
+      p <- ggplot(self$df_lambda_width, aes(x = log10(lambda), y = width, group=kindCI, color=kindCI)) +
+        geom_point() +
+        geom_line() +
+        ylab('width of interval')
+      return(p)
+    },
+    select_lambda_pleateau_wald = function(){
       # grab pleateau
+      df_ls <- list()
+      count <- 1
+      for (kind in 'wald') {
+        tempDf <- self$df_lambda_width[self$df_lambda_width$kindCI == kind,]
+        tempDf <- tempDf[order(tempDf$lambda),]
+
+        platOut <- grabPlateau$new(x = log10(tempDf$lambda), y = tempDf$width)
+        coordOut <- platOut$plateau_1()
+        coordOut$kindCI <- kind
+
+        df_ls[[count]] <- coordOut
+        count <- count + 1
+      }
+      allPlateaus <- do.call(rbind, df_ls)
+      return(10^allPlateaus$x)
+    },
+    select_lambda_pleateau_all = function(){
+      # grab pleateau
+      df_ls <- list()
+      count <- 1
+      for (kind in unique(self$df_lambda_width$kindCI)) {
+        tempDf <- self$df_lambda_width[self$df_lambda_width$kindCI == kind,]
+        tempDf <- tempDf[order(tempDf$lambda),]
+
+        platOut <- grabPlateau$new(x = log10(tempDf$lambda), y = tempDf$width)
+        coordOut <- platOut$plateau_1()
+        # browser()
+        coordOut$kindCI <- kind
+        df_ls[[count]] <- coordOut
+        count <- count + 1
+      }
+      allPlateaus <- do.call(rbind, df_ls)
+      return(10^median(allPlateaus$x))
     }
   )
 )
@@ -118,7 +138,7 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
 #' @export
 grabPlateau <- R6Class("grabPlateau",
   public = list(
-    x = NULL,
+    x = NULL, # x needs to be sorted
     y = NULL,
     initialize = function(x, y) {
       self$x <- x
@@ -126,7 +146,10 @@ grabPlateau <- R6Class("grabPlateau",
     },
     plateau_1 = function() {
       # immediate after largest cliff
-      diff(self$y)/diff(self$x)
+      firstDiff <- diff(self$y)/diff(self$x)
+      # plot(firstDiff)
+      idx <- which.min(firstDiff) - 1
+      return(data.frame(y = self$y[idx], x = self$x[idx]))
     }
   )
 )
