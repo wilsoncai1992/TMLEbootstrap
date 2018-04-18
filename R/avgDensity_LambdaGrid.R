@@ -9,6 +9,7 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
 
     # dict_boot = dict::dict(), # dictionary of comprehensiveBootstrap
     dict_boot = list(), # named list of comprehensiveBootstrap
+    df_lambda_width = NULL,
     initialize = function(data,
                           bin_width,
                           epsilon_step,
@@ -93,6 +94,39 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
         geom_line() +
         ylab('width of interval')
       return(p)
+    },
+    select_lambda_pleateau = function(){
+      lambdas <- self$get_lambda()
+      CI_list <- self$get_value()
+      width_all <- lapply(CI_list, function(x) x$width_all)
+
+      df_ls <- list()
+      count <- 1
+      for (i in 1:length(width_all)) {
+        for (j in 1:length(width_all[[i]])) {
+          df_ls[[count]] <- data.frame(lambda = lambdas[i], width = width_all[[i]][[j]], kindCI = names(width_all[[i]][j]))
+          count <- count + 1
+        }
+      }
+      df2 <- do.call(rbind, df_ls)
+      self$df_lambda_width <- df2[grep('ctr', df2$kindCI, invert = TRUE),] # not use centered version
+      # grab pleateau
+    }
+  )
+)
+
+#' @export
+grabPlateau <- R6Class("grabPlateau",
+  public = list(
+    x = NULL,
+    y = NULL,
+    initialize = function(x, y) {
+      self$x <- x
+      self$y <- y
+    },
+    plateau_1 = function() {
+      # immediate after largest cliff
+      diff(self$y)/diff(self$x)
     }
   )
 )

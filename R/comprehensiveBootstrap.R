@@ -4,8 +4,8 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
     bootOut = NULL, # regular boot
     bootOutExact = NULL, # secOrd boot
     Psi = NULL,
-    CI_all = NULL, # list of length = 2; the first element is wald CI, the second is bootstrap CI
-    width_all = NULL,
+    CI_all = NULL, # list of all CI
+    width_all = NULL, # the CI width in CI_all
     initialize = function(parameter = NULL, ...) {
       # input
       # data etc...
