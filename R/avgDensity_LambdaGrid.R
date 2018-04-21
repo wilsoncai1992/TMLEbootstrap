@@ -10,6 +10,11 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
     # dict_boot = dict::dict(), # dictionary of comprehensiveBootstrap
     dict_boot = list(), # named list of comprehensiveBootstrap
     df_lambda_width = NULL,
+
+    # OPTIONAL: slots to save lambdas
+    lambdaPlateau = NULL,
+    lambdaCV = NULL,
+    lambdaOracle = NULL,
     initialize = function(data,
                           bin_width,
                           epsilon_step,
@@ -101,6 +106,24 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
       df_ls <- list()
       count <- 1
       for (kind in 'wald') {
+        tempDf <- self$df_lambda_width[self$df_lambda_width$kindCI == kind,]
+        tempDf <- tempDf[order(tempDf$lambda),]
+
+        platOut <- grabPlateau$new(x = log10(tempDf$lambda), y = tempDf$width)
+        coordOut <- platOut$plateau_1()
+        coordOut$kindCI <- kind
+
+        df_ls[[count]] <- coordOut
+        count <- count + 1
+      }
+      allPlateaus <- do.call(rbind, df_ls)
+      return(10^allPlateaus$x)
+    },
+    select_lambda_pleateau_secscalepen = function(){
+      # grab pleateau
+      df_ls <- list()
+      count <- 1
+      for (kind in 'secOrd_scale_pen') {
         tempDf <- self$df_lambda_width[self$df_lambda_width$kindCI == kind,]
         tempDf <- tempDf[order(tempDf$lambda),]
 
