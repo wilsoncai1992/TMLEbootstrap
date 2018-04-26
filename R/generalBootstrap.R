@@ -53,6 +53,21 @@ generalBootstrap <- R6Class("generalBootstrap",
       # new_CI <- bootCI + max(0, 2*(- mean(bootCI) + self$Psi))
       return(new_CI)
     },
+    bias_scale = function(bootCI = NULL){
+      # if user don't provide bootCI, use existing bootCI;
+      if(is.null(bootCI)) bootCI <- self$CI_all[[2]]
+      bootCenter <- mean(bootCI)
+
+      mse <- (self$bootstrap_estimates - self$Psi)^2
+      sigma_star <- sqrt(mse)
+      sigma <- diff(self$CI_all[[1]])/1.96/2 # the spread of wald is 2*1.96*sd
+
+      r <- 1
+      if(sigma_star == 0) r <- 1 # catch when bootstrap Psi# are all identical
+      if(sigma_star < sigma) r <- sigma_star/sigma
+      # keep center the same, increase the width of the bootCI
+      return((bootCI - bootCenter)/r + bootCenter)
+    },
     all_boot_CI = function(){
       penalized <- self$penalized_CI()
       penalized_half <- self$penalized_CI_half()
@@ -68,6 +83,9 @@ generalBootstrap <- R6Class("generalBootstrap",
       scale_center <- self$center_CI(bootCI = scale)
       scale_penalized_center <- self$center_CI(bootCI = scale_penalized)
       scale_penalized_half_center <- self$center_CI(bootCI = scale_penalized_half)
+
+      # bias scale
+      bias_scale <- self$bias_scale()
       return(list(wald = self$CI_all[[1]],
 
                   boot = self$CI_all[[2]],
@@ -83,6 +101,8 @@ generalBootstrap <- R6Class("generalBootstrap",
                   scale_ctr = scale_center,
                   scale_penalized_ctr = scale_penalized_center,
                   scale_penalized_half_ctr = scale_penalized_half_center,
+
+                  bias_scale = bias_scale,
                   shift2 = shift2))
     }
     )

@@ -51,7 +51,11 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
                           secOrd_pen_half_ctr = taylorCI$penalized_half_ctr,
                           secOrd_scale_ctr = taylorCI$scale_ctr,
                           secOrd_scale_pen_ctr = taylorCI$scale_penalized_ctr,
-                          secOrd_scale_pen_half_ctr = taylorCI$scale_penalized_half_ctr
+                          secOrd_scale_pen_half_ctr = taylorCI$scale_penalized_half_ctr,
+
+                          # use mse as sd of the CI
+                          reg_bias_scale = regularCI$bias_scale,
+                          secOrd_bias_scale = taylorCI$bias_scale
                           )
       # return(self$CI_all)
     },
