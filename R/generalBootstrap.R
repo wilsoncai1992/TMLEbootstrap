@@ -58,7 +58,7 @@ generalBootstrap <- R6Class("generalBootstrap",
       if(is.null(bootCI)) bootCI <- self$CI_all[[2]]
       bootCenter <- mean(bootCI)
 
-      mse <- (self$bootstrap_estimates - self$Psi)^2
+      mse <- mean((self$bootstrap_estimates - self$Psi)^2)
       sigma_star <- sqrt(mse)
       sigma <- diff(self$CI_all[[1]])/1.96/2 # the spread of wald is 2*1.96*sd
 
