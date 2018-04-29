@@ -53,14 +53,14 @@ generalBootstrap <- R6Class("generalBootstrap",
       # new_CI <- bootCI + max(0, 2*(- mean(bootCI) + self$Psi))
       return(new_CI)
     },
-    bias_scale = function(bootCI = NULL){
+    bias_scale = function(bootCI = NULL, n = 1e2){
       # if user don't provide bootCI, use existing bootCI;
       if(is.null(bootCI)) bootCI <- self$CI_all[[2]]
       bootCenter <- mean(bootCI)
 
       mse <- mean((self$bootstrap_estimates - self$Psi)^2)
       sigma_star <- sqrt(mse)
-      sigma <- diff(bootCI)/1.96/2 # the spread of original boot is 2*1.96*sd
+      sigma <- diff(bootCI)/1.96/2*sqrt(n) # the spread of original boot is 2*1.96*sd/sqrt(n)
 
       r <- 1
       if(sigma_star == 0) r <- 1 # catch when bootstrap Psi# are all identical
