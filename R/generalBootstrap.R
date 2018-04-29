@@ -64,8 +64,8 @@ generalBootstrap <- R6Class("generalBootstrap",
 
       r <- 1
       if(sigma_star == 0) r <- 1 # catch when bootstrap Psi# are all identical
-      if(sigma_star != 0) r <- sigma_star/sigma
-      # if(sigma_star > sigma) r <- sigma_star/sigma
+      # if(sigma_star != 0) r <- sigma_star/sigma # always use sigma#
+      if(sigma_star > sigma) r <- sigma_star/sigma # only use sigma# to widen the CI
       # keep center the same, increase the width of the bootCI
       return((bootCI - bootCenter)/r + bootCenter)
     },
