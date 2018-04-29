@@ -60,11 +60,12 @@ generalBootstrap <- R6Class("generalBootstrap",
 
       mse <- mean((self$bootstrap_estimates - self$Psi)^2)
       sigma_star <- sqrt(mse)
-      sigma <- diff(self$CI_all[[1]])/1.96/2 # the spread of wald is 2*1.96*sd
+      sigma <- diff(bootCI)/1.96/2 # the spread of original boot is 2*1.96*sd
 
       r <- 1
       if(sigma_star == 0) r <- 1 # catch when bootstrap Psi# are all identical
-      if(sigma_star < sigma) r <- sigma_star/sigma
+      if(sigma_star != 0) r <- sigma_star/sigma
+      # if(sigma_star > sigma) r <- sigma_star/sigma
       # keep center the same, increase the width of the bootCI
       return((bootCI - bootCenter)/r + bootCenter)
     },
