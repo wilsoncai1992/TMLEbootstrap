@@ -55,7 +55,9 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
 
                           # use mse as sd of the CI
                           reg_bias_scale = regularCI$bias_scale,
-                          secOrd_bias_scale = taylorCI$bias_scale
+                          reg_bias_scale_ctr = regularCI$bias_scale_ctr,
+                          secOrd_bias_scale = taylorCI$bias_scale,
+                          secOrd_bias_scale_ctr = taylorCI$bias_scale_ctr
                           )
       # return(self$CI_all)
     },

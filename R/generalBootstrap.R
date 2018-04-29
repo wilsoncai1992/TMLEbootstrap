@@ -86,6 +86,7 @@ generalBootstrap <- R6Class("generalBootstrap",
 
       # bias scale
       bias_scale <- self$bias_scale()
+      bias_scale_ctr <- self$center_CI(bootCI = bias_scale)
       return(list(wald = self$CI_all[[1]],
 
                   boot = self$CI_all[[2]],
@@ -103,6 +104,7 @@ generalBootstrap <- R6Class("generalBootstrap",
                   scale_penalized_half_ctr = scale_penalized_half_center,
 
                   bias_scale = bias_scale,
+                  bias_scale_ctr = bias_scale_ctr,
                   shift2 = shift2))
     }
     )
