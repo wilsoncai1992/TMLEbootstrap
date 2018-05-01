@@ -3,6 +3,8 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
   public = list(
     bootOut = NULL, # regular boot
     bootOutExact = NULL, # secOrd boot
+    bootOutConvex = NULL, # convex bootstrap
+
     Psi = NULL,
     CI_all = NULL, # list of all CI
     width_all = NULL, # the CI width in CI_all
@@ -13,17 +15,23 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
       # create two boot objects
       self$bootOut <- parameter$new(...)
       self$bootOutExact <- self$bootOut$clone(deep = TRUE) # deep copy point tmle, less repeat
+      self$bootOutConvex <- self$bootOut$clone(deep = TRUE) # deep copy point tmle, less repeat
     },
     bootstrap = function(...) {
       # input:
       # REPEAT_BOOTSTRAP
       self$bootOut$bootstrap(...)
       self$bootOutExact$exact_bootstrap(...)
+      self$bootOutConvex$convex_bootstrap(...)
+
       self$Psi <- self$bootOut$Psi # populate Psi_n
     },
     all_CI = function(){
       regularCI <- self$bootOut$all_boot_CI()
       taylorCI <- self$bootOutExact$all_boot_CI()
+      convexRegCI <- self$bootOutConvex$all_boot_CI()
+
+
       self$CI_all <- list(wald = regularCI$wald,
                           reg = regularCI$boot,
                           reg_pen = regularCI$penalized,
@@ -57,7 +65,11 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
                           reg_bias_scale = regularCI$bias_scale,
                           reg_bias_scale_ctr = regularCI$bias_scale_ctr,
                           secOrd_bias_scale = taylorCI$bias_scale,
-                          secOrd_bias_scale_ctr = taylorCI$bias_scale_ctr
+                          secOrd_bias_scale_ctr = taylorCI$bias_scale_ctr,
+                          # convex bootstrap
+                          convReg_ctr = convexRegCI$ctr,
+                          convReg_pen_ctr = convexRegCI$penalized_ctr,
+                          convReg_scale_ctr = convexRegCI$scale_ctr
                           )
       # return(self$CI_all)
     },
