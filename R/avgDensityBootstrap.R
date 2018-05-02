@@ -192,7 +192,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
                                          .verbose = F) %do% {
                                          # .verbose = T) %dopar% {
         if(it2 %% 10 == 0) print(it2)
-        betfun(self$x, self$epsilon_step, inflate_lambda = inflate_lambda)
+        betfun(self$x, self$epsilon_step, inflate_lambda = inflate_lambda, alpha = alpha)
       }
       # save(all_bootstrap_estimates, file = 'all_bootstrap_estimates.rda')
       ALPHA <- 0.05
