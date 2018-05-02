@@ -147,7 +147,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       normal_CI <- self$pointTMLE$CI
       self$CI_all <- list(normal_CI, boot1_CI)
     },
-    convex_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1, alpha = 0.01){
+    convex_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1, alpha = 0.4){
       # exact second order expansion bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
       betfun <- function(data,
