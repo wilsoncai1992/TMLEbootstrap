@@ -16,13 +16,13 @@ densityHAL <- R6Class("densityHAL",
       # use `longiData` to transform `x`; fit a single lambda HAL on the data
       df_compressed <- self$longiData$generate_df_compress(x = self$x)
       self$hal_fit <- hal9001::fit_hal_single_lambda(X = df_compressed[,'box'],
-        Y = df_compressed$Y,
-        weights = df_compressed$Freq,
-        family = "binomial",
-        lambda = lambda,
-        fit_type = 'glmnet',
-        use_min = TRUE, #useless
-        yolo = FALSE)
+                                                    Y = df_compressed$Y,
+                                                    weights = df_compressed$Freq,
+                                                    family = "binomial",
+                                                    lambda = lambda,
+                                                    fit_type = 'glmnet',
+                                                    use_min = TRUE, #useless
+                                                    yolo = FALSE)
       # self$hal_fit$lambda_star
     },
     predict = function(new_x = NULL){

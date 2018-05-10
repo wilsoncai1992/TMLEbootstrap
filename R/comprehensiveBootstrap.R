@@ -10,7 +10,7 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
     width_all = NULL, # the CI width in CI_all
     initialize = function(parameter = NULL, ...) {
       # input
-      # data etc...
+      # ...: for data, param, etc...
       if(!as.character(parameter$inherit) == 'generalBootstrap') stop('please input generalBootstrap class!')
       # create two boot objects
       self$bootOut <- parameter$new(...)
