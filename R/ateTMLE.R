@@ -15,30 +15,52 @@ ateTMLE <- R6Class("ateTMLE",
     se_Psi = NULL,
     CI = NULL,
     # verbose = FALSE,
+    lambda = NULL,
     initialize = function(data) {
       self$data <- data
       if(class(data$W) != 'data.frame') message('W not data.frame')
     },
-    initial_fit = function(){
+    initial_fit = function(lambda = NULL){
+      self$lambda <- lambda
       # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
       library(hal9001)
       # Q fit
-      self$Q_fit <- hal9001::fit_hal(X = data.frame(self$data$A, self$data$W),
-                         Y = self$data$Y,
-                         family = 'gaussian',
-                         fit_type = 'glmnet',
-                         n_folds = 3,
-                         use_min = TRUE,
-                         yolo = FALSE)
+      if(is.null(lambda)){ # use CV
+        self$Q_fit <- hal9001::fit_hal(X = data.frame(self$data$A, self$data$W),
+                           Y = self$data$Y,
+                           family = 'gaussian',
+                           fit_type = 'glmnet',
+                           n_folds = 3,
+                           use_min = TRUE,
+                           yolo = FALSE)
+      }else{ # use manual lambda
+        self$Q_fit <- hal9001::fit_hal_single_lambda(X = data.frame(self$data$A, self$data$W),,
+                                                Y = self$data$Y,
+                                               family = 'gaussian',
+                                                lambda = lambda,
+                                                fit_type = 'glmnet',
+                                                use_min = TRUE, #useless
+                                                yolo = FALSE)
+      }
       # Q_HAL_tuned <- squash_hal_fit(Qfit)
       # g fit
-      self$g_fit <- hal9001::fit_hal(X = data.frame(self$data$W),
-                         Y = self$data$A,
-                         family = 'binomial',
-                         fit_type = 'glmnet',
-                         n_folds = 3,
-                         use_min = TRUE,
-                         yolo = FALSE)
+      if(is.null(lambda)){
+        self$g_fit <- hal9001::fit_hal(X = data.frame(self$data$W),
+                                       Y = self$data$A,
+                                       family = 'binomial',
+                                       fit_type = 'glmnet',
+                                       n_folds = 3,
+                                       use_min = TRUE,
+                                       yolo = FALSE)
+      }else{
+        self$g_fit <- hal9001::fit_hal_single_lambda(X = data.frame(self$data$W),
+                                               Y = self$data$A,
+                                               family = 'binomial',
+                                                lambda = lambda,
+                                                fit_type = 'glmnet',
+                                                use_min = TRUE, #useless
+                                                yolo = FALSE)
+      }
       # g_HAL_tuned <- hal9001::squash_hal_fit(gfit)
       # get Q_1W, Q_0W
       self$Q_1W <- stats::predict(object = self$Q_fit, new_data = data.frame(1, self$data$W))
