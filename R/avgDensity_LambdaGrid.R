@@ -211,6 +211,7 @@ grabPlateau <- R6Class("grabPlateau",
       firstDiff <- diff(self$y)/diff(self$x)
       # plot(firstDiff)
       idx <- which.min(firstDiff) - 1
+      if (idx == 0) idx <- 1 # fix when there is no plateau
       return(data.frame(y = self$y[idx], x = self$x[idx]))
     }
   )
