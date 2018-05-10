@@ -184,8 +184,7 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
         boot_here <- comprehensiveBootstrap$new(parameter = ateBootstrap,
                                                 data = self$data,
                                                 lambda = lambda)
-        boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
-                            inflate_lambda = self$inflate_lambda)
+        boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
         boot_here$all_CI()
         boot_here$compute_width()
         new_ls <- c(new_ls, boot_here)

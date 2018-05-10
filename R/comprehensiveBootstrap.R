@@ -22,14 +22,14 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
       # REPEAT_BOOTSTRAP
       self$bootOut$bootstrap(...)
       self$bootOutExact$exact_bootstrap(...)
-      self$bootOutConvex$convex_bootstrap(...)
+      # self$bootOutConvex$convex_bootstrap(...)
 
       self$Psi <- self$bootOut$Psi # populate Psi_n
     },
     all_CI = function(){
       regularCI <- self$bootOut$all_boot_CI()
       taylorCI <- self$bootOutExact$all_boot_CI()
-      convexRegCI <- self$bootOutConvex$all_boot_CI()
+      # convexRegCI <- self$bootOutConvex$all_boot_CI()
 
 
       self$CI_all <- list(wald = regularCI$wald,
@@ -65,11 +65,11 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
                           reg_bias_scale = regularCI$bias_scale,
                           reg_bias_scale_ctr = regularCI$bias_scale_ctr,
                           secOrd_bias_scale = taylorCI$bias_scale,
-                          secOrd_bias_scale_ctr = taylorCI$bias_scale_ctr,
+                          secOrd_bias_scale_ctr = taylorCI$bias_scale_ctr
                           # convex bootstrap
-                          convReg_ctr = convexRegCI$ctr,
-                          convReg_pen_ctr = convexRegCI$penalized_ctr,
-                          convReg_scale_ctr = convexRegCI$scale_ctr
+                          # convReg_ctr = convexRegCI$ctr,
+                          # convReg_pen_ctr = convexRegCI$penalized_ctr,
+                          # convReg_scale_ctr = convexRegCI$scale_ctr
                           )
       # return(self$CI_all)
     },
