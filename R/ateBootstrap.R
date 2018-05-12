@@ -3,16 +3,16 @@ ateBootstrap <- R6Class("ateBootstrap",
   inherit = generalBootstrap,
   public = list(
     data = NULL,
-    lambda = NULL,
+    lambda1 = NULL,
     pointTMLE = NULL,
 
     bootstrap_estimates = NULL,
-    initialize = function(data, lambda = NULL) {
+    initialize = function(data, lambda1 = NULL) {
       self$data <- data
-      self$lambda <- lambda
+      self$lambda1 <- lambda1
       if(class(data$W) != 'data.frame') message('W not data.frame')
       tmleOut <- ateTMLE$new(data = self$data)
-      tmleOut$initial_fit(lambda = lambda)
+      tmleOut$initial_fit(lambda1 = lambda1)
       tmleOut$target()
 
       self$pointTMLE <- tmleOut

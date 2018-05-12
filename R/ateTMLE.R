@@ -15,36 +15,38 @@ ateTMLE <- R6Class("ateTMLE",
     se_Psi = NULL,
     CI = NULL,
     # verbose = FALSE,
-    lambda = NULL,
+    lambda1 = NULL,
+    lambda2 = NULL,
     initialize = function(data) {
       self$data <- data
       if(class(data$W) != 'data.frame') message('W not data.frame')
     },
-    initial_fit = function(lambda = NULL){
-      self$lambda <- lambda
+    initial_fit = function(lambda1 = NULL, lambda2 = NULL){
+      self$lambda1 <- lambda1
+      self$lambda2 <- lambda2
       # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
       library(hal9001)
       # Q fit
-      if(is.null(lambda)){ # use CV
+      if(is.null(lambda1)){ # use CV
         self$Q_fit <- hal9001::fit_hal(X = data.frame(self$data$A, self$data$W),
-                           Y = self$data$Y,
-                           family = 'gaussian',
-                           fit_type = 'glmnet',
-                           n_folds = 3,
-                           use_min = TRUE,
-                           yolo = FALSE)
-      }else{ # use manual lambda
+                                       Y = self$data$Y,
+                                       family = 'gaussian',
+                                       fit_type = 'glmnet',
+                                       n_folds = 3,
+                                       use_min = TRUE,
+                                       yolo = FALSE)
+      }else{ # use manual lambda1
         self$Q_fit <- hal9001::fit_hal_single_lambda(X = data.frame(self$data$A, self$data$W),,
-                                                Y = self$data$Y,
-                                               family = 'gaussian',
-                                                lambda = lambda,
-                                                fit_type = 'glmnet',
-                                                use_min = TRUE, #useless
-                                                yolo = FALSE)
+                                                      Y = self$data$Y,
+                                                     family = 'gaussian',
+                                                      lambda = lambda1,
+                                                      fit_type = 'glmnet',
+                                                      use_min = TRUE, #useless
+                                                      yolo = FALSE)
       }
       # Q_HAL_tuned <- squash_hal_fit(Qfit)
       # g fit
-      if(is.null(lambda)){
+      if(is.null(lambda2)){ # use CV
         self$g_fit <- hal9001::fit_hal(X = data.frame(self$data$W),
                                        Y = self$data$A,
                                        family = 'binomial',
@@ -52,11 +54,11 @@ ateTMLE <- R6Class("ateTMLE",
                                        n_folds = 3,
                                        use_min = TRUE,
                                        yolo = FALSE)
-      }else{
+      }else{ # use manual lambda1
         self$g_fit <- hal9001::fit_hal_single_lambda(X = data.frame(self$data$W),
                                                Y = self$data$A,
                                                family = 'binomial',
-                                                lambda = lambda,
+                                                lambda = lambda2,
                                                 fit_type = 'glmnet',
                                                 use_min = TRUE, #useless
                                                 yolo = FALSE)
