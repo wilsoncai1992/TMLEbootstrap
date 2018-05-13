@@ -57,11 +57,11 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
 
         return(c(bootstrapTmleFit$Psi))
       }
+      library(foreach)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP),
                                          .combine = c,
                                          .inorder = FALSE,
                                          .packages = c('R6', 'hal9001', 'fixedHAL'),
-                                         # .errorhandling = 'remove',
                                          .errorhandling = 'pass',
                                          .export = c('self'),
                                          .verbose = F) %do% {
@@ -131,6 +131,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         R2 <- term1 - term2 + term3
         return(bootstrapTmleFit$Psi - R2)
       }
+      library(foreach)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP),
                                          .combine = c,
                                          .inorder = FALSE,
@@ -216,6 +217,7 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
         bootstrapTmleFit$scaleBack_afterTMLE() # cont Y
         return(bootstrapTmleFit$Psi)
       }
+      library(foreach)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP),
                                          .combine = c,
                                          .inorder = FALSE,
@@ -293,6 +295,7 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
         R2 <- term1 - term2 + term3
         return(bootstrapTmleFit$Psi - R2)
       }
+      library(foreach)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP),
                                          .combine = c,
                                          .inorder = FALSE,
