@@ -198,7 +198,7 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
 )
 
 #' @export
-blipVar_LambdaGrid <- R6Class("blipVar_LambdaGrid",
+blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
   inherit = LambdaGrid,
   public = list(
     data = NULL,
