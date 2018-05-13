@@ -1,4 +1,6 @@
 library(R6)
+library(hal9001)
+library(foreach)
 #' @export
 blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
   inherit = generalBootstrap,
@@ -30,7 +32,6 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
 
         bootstrapTmleFit <- blipVarianceTMLE_gentmle$new(data = d)
         # fit new Q, g
-        library(hal9001)
         # Q fit
         Q_HAL_boot <- fit_fixed_HAL(Y = d$Y,
                                     X = data.frame(d$A, d$W),
@@ -56,7 +57,6 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
 
         return(c(bootstrapTmleFit$Psi))
       }
-      library(foreach)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP),
                                          .combine = c,
                                          .inorder = FALSE,
@@ -92,7 +92,6 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
 
         bootstrapTmleFit <- blipVarianceTMLE_gentmle$new(data = d)
         # fit new Q, g
-        library(hal9001)
         # Q fit
         Q_HAL_boot <- fit_fixed_HAL(Y = d$Y,
                                     X = data.frame(d$A, d$W),
@@ -132,7 +131,6 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         R2 <- term1 - term2 + term3
         return(bootstrapTmleFit$Psi - R2)
       }
-      library(foreach)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP),
                                          .combine = c,
                                          .inorder = FALSE,
@@ -164,7 +162,7 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
   inherit = blipVarianceBootstrap,
   public = list(
     Q_0W_rescale = NULL,
-    initialize = function(data, verbose = NULL) {
+    initialize = function(data, lambda1 = NULL, lambda2 = NULL, verbose = NULL) {
       # subclass of `blipVarianceBootstrap` for continuous Y;
       # pointTMLE replaced by `blipVarianceTMLE_gentmle_contY` class
       # bootstrap method replaced by continuous hal fit; feed into `blipVarianceTMLE_gentmle_contY` class
@@ -173,7 +171,7 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
       if (!is.null(verbose)) self$verbose <- verbose
       self$pointTMLE <- blipVarianceTMLE_gentmle_contY$new(data = data)
       self$pointTMLE$scaleY()
-      self$pointTMLE$initial_fit()
+      self$pointTMLE$initial_fit(lambda1 = lambda1, lambda2 = lambda2)
       self$pointTMLE$target()
       self$pointTMLE$scaleBack_afterTMLE()
 
@@ -192,7 +190,6 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
         bootstrapTmleFit <- blipVarianceTMLE_gentmle_contY$new(data = d)
         bootstrapTmleFit$scaleY() # not rigorous; use population scale_Y
         # fit new Q, g
-        library(hal9001)
         # Q fit
         Q_HAL_boot <- fit_fixed_HAL(Y = d$Y,
                                     X = data.frame(d$A, d$W),
@@ -219,7 +216,6 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
         bootstrapTmleFit$scaleBack_afterTMLE() # cont Y
         return(bootstrapTmleFit$Psi)
       }
-      library(foreach)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP),
                                          .combine = c,
                                          .inorder = FALSE,
@@ -255,7 +251,6 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
         bootstrapTmleFit <- blipVarianceTMLE_gentmle_contY$new(data = d)
         bootstrapTmleFit$scaleY() # not rigorous; use population scale_Y
         # fit new Q, g
-        library(hal9001)
         # Q fit
         Q_HAL_boot <- fit_fixed_HAL(Y = d$Y,
                                     X = data.frame(d$A, d$W),
@@ -298,7 +293,6 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
         R2 <- term1 - term2 + term3
         return(bootstrapTmleFit$Psi - R2)
       }
-      library(foreach)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP),
                                          .combine = c,
                                          .inorder = FALSE,

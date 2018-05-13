@@ -198,6 +198,37 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
 )
 
 #' @export
+blipVar_LambdaGrid <- R6Class("blipVar_LambdaGrid",
+  inherit = LambdaGrid,
+  public = list(
+    data = NULL,
+    initialize = function(data,
+                          REPEAT_BOOTSTRAP = 2e2,
+                          inflate_lambda = 1) {
+      self$data <- data
+      self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
+      self$inflate_lambda <- inflate_lambda
+    },
+    add_lambda = function(lambda_grid = NULL) {
+      new_ls <- list()
+      for (lambda1 in lambda_grid) {
+        boot_here <- comprehensiveBootstrap$new(parameter = blipVarianceBootstrap_contY,
+                                                data = self$data,
+                                                lambda1 = lambda1)
+        boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
+        boot_here$all_CI()
+        boot_here$compute_width()
+        new_ls <- c(new_ls, boot_here)
+        # self$dict_boot[[lambda1]] <- boot_here
+        message(paste(lambda1, 'is added'))
+      }
+      names(new_ls) <- lambda_grid # named list. the name is the lambda1 used for fitting
+      self$dict_boot <- c(self$dict_boot, new_ls)
+    }
+  )
+)
+
+#' @export
 grabPlateau <- R6Class("grabPlateau",
   public = list(
     x = NULL, # x needs to be sorted
