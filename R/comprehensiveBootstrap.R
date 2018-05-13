@@ -12,8 +12,11 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
       # input
       # ...: for data, param, etc...
       classError <- TRUE
-      if(as.character(parameter$inherit) == 'generalBootstrap') classError <- FALSE
-      if(as.character(parameter$get_inherit()$inherit) == 'generalBootstrap') classError <- FALSE
+      if(as.character(parameter$inherit) == 'generalBootstrap'){
+        classError <- FALSE
+      }else{
+        if(as.character(parameter$get_inherit()$inherit) == 'generalBootstrap') classError <- FALSE
+      }
       if(classError) stop('please input generalBootstrap class!') # if itself or its parent are not generalBootstrap class, throw error
 
       # create two boot objects
