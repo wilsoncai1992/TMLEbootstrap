@@ -230,7 +230,7 @@ blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
     add_lambda = function(lambda_grid = NULL) {
       new_ls <- list()
       for (lambda1 in lambda_grid) {
-        boot_here <- comprehensiveBootstrap$new(parameter = blipVarianceTMLE_gentmle_contY,
+        boot_here <- comprehensiveBootstrap$new(parameter = blipVarianceBootstrap_contY,
                                                 data = self$data,
                                                 lambda1 = lambda1)
         boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
