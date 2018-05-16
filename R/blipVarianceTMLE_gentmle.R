@@ -171,6 +171,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
                                      submodel = submodel_logit)
       self$Psi <- self$gentmle_object$tmleests
       self$se_Psi <- sd(self$gentmle_object$Dstar)/sqrt(length(self$data$A))
+      # self$se_Psi <- self$gentmle_object$ED2/sqrt(length(self$data$A)) # this is from jeremy
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
     }
 ))

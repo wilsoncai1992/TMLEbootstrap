@@ -87,6 +87,24 @@ LambdaGrid <- R6Class("LambdaGrid",
       allPlateaus <- do.call(rbind, df_ls)
       return(10^allPlateaus$x)
     },
+    select_lambda_pleateau_reg = function(){
+      # grab pleateau
+      df_ls <- list()
+      count <- 1
+      for (kind in 'reg_scale') {
+        tempDf <- self$df_lambda_width[self$df_lambda_width$kindCI == kind,]
+        tempDf <- tempDf[order(tempDf$lambda),]
+
+        platOut <- grabPlateau$new(x = log10(tempDf$lambda), y = tempDf$width)
+        coordOut <- platOut$plateau_1()
+        coordOut$kindCI <- kind
+
+        df_ls[[count]] <- coordOut
+        count <- count + 1
+      }
+      allPlateaus <- do.call(rbind, df_ls)
+      return(10^allPlateaus$x)
+    },
     select_lambda_pleateau_secscalepen = function(){
       # grab pleateau
       df_ls <- list()
@@ -212,7 +230,7 @@ blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
     add_lambda = function(lambda_grid = NULL) {
       new_ls <- list()
       for (lambda1 in lambda_grid) {
-        boot_here <- comprehensiveBootstrap$new(parameter = blipVarianceBootstrap_contY,
+        boot_here <- comprehensiveBootstrap$new(parameter = blipVarianceTMLE_gentmle_contY,
                                                 data = self$data,
                                                 lambda1 = lambda1)
         boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
