@@ -189,7 +189,9 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
                   W = data.frame(data$W[indices,]))
 
         bootstrapTmleFit <- blipVarianceTMLE_gentmle_contY$new(data = d)
-        bootstrapTmleFit$scaleY() # not rigorous; use population scale_Y
+        # bootstrapTmleFit$scaleY() # not rigorous; use population scale_Y
+        bootstrapTmleFit$scale_Y <- self$pointTMLE$scale_Y
+        bootstrapTmleFit$Y_rescale <- bootstrapTmleFit$scale_Y$scale01(newX = bootstrapTmleFit$data$Y)
         # fit new Q, g
         # Q fit
         Q_HAL_boot <- fit_fixed_HAL(Y = d$Y,
@@ -251,7 +253,9 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
                   W = data.frame(data$W[indices,]))
 
         bootstrapTmleFit <- blipVarianceTMLE_gentmle_contY$new(data = d)
-        bootstrapTmleFit$scaleY() # not rigorous; use population scale_Y
+        # bootstrapTmleFit$scaleY() # not rigorous; use population scale_Y
+        bootstrapTmleFit$scale_Y <- self$pointTMLE$scale_Y
+        bootstrapTmleFit$Y_rescale <- bootstrapTmleFit$scale_Y$scale01(newX = bootstrapTmleFit$data$Y)
         # fit new Q, g
         # Q fit
         Q_HAL_boot <- fit_fixed_HAL(Y = d$Y,
