@@ -307,7 +307,6 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
                                          .errorhandling = 'pass',
                                          .export = c('self'),
                                          .verbose = F) %do% {
-                                         # .verbose = F) %dopar% {
                                            if(it2 %% 10 == 0) print(it2)
                                            betfun(data = self$data, population_tmle = self$pointTMLE)
                                          }

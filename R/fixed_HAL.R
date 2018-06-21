@@ -27,9 +27,7 @@ fit_fixed_HAL <- function(Y, X, weights = NULL, hal9001_object, family = stats::
     IS_GLM <- TRUE
   }
 
-  # yo2 <- MatrixModels:::lm.fit.sparse(x = x_basis,y = Y)
-
-  # inflate lambda than CV  select
+  # inflate lambda than CV select
   if (!is.numeric(inflate_lambda)) warning('non-numeric `inflate_lambda`!'); inflate_lambda <- 1
   lambda <- inflate_lambda * hal9001_object$lambda_star
 

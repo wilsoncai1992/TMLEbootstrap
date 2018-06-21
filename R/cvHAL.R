@@ -1,14 +1,14 @@
 require(R6)
 #' @export
 densityHAL <- R6Class("densityHAL",
+  # for fixed lambda; fit a hal fit on longitudinal dataframe; outout density estimate
+  # input: longiData on whole data, for split schema
+  # output: tuned HAL
   public = list(
     longiData = NULL,
     x = NULL,
     hal_fit = NULL, # hal9001 object; fit using optimal lambda; for output
     initialize = function(x, longiData) {
-      # for fixed lambda; fit a hal fit on longitudinal dataframe; outout density estimate
-      # input: longiData on whole data, for split schema
-      # output: tuned HAL
       self$longiData <- longiData
       self$x <- x
     },
@@ -23,7 +23,6 @@ densityHAL <- R6Class("densityHAL",
                                                     fit_type = 'glmnet',
                                                     use_min = TRUE, #useless
                                                     yolo = FALSE)
-      # self$hal_fit$lambda_star
     },
     predict = function(new_x = NULL){
       # predict density p_hat on `new_x`
@@ -31,7 +30,7 @@ densityHAL <- R6Class("densityHAL",
       return(rje::expit(predict(self$hal_fit, new_data = new_x)))
     },
     predict_long = function(new_x = NULL){
-      # make prediction faster routine
+      # make prediction faster on larger x
       message('use long prediction routine...')
       x_list <- split(new_x, ceiling(seq_along(new_x)/20))
       out <- lapply(x_list, function(x) self$predict(new_x = x))
@@ -51,13 +50,12 @@ densityHAL <- R6Class("densityHAL",
       not_weighted <- cross_entropy(y = df_valid$Y, yhat = yhat)
       return(sum(not_weighted * df_valid$Freq) / sum(df_valid$Freq))
     }
-    # density_intial <- empiricalDensity$new(p_density = yhat, x = x)
-    # p_hat <- density_intial$normalize()
   )
 )
 
 #' @export
 cv_densityHAL <- R6Class("cv_densityHAL",
+  # cross validate a grid of `densityHAL` with a grid of lambda
   public = list(
     longiData = NULL,
     x = NULL,
@@ -66,7 +64,6 @@ cv_densityHAL <- R6Class("cv_densityHAL",
     results = NULL,
     lambda.min = NULL,
     initialize = function(x, longiData) {
-      # cross validate a grid of `densityHAL` with a grid of lambda
       self$longiData <- longiData
       self$x <- x
     },

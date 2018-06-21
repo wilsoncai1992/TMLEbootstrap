@@ -1,6 +1,7 @@
 # library(R6)
 #' @export
 empiricalDensity <- R6Class("empiricalDensity",
+  # helper for avgDens TMLE; hold univariate density and normalization
   public = list(
     p_density = NULL,
     x = NULL,

@@ -1,6 +1,7 @@
 require(R6)
 #' @export
 longiData <- R6Class("longiData",
+  # helper for avgDens TMLE. convert univariate series to longitudinal format
   public = list(
     x = NULL,
     bin_width = NULL,
@@ -47,6 +48,7 @@ longiData <- R6Class("longiData",
 
 #' @export
 longiData_resample <- R6Class("longiData_resample",
+  # perform bootstrap on longitudinal format; respecting weights
   public = list(
     df_compressed = NULL,
     n_row = NULL,
@@ -84,10 +86,10 @@ longiData_resample <- R6Class("longiData_resample",
 
 #' @export
 sum_longiData_resample <- function(list) {
+  # combine a list of longiData
   # input: list of longiData_resample
   # output: a new longiData_resample
   library(dplyr)
-  # library(tidyr)
   list_df <- lapply(list, function(x) x$df_compressed)
   df_long <- do.call(rbind, list_df)
   out <- data.frame(df_long %>% group_by(box, Y) %>% summarise(Freq = sum(Freq)) %>% ungroup())

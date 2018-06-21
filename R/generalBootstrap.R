@@ -1,14 +1,13 @@
-# library(R6)
 #' @export
 generalBootstrap <- R6Class("generalBootstrap",
+  # bootstrap modifications
   public = list(
     Psi = NULL,
     CI_all = NULL, # list of length = 2; the first element is wald CI, the second is bootstrap CI
     initialize = function() {
     },
     center_CI = function(bootCI = NULL){
-      # if user don't provide bootCI, use existing bootCI;
-      if(is.null(bootCI)) bootCI <- self$CI_all[[2]]
+      if(is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
       # centered bootstrap (shift 1 time)
       new_CI <- bootCI - mean(bootCI) + self$Psi
       # only shift positively
@@ -17,8 +16,7 @@ generalBootstrap <- R6Class("generalBootstrap",
     },
     scale_adjust_CI = function(bootCI = NULL){
       waldCI <- self$CI_all[[1]]
-      # if user don't provide bootCI, use existing bootCI;
-      if(is.null(bootCI)) bootCI <- self$CI_all[[2]]
+      if(is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
       bootCenter <- mean(bootCI)
       r <- 1
       if(diff(bootCI) == 0) r <- 1 # catch when bootstrap Psi# are all identical
@@ -28,9 +26,8 @@ generalBootstrap <- R6Class("generalBootstrap",
     },
     penalized_CI = function(bootCI = NULL){
       # bias penalized bootstrap
-      # if user don't provide bootCI, use existing bootCI;
       # if user input scale_adjust CI, this will output scale + penalized bootCI
-      if(is.null(bootCI)) bootCI <- self$CI_all[[2]]
+      if(is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
       delta <- mean(bootCI) - self$Psi
       bootCI[2] <- bootCI[2] + abs(delta)
       bootCI[1] <- bootCI[1] - abs(delta)
@@ -38,9 +35,8 @@ generalBootstrap <- R6Class("generalBootstrap",
     },
     penalized_CI_half = function(bootCI = NULL){
       # bias penalized bootstrap
-      # if user don't provide bootCI, use existing bootCI;
       # if user input scale_adjust CI, this will output scale + penalized bootCI
-      if(is.null(bootCI)) bootCI <- self$CI_all[[2]]
+      if(is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
       delta <- mean(bootCI) - self$Psi
       bootCI[2] <- bootCI[2] + abs(delta)/2
       bootCI[1] <- bootCI[1] - abs(delta)/2
@@ -54,8 +50,7 @@ generalBootstrap <- R6Class("generalBootstrap",
       return(new_CI)
     },
     bias_scale = function(bootCI = NULL, n = 1e2){
-      # if user don't provide bootCI, use existing bootCI;
-      if(is.null(bootCI)) bootCI <- self$CI_all[[2]]
+      if(is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
       bootCenter <- mean(bootCI)
 
       mse <- mean((self$bootstrap_estimates - self$Psi)^2)
@@ -70,6 +65,7 @@ generalBootstrap <- R6Class("generalBootstrap",
       return((bootCI - bootCenter)*r + bootCenter)
     },
     all_boot_CI = function(){
+      # return a list of all kinds of modifications
       penalized <- self$penalized_CI()
       penalized_half <- self$penalized_CI_half()
       scale <- self$scale_adjust_CI()
@@ -91,22 +87,23 @@ generalBootstrap <- R6Class("generalBootstrap",
       return(list(wald = self$CI_all[[1]],
 
                   boot = self$CI_all[[2]],
-                  penalized = penalized,
-                  penalized_half = penalized_half,
-                  scale = scale,
-                  scale_penalized = scale_penalized,
-                  scale_penalized_half = scale_penalized_half,
+                  penalized = penalized, # reg + pen
+                  penalized_half = penalized_half, # reg + 0.5pen
+                  scale = scale, # reg + scale
+                  scale_penalized = scale_penalized, # reg + scale + pen
+                  scale_penalized_half = scale_penalized_half, # reg + scale + 0.5pen
 
-                  ctr = center,
-                  penalized_ctr = penalized_center,
-                  penalized_half_ctr = penalized_half_center,
-                  scale_ctr = scale_center,
-                  scale_penalized_ctr = scale_penalized_center,
-                  scale_penalized_half_ctr = scale_penalized_half_center,
+                  ctr = center, # reg + center at Psi
+                  penalized_ctr = penalized_center, # reg + pen + center at Psi
+                  penalized_half_ctr = penalized_half_center, # reg + 0.5pen + center at Psi
+                  scale_ctr = scale_center, # reg + scale + center at Psi
+                  scale_penalized_ctr = scale_penalized_center, # reg + pen + scale + center at Psi
+                  scale_penalized_half_ctr = scale_penalized_half_center, # reg + 0.5pen + scale + center at Psi
 
-                  bias_scale = bias_scale,
-                  bias_scale_ctr = bias_scale_ctr,
-                  shift2 = shift2))
+                  bias_scale = bias_scale, # make the width 1.96*sigma_star; sigma_star == sqrt(mse(Psi# - Psi_n))
+                  bias_scale_ctr = bias_scale_ctr, # bias_scale + center
+                  shift2 = shift2 # compensate the bias twice; bias == |mean(Psi#) - Psi_n|
+                  ))
     }
     )
 )

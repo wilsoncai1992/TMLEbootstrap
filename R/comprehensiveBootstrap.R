@@ -1,9 +1,10 @@
 #' @export
 comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
+  # run `generalBootstrap` twice; one for reg bootstrap, one for secOrd bootstrap
   public = list(
     bootOut = NULL, # regular boot
     bootOutExact = NULL, # secOrd boot
-    bootOutConvex = NULL, # convex bootstrap
+    # bootOutConvex = NULL, # convex bootstrap
 
     Psi = NULL,
     CI_all = NULL, # list of all CI
@@ -22,7 +23,7 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
       # create two boot objects
       self$bootOut <- parameter$new(...)
       self$bootOutExact <- self$bootOut$clone(deep = TRUE) # deep copy point tmle, less repeat
-      self$bootOutConvex <- self$bootOut$clone(deep = TRUE) # deep copy point tmle, less repeat
+      # self$bootOutConvex <- self$bootOut$clone(deep = TRUE) # deep copy point tmle, less repeat
     },
     bootstrap = function(...) {
       # input:
@@ -81,6 +82,7 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
       # return(self$CI_all)
     },
     compute_width = function(){
+      # compute a list of all widths
       get_width <- function(list) vapply(list, diff, FUN.VALUE = numeric(1)) # loop over list, take diff of the CI bounds
       self$width_all <- as.list(get_width(self$CI_all))
       names(self$width_all) <- names(self$CI_all)

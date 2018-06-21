@@ -1,6 +1,7 @@
 library(R6)
 #' @export
 scaleX <- R6Class("scaleX",
+  # perform standardization based on (x - min)/(max - min)
   public = list(
     X = NULL,
     minX = NULL,

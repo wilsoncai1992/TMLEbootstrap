@@ -8,6 +8,9 @@ ateBootstrap <- R6Class("ateBootstrap",
 
     bootstrap_estimates = NULL,
     initialize = function(data, lambda1 = NULL, lambda2 = NULL) {
+      # data is in list
+      # lambda1 is a grid of lambda for Q
+      # lambda2 is a grid of lambda for g
       self$data <- data
       self$lambda1 <- lambda1
       if(class(data$W) != 'data.frame') message('W not data.frame')

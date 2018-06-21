@@ -22,11 +22,13 @@ ateTMLE <- R6Class("ateTMLE",
       if(class(data$W) != 'data.frame') message('W not data.frame')
     },
     initial_fit = function(lambda1 = NULL, lambda2 = NULL){
+      # lambda1 for Q fit
+      # lambda2 for g fit
       self$lambda1 <- lambda1
       self$lambda2 <- lambda2
       # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
-      library(hal9001)
       # Q fit
+      library(hal9001)
       if(is.null(lambda1)){ # use CV
         self$Q_fit <- hal9001::fit_hal(X = data.frame(self$data$A, self$data$W),
                                        Y = self$data$Y,
@@ -71,6 +73,7 @@ ateTMLE <- R6Class("ateTMLE",
       self$g1_W <- plogis(stats::predict(object = self$g_fit, new_data = data.frame(self$data$W)))
     },
     plot_Q1W = function(foo = NULL){
+      # plot the Q(1,W) function (optional: against a foo function)
       plot(self$Q_1W ~ self$data$W[,1], col = 'blue')
       if(!is.null(foo)) curve(expr = foo, from = -10, to = 10, add = TRUE, lty = 2, n=1e3)
       points(self$data$Y[self$data$A == 1] ~ self$data$W[self$data$A == 1,1], col = 'grey')
@@ -78,6 +81,7 @@ ateTMLE <- R6Class("ateTMLE",
       # plot(Q_1W - Q_0W ~ self$data$W)
     },
     target = function() {
+      # perform iterative TMLE
       library(tmle)
       self$tmle_object <- tmle(Y = self$data$Y, A = self$data$A, W = as.matrix(self$data$W),
                                Q = cbind(self$Q_0W, self$Q_1W),

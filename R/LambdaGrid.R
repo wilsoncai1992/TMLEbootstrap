@@ -21,6 +21,7 @@ LambdaGrid <- R6Class("LambdaGrid",
       unname(self$dict_boot)
     },
     plot_CI = function(Psi = NULL){
+      # plot CI v.s. log(lambda)
       lambdas <- self$get_lambda()
       CI_list <- self$get_value()
       CI_all <- lapply(CI_list, function(x) x$CI_all)
@@ -63,6 +64,7 @@ LambdaGrid <- R6Class("LambdaGrid",
       self$df_lambda_width <- df2[grep('ctr', df2$kindCI, invert = TRUE),] # not use centered version
     },
     plot_width = function(){
+      # plot CIwidth v.s. log(lambda)
       library(ggplot2)
       p <- ggplot(self$df_lambda_width, aes(x = log10(lambda), y = width, group=kindCI, color=kindCI)) +
         geom_point() +
@@ -71,7 +73,7 @@ LambdaGrid <- R6Class("LambdaGrid",
       return(p)
     },
     select_lambda_pleateau_wald = function(){
-      # grab pleateau
+      # grab pleateau (when wald plateaus)
       df_ls <- list()
       count <- 1
       for (kind in 'wald') {
@@ -90,7 +92,7 @@ LambdaGrid <- R6Class("LambdaGrid",
       return(10^allPlateaus$x)
     }
     # select_lambda_pleateau_reg = function(){
-    #   # grab pleateau
+    #   # grab pleateau (when reg plateaus)
     #   df_ls <- list()
     #   count <- 1
     #   for (kind in 'reg_scale') {
@@ -109,7 +111,7 @@ LambdaGrid <- R6Class("LambdaGrid",
     #   return(10^allPlateaus$x)
     # },
     # select_lambda_pleateau_secscalepen = function(){
-    #   # grab pleateau
+    #   # grab pleateau (when secOrd + pen + scale plateaus)
     #   df_ls <- list()
     #   count <- 1
     #   for (kind in 'secOrd_scale_pen') {
@@ -128,7 +130,7 @@ LambdaGrid <- R6Class("LambdaGrid",
     #   return(10^allPlateaus$x)
     # },
     # select_lambda_pleateau_all = function(){
-    #   # grab pleateau
+    #   # grab pleateau (when average width plateaus)
     #   df_ls <- list()
     #   count <- 1
     #   for (kind in unique(self$df_lambda_width$kindCI)) {
@@ -180,7 +182,6 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
         boot_here$all_CI()
         boot_here$compute_width()
         new_ls <- c(new_ls, boot_here)
-        # self$dict_boot[[lambda]] <- boot_here
         message(paste(lambda, 'is added'))
       }
       names(new_ls) <- lambda_grid # named list. the name is the lambda used for fitting
@@ -211,7 +212,6 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
         boot_here$all_CI()
         boot_here$compute_width()
         new_ls <- c(new_ls, boot_here)
-        # self$dict_boot[[lambda1]] <- boot_here
         message(paste(lambda1, 'is added'))
       }
       names(new_ls) <- lambda_grid # named list. the name is the lambda1 used for fitting
@@ -242,7 +242,6 @@ blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
         boot_here$all_CI()
         boot_here$compute_width()
         new_ls <- c(new_ls, boot_here)
-        # self$dict_boot[[lambda1]] <- boot_here
         message(paste(lambda1, 'is added'))
       }
       names(new_ls) <- lambda_grid # named list. the name is the lambda1 used for fitting
@@ -271,8 +270,6 @@ grabPlateau <- R6Class("grabPlateau",
     },
     plateau_2 = function() {
       # argmin(sec diff)
-      # firstDiff <- diff(self$y)/diff(self$x)
-      # secDiff <- diff(firstDiff)/diff(self$x)
       dx <- diff(self$x)
       dx_shift <- c(dx[2:length(dx)], NA)
       denom <- dx * dx_shift
