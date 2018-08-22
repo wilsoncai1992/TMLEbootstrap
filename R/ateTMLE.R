@@ -1,4 +1,6 @@
 library(R6)
+library(tmle)
+library(hal9001)
 #' @export
 ateTMLE <- R6Class("ateTMLE",
   public = list(
@@ -28,7 +30,6 @@ ateTMLE <- R6Class("ateTMLE",
       self$lambda2 <- lambda2
       # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
       # Q fit
-      library(hal9001)
       if(is.null(lambda1)){ # use CV
         self$Q_fit <- hal9001::fit_hal(X = data.frame(self$data$A, self$data$W),
                                        Y = self$data$Y,
@@ -82,7 +83,6 @@ ateTMLE <- R6Class("ateTMLE",
     },
     target = function() {
       # perform iterative TMLE
-      library(tmle)
       self$tmle_object <- tmle(Y = self$data$Y, A = self$data$A, W = as.matrix(self$data$W),
                                Q = cbind(self$Q_0W, self$Q_1W),
                                g1W = self$g1_W,
@@ -92,5 +92,24 @@ ateTMLE <- R6Class("ateTMLE",
       self$Psi <- self$tmle_object$estimates$ATE$psi
       self$se_Psi <- sqrt(self$tmle_object$estimates$ATE$var.psi)
       self$CI <- self$tmle_object$estimates$ATE$CI
+    },
+    inference_without_target = function() {
+      # apply parameter mapping without doing any targeting
+      # A has to be 0/1 coding
+      self$Psi <- mean(self$Q_1W - self$Q_0W)
+      compute_EIC <- function(A, gk, Y, Qk, Q1k, Q0k, psi){
+        HA <- (A/gk - (1 - A)/(1 - gk))
+        EIC <- HA * (Y - Qk) + Q1k - Q0k - psi
+        return(EIC)
+      }
+      EIC <- compute_EIC(A = self$data$A,
+                        gk = self$g1_W,
+                        Y = self$data$Y,
+                        Qk = self$Q_1W * self$data$A + self$Q_0W * (1 - self$data$A),
+                        Q1k = self$Q_1W,
+                        Q0k = self$Q_0W,
+                        psi = self$Psi)
+      self$se_Psi <- sqrt(var(EIC)/length(EIC))
+      self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
     }
 ))

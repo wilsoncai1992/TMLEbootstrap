@@ -1,5 +1,9 @@
 library(R6)
 library(hal9001)
+library(gentmle2)
+
+
+
 #' @export
 blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
   public = list(
@@ -66,7 +70,6 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
     },
     target = function() {
       # use the logistic submodel to target blip variance; output Psi, EIC, CI
-      library(gentmle2)
       initdata <- data.frame(A = self$data$A,
                              Y = self$data$Y,
                              gk = self$g_1W,
@@ -81,6 +84,25 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
       self$Psi <- self$gentmle_object$tmleests
 
       self$se_Psi <- sd(self$gentmle_object$Dstar)/sqrt(length(self$data$A))
+      self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
+    },
+    compute_EIC = function(Y, A, Q1k, Q0k, Qk, gk, psi){
+      # helper function to compute EIC values. shared among blipVarianceTMLE class
+      HA = 2 * (Q1k - Q0k - mean(Q1k-Q0k)) * (A/gk - (1 - A)/(1 - gk))
+      IC = HA*(Y-Qk)+(Q1k - Q0k - mean(Q1k-Q0k))^2 - psi
+      return(IC)
+    },
+    inference_without_target = function(){
+      # apply parameter mapping without doing targeting step
+      self$Psi <- var(self$Q_1W - self$Q_0W)
+      EIC <- self$compute_EIC(Y = self$data$Y,
+                              A = self$data$A,
+                              Q1k = self$Q_1W,
+                              Q0k = self$Q_0W,
+                              Qk = self$Q_AW,
+                              gk = self$g_1W,
+                              psi = self$Psi)
+      self$se_Psi <- sqrt(var(EIC)/length(EIC))
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
     }
 ))
@@ -157,7 +179,6 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
     },
     target = function() {
       # message('continuous Y')
-      library(gentmle2)
       initdata <- data.frame(A = self$data$A,
                              Y = self$Y_rescale,
                              gk = self$g_1W,
@@ -172,6 +193,19 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
       self$Psi <- self$gentmle_object$tmleests
       self$se_Psi <- sd(self$gentmle_object$Dstar)/sqrt(length(self$data$A))
       # self$se_Psi <- self$gentmle_object$ED2/sqrt(length(self$data$A)) # this is from jeremy
+      self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
+    },
+    inference_without_target = function(){
+      # apply parameter mapping without doing targeting step
+      self$Psi <- var(self$Q_1W_rescale - self$Q_0W_rescale)
+      EIC <- self$compute_EIC(Y = self$Y_rescale,
+                              A = self$data$A,
+                              Q1k = self$Q_1W_rescale,
+                              Q0k = self$Q_0W_rescale,
+                              Qk = self$Q_AW_rescale,
+                              gk = self$g_1W,
+                              psi = self$Psi)
+      self$se_Psi <- sqrt(var(EIC)/length(EIC))
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
     }
 ))

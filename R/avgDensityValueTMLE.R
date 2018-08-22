@@ -1,4 +1,6 @@
 library(R6)
+library(SuperLearner)
+library(hal9001)
 
 #' onestep TMLE of average density parameter
 #'
@@ -47,8 +49,6 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     fit_density = function(bin_width = .1,
                           lambda_grid = c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1),
                           n_fold = 3) {
-      library(SuperLearner)
-      library(hal9001)
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
       # longDFOut <- self$longDataOut$generate_df()
       longDFOut <- self$longDataOut$generate_df_compress()

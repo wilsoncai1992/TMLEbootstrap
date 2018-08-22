@@ -9,14 +9,20 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
     pointTMLE = NULL,
 
     bootstrap_estimates = NULL,
-    initialize = function(data, verbose = NULL) {
+    targeting = NULL,
+    initialize = function(data, verbose = NULL, targeting = TRUE) {
       # bootstraping blip variance TMLE (binary Y)
       self$data <- data
+      self$targeting <- targeting
       if(class(data$W) != 'data.frame') message('W not data.frame')
       if (!is.null(verbose)) self$verbose <- verbose
       self$pointTMLE <- blipVarianceTMLE_gentmle$new(data = data)
       self$pointTMLE$initial_fit()
-      self$pointTMLE$target()
+      if(self$targeting){
+        self$pointTMLE$target()
+      }else{
+        self$pointTMLE$inference_without_target()
+      }
 
       self$Psi <- self$pointTMLE$Psi
     },
@@ -53,7 +59,11 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         bootstrapTmleFit$Q_0W <- Q_0W_boot
         bootstrapTmleFit$Q_fit <- Q_HAL_boot
         bootstrapTmleFit$g_fit <- g_HAL_boot
-        bootstrapTmleFit$target()
+        if(self$targeting){
+          bootstrapTmleFit$target()
+        }else{
+          bootstrapTmleFit$inference_without_target()
+        }
 
         return(c(bootstrapTmleFit$Psi))
       }
@@ -113,7 +123,11 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         bootstrapTmleFit$Q_0W <- Q_0W_boot
         bootstrapTmleFit$Q_fit <- Q_HAL_boot
         bootstrapTmleFit$g_fit <- g_HAL_boot
-        bootstrapTmleFit$target()
+        if(self$targeting){
+          bootstrapTmleFit$target()
+        }else{
+          bootstrapTmleFit$inference_without_target()
+        }
 
         # predict Q#, g# on population data
         g_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$g_fit, new_data = data.frame(data$W))
@@ -163,17 +177,22 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
   inherit = blipVarianceBootstrap,
   public = list(
     Q_0W_rescale = NULL,
-    initialize = function(data, lambda1 = NULL, lambda2 = NULL, verbose = NULL) {
+    initialize = function(data, lambda1 = NULL, lambda2 = NULL, verbose = NULL, targeting = TRUE) {
       # subclass of `blipVarianceBootstrap` for continuous Y;
       # pointTMLE replaced by `blipVarianceTMLE_gentmle_contY` class
       # bootstrap method replaced by continuous hal fit; feed into `blipVarianceTMLE_gentmle_contY` class
       self$data <- data
+      self$targeting <- targeting
       if(class(data$W) != 'data.frame') message('W not data.frame')
       if (!is.null(verbose)) self$verbose <- verbose
       self$pointTMLE <- blipVarianceTMLE_gentmle_contY$new(data = data)
       self$pointTMLE$scaleY()
       self$pointTMLE$initial_fit(lambda1 = lambda1, lambda2 = lambda2)
-      self$pointTMLE$target()
+      if(self$targeting){
+        self$pointTMLE$target()
+      }else{
+        self$pointTMLE$inference_without_target()
+      }
       self$pointTMLE$scaleBack_afterTMLE()
 
       self$Psi <- self$pointTMLE$Psi
@@ -215,7 +234,11 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
         bootstrapTmleFit$Q_0W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_0W_boot)
         bootstrapTmleFit$Q_fit <- Q_HAL_boot
         bootstrapTmleFit$g_fit <- g_HAL_boot
-        bootstrapTmleFit$target()
+        if(self$targeting){
+          bootstrapTmleFit$target()
+        }else{
+          bootstrapTmleFit$inference_without_target()
+        }
         bootstrapTmleFit$scaleBack_afterTMLE() # cont Y
         return(bootstrapTmleFit$Psi)
       }
@@ -279,7 +302,11 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
         bootstrapTmleFit$Q_0W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_0W_boot)
         bootstrapTmleFit$Q_fit <- Q_HAL_boot
         bootstrapTmleFit$g_fit <- g_HAL_boot
-        bootstrapTmleFit$target()
+        if(self$targeting){
+          bootstrapTmleFit$target()
+        }else{
+          bootstrapTmleFit$inference_without_target()
+        }
         bootstrapTmleFit$scaleBack_afterTMLE() # cont Y
         # predict Q#, g# on population data
         g_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$g_fit, new_data = data.frame(data$W))
