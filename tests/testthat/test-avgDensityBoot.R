@@ -43,8 +43,16 @@ out <- list(wald = regularCI$wald,
             taylor_pen = taylorCI$penalized,
             taylor_scale = taylorCI$scale,
             taylor_scale_pen = taylorCI$scale_penalized)
+
+# without targeting
+bootOut_HALMLE <- avgDensityBootstrap$new(x = data_out$x, bin_width = bin_width, targeting = FALSE)
+bootOut_HALMLE$bootstrap(2e1)
+halmleCI <- bootOut_HALMLE$all_boot_CI()
 ################################################################################
 test_that("avgDensityBootstrap results should not be NA", {
   expect_true(all(!sapply(out, is.na)))
 })
 
+test_that("HAL-MLE bootstrap results should not be NA", {
+  expect_true(all(!sapply(halmleCI, is.na)))
+})

@@ -2,8 +2,6 @@ library(R6)
 library(hal9001)
 library(gentmle2)
 
-
-
 #' @export
 blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
   public = list(
@@ -76,11 +74,11 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
                              Qk = self$Q_AW,
                              Q1k = self$Q_1W,
                              Q0k = self$Q_0W)
-      self$gentmle_object <- gentmle(initdata = initdata,
-                                     params = list(param_sigmaATE),
+      self$gentmle_object <- gentmle2::gentmle(initdata = initdata,
+                                     params = list(gentmle2::param_sigmaATE),
                                      approach = "full",
                                      # max_iter = 1e5,
-                                     submodel = submodel_logit)
+                                     submodel = gentmle2::submodel_logit)
       self$Psi <- self$gentmle_object$tmleests
 
       self$se_Psi <- sd(self$gentmle_object$Dstar)/sqrt(length(self$data$A))
@@ -185,11 +183,11 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
                              Qk = self$Q_AW_rescale,
                              Q1k = self$Q_1W_rescale,
                              Q0k = self$Q_0W_rescale)
-      self$gentmle_object <- gentmle(initdata = initdata,
-                                     params = list(param_sigmaATE),
+      self$gentmle_object <- gentmle2::gentmle(initdata = initdata,
+                                     params = list(gentmle2::param_sigmaATE),
                                      approach = "full",
                                      # max_iter = 1e5,
-                                     submodel = submodel_logit)
+                                     submodel = gentmle2::submodel_logit)
       self$Psi <- self$gentmle_object$tmleests
       self$se_Psi <- sd(self$gentmle_object$Dstar)/sqrt(length(self$data$A))
       # self$se_Psi <- self$gentmle_object$ED2/sqrt(length(self$data$A)) # this is from jeremy

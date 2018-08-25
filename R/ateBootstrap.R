@@ -1,3 +1,5 @@
+library(foreach)
+
 #' @export
 ateBootstrap <- R6Class("ateBootstrap",
   inherit = generalBootstrap,
@@ -139,7 +141,6 @@ ateBootstrap <- R6Class("ateBootstrap",
         R2 <- mean(part1 - part0)
         return(c(bootstrapTMLEFit$Psi - R2))
       }
-      library(foreach)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
                                          .inorder = FALSE,
                                          .packages = c('R6'),
