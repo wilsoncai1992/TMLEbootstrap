@@ -105,7 +105,7 @@ predict.fixed_HAL <- function(object, ..., new_data) {
 
 #
 # SL wrappers
-# ---------------------------------------------------------------------------------------
+# ========================================================================
 
 # most general form of wrapper.
 # depend on an hal9001 object. which is the fit on the whole data.
