@@ -19,6 +19,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
     gentmle_object = NULL,
     se_Psi = NULL,
     CI = NULL,
+    EIC = NULL,
     verbose = FALSE,
     initialize = function(data, epsilon_step = NULL, verbose = NULL) {
       # HAL initial fit for blip variance TMLE (iterative); targeting is done in gentmle2
@@ -102,6 +103,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
                               psi = self$Psi)
       self$se_Psi <- sqrt(var(EIC)/length(EIC))
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
+      self$EIC <- EIC
     },
     compute_min_phi_ratio = function(){
       # return the ratio of 1 in the basis.
@@ -231,5 +233,6 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
                               psi = self$Psi)
       self$se_Psi <- sqrt(var(EIC)/length(EIC))
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
+      self$EIC <- EIC
     }
 ))

@@ -16,6 +16,7 @@ ateTMLE <- R6Class("ateTMLE",
     Psi = NULL,
     se_Psi = NULL,
     CI = NULL,
+    EIC = NULL,
     # verbose = FALSE,
     lambda1 = NULL,
     lambda2 = NULL,
@@ -88,7 +89,8 @@ ateTMLE <- R6Class("ateTMLE",
                                g1W = self$g1_W,
                                family = 'gaussian',
                                fluctuation = 'linear',
-                               V = 3, verbose = FALSE)
+                               V = 3,
+                               verbose = FALSE)
       self$Psi <- self$tmle_object$estimates$ATE$psi
       self$se_Psi <- sqrt(self$tmle_object$estimates$ATE$var.psi)
       self$CI <- self$tmle_object$estimates$ATE$CI
@@ -98,7 +100,7 @@ ateTMLE <- R6Class("ateTMLE",
       # A has to be 0/1 coding
       self$Psi <- mean(self$Q_1W - self$Q_0W)
       compute_EIC <- function(A, gk, Y, Qk, Q1k, Q0k, psi){
-        HA <- (A/gk - (1 - A)/(1 - gk))
+        HA <- A/gk - (1 - A)/(1 - gk)
         EIC <- HA * (Y - Qk) + Q1k - Q0k - psi
         return(EIC)
       }
@@ -111,6 +113,7 @@ ateTMLE <- R6Class("ateTMLE",
                         psi = self$Psi)
       self$se_Psi <- sqrt(var(EIC)/length(EIC))
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
+      self$EIC <- EIC
     },
     compute_min_phi_ratio = function(){
       # return the ratio of 1 in the basis.
@@ -135,12 +138,9 @@ ateTMLE <- R6Class("ateTMLE",
         nonzeroBeta_phiRatio <- numeric()
       }
 
-      if (length(nonzeroBeta_phiRatio) == 0) {
-        # all beta are zero
-        # Qbasis has zero length
-        return(NULL)
-      }else{
-        return(min(nonzeroBeta_phiRatio))
-      }
+      # return NULL if:
+      # all beta are zero
+      # Qbasis has zero length
+      if (length(nonzeroBeta_phiRatio) != 0) return(min(nonzeroBeta_phiRatio)) else return(NULL)
     }
 ))

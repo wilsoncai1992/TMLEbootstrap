@@ -62,3 +62,8 @@ test_that("ateBootstrap results should not be NA", {
 test_that("HAL-MLE bootstrap results should not be NA", {
   expect_true(all(!sapply(halmleCI, is.na)))
 })
+
+test_that("HALselect some beta", {
+  expect_true(!is.null(bootOut_HALMLE$pointTMLE$compute_min_phi_ratio()))
+})
+

@@ -147,13 +147,10 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         nonzeroBeta_phiRatio <- numeric()
       }
 
-      if (length(nonzeroBeta_phiRatio) == 0) {
-        # all beta are zero
-        # Qbasis has zero length
-        return(NULL)
-      }else{
-        return(min(nonzeroBeta_phiRatio))
-      }
+      # return NULL if:
+      # all beta are zero
+      # Qbasis has zero length
+      if (length(nonzeroBeta_phiRatio) != 0) return(min(nonzeroBeta_phiRatio)) else return(NULL)
     }
 
 
