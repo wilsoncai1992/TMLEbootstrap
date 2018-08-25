@@ -25,7 +25,8 @@ Suggests:
   knitr,
   testthat,
   truncnorm,
-  nnls
+  nnls,
+  Matrix
 Remotes:
   github::jeremyrcoyle/origami,
   github::wilsoncai1992/hal9001,

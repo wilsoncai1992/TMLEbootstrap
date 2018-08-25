@@ -39,7 +39,7 @@ ateTMLE <- R6Class("ateTMLE",
                                        use_min = TRUE,
                                        yolo = FALSE)
       }else{ # use manual lambda1
-        self$Q_fit <- hal9001::fit_hal_single_lambda(X = data.frame(self$data$A, self$data$W),,
+        self$Q_fit <- hal9001::fit_hal_single_lambda(X = data.frame(self$data$A, self$data$W),
                                                       Y = self$data$Y,
                                                      family = 'gaussian',
                                                       lambda = lambda1,
@@ -111,5 +111,36 @@ ateTMLE <- R6Class("ateTMLE",
                         psi = self$Psi)
       self$se_Psi <- sqrt(var(EIC)/length(EIC))
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
+    },
+    compute_min_phi_ratio = function(){
+      # return the ratio of 1 in the basis.
+      # argmin over all columns where there are non-zero beta value (intercept excluded)
+      Qbasis_list <- self$Q_fit$basis_list
+      Qcopy_map <- self$Q_fit$copy_map
+      X = data.frame(self$data$A, self$data$W)
+      if(length(Qbasis_list) > 0){
+        x_basis <- hal9001:::make_design_matrix(as.matrix(X), Qbasis_list)
+        unique_columns <- as.numeric(names(Qcopy_map))
+        # design matrix. each column correspond to Q_fit$coefs. don't have intercept column
+        x_basis <- x_basis[, unique_columns]
+        # dim(x_basis)
+        phi_ratio <- Matrix::colMeans(x_basis)
+
+        length(self$Q_fit$coefs)
+        beta_nonIntercept <- self$Q_fit$coefs[-1]
+        beta_nonzero <- beta_nonIntercept != 0
+        nonzeroBeta_phiRatio <- phi_ratio[beta_nonzero]
+      }else{
+        # there is no coef left
+        nonzeroBeta_phiRatio <- numeric()
+      }
+
+      if (length(nonzeroBeta_phiRatio) == 0) {
+        # all beta are zero
+        # Qbasis has zero length
+        return(NULL)
+      }else{
+        return(min(nonzeroBeta_phiRatio))
+      }
     }
 ))

@@ -2,7 +2,7 @@ language: r
 dist: trusty
 sudo: required
 cache: packages
-warnings_are_errors: true
+warnings_are_errors: false
 
 branches:
   only:
