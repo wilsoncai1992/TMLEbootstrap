@@ -1,4 +1,6 @@
 library(R6)
+library(tmle)
+library(hal9001)
 #' @export
 ateTMLE <- R6Class("ateTMLE",
   public = list(
@@ -14,6 +16,7 @@ ateTMLE <- R6Class("ateTMLE",
     Psi = NULL,
     se_Psi = NULL,
     CI = NULL,
+    EIC = NULL,
     # verbose = FALSE,
     lambda1 = NULL,
     lambda2 = NULL,
@@ -28,7 +31,6 @@ ateTMLE <- R6Class("ateTMLE",
       self$lambda2 <- lambda2
       # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
       # Q fit
-      library(hal9001)
       if(is.null(lambda1)){ # use CV
         self$Q_fit <- hal9001::fit_hal(X = data.frame(self$data$A, self$data$W),
                                        Y = self$data$Y,
@@ -38,7 +40,7 @@ ateTMLE <- R6Class("ateTMLE",
                                        use_min = TRUE,
                                        yolo = FALSE)
       }else{ # use manual lambda1
-        self$Q_fit <- hal9001::fit_hal_single_lambda(X = data.frame(self$data$A, self$data$W),,
+        self$Q_fit <- hal9001::fit_hal_single_lambda(X = data.frame(self$data$A, self$data$W),
                                                       Y = self$data$Y,
                                                      family = 'gaussian',
                                                       lambda = lambda1,
@@ -82,15 +84,63 @@ ateTMLE <- R6Class("ateTMLE",
     },
     target = function() {
       # perform iterative TMLE
-      library(tmle)
-      self$tmle_object <- tmle(Y = self$data$Y, A = self$data$A, W = as.matrix(self$data$W),
+      self$tmle_object <- tmle::tmle(Y = self$data$Y, A = self$data$A, W = as.matrix(self$data$W),
                                Q = cbind(self$Q_0W, self$Q_1W),
                                g1W = self$g1_W,
                                family = 'gaussian',
                                fluctuation = 'linear',
-                               V = 3, verbose = FALSE)
+                               V = 3,
+                               verbose = FALSE)
       self$Psi <- self$tmle_object$estimates$ATE$psi
       self$se_Psi <- sqrt(self$tmle_object$estimates$ATE$var.psi)
       self$CI <- self$tmle_object$estimates$ATE$CI
+    },
+    inference_without_target = function() {
+      # apply parameter mapping without doing any targeting
+      # A has to be 0/1 coding
+      self$Psi <- mean(self$Q_1W - self$Q_0W)
+      compute_EIC <- function(A, gk, Y, Qk, Q1k, Q0k, psi){
+        HA <- A/gk - (1 - A)/(1 - gk)
+        EIC <- HA * (Y - Qk) + Q1k - Q0k - psi
+        return(EIC)
+      }
+      EIC <- compute_EIC(A = self$data$A,
+                        gk = self$g1_W,
+                        Y = self$data$Y,
+                        Qk = self$Q_1W * self$data$A + self$Q_0W * (1 - self$data$A),
+                        Q1k = self$Q_1W,
+                        Q0k = self$Q_0W,
+                        psi = self$Psi)
+      self$se_Psi <- sqrt(var(EIC)/length(EIC))
+      self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
+      self$EIC <- EIC
+    },
+    compute_min_phi_ratio = function(){
+      # return the ratio of 1 in the basis.
+      # argmin over all columns where there are non-zero beta value (intercept excluded)
+      Qbasis_list <- self$Q_fit$basis_list
+      Qcopy_map <- self$Q_fit$copy_map
+      X = data.frame(self$data$A, self$data$W)
+      if(length(Qbasis_list) > 0){
+        x_basis <- hal9001:::make_design_matrix(as.matrix(X), Qbasis_list)
+        unique_columns <- as.numeric(names(Qcopy_map))
+        # design matrix. each column correspond to Q_fit$coefs. don't have intercept column
+        x_basis <- x_basis[, unique_columns]
+        # dim(x_basis)
+        phi_ratio <- Matrix::colMeans(x_basis)
+
+        length(self$Q_fit$coefs)
+        beta_nonIntercept <- self$Q_fit$coefs[-1]
+        beta_nonzero <- beta_nonIntercept != 0
+        nonzeroBeta_phiRatio <- phi_ratio[beta_nonzero]
+      }else{
+        # there is no coef left
+        nonzeroBeta_phiRatio <- numeric()
+      }
+
+      # return NULL if:
+      # all beta are zero
+      # Qbasis has zero length
+      if (length(nonzeroBeta_phiRatio) != 0) return(min(nonzeroBeta_phiRatio)) else return(NULL)
     }
 ))

@@ -1,3 +1,5 @@
+library(foreach)
+
 #' @export
 ateBootstrap <- R6Class("ateBootstrap",
   inherit = generalBootstrap,
@@ -7,16 +9,25 @@ ateBootstrap <- R6Class("ateBootstrap",
     pointTMLE = NULL,
 
     bootstrap_estimates = NULL,
-    initialize = function(data, lambda1 = NULL, lambda2 = NULL) {
+    targeting = NULL,
+    initialize = function(data,
+                          lambda1 = NULL,
+                          lambda2 = NULL,
+                          targeting = TRUE) {
       # data is in list
       # lambda1 is a grid of lambda for Q
       # lambda2 is a grid of lambda for g
       self$data <- data
       self$lambda1 <- lambda1
+      self$targeting <- targeting
       if(class(data$W) != 'data.frame') message('W not data.frame')
       tmleOut <- ateTMLE$new(data = self$data)
       tmleOut$initial_fit(lambda1 = lambda1, lambda2 = lambda2)
-      tmleOut$target()
+      if(self$targeting){
+        tmleOut$target()
+      }else{
+        tmleOut$inference_without_target()
+      }
 
       self$pointTMLE <- tmleOut
       self$Psi <- self$pointTMLE$Psi
@@ -51,7 +62,11 @@ ateBootstrap <- R6Class("ateBootstrap",
         bootstrapTMLEFit$Q_0W <- Q_0W_boot
         bootstrapTMLEFit$g1_W <- g1_W_boot
         # target new fit
-        bootstrapTMLEFit$target()
+        if(self$targeting){
+          bootstrapTMLEFit$target()
+        }else{
+          bootstrapTMLEFit$inference_without_target()
+        }
         # browser()
         return(c(bootstrapTMLEFit$Psi))
       }
@@ -108,7 +123,11 @@ ateBootstrap <- R6Class("ateBootstrap",
         bootstrapTMLEFit$Q_0W <- Q_0W_boot
         bootstrapTMLEFit$g1_W <- g1_W_boot
         # target new fit
-        bootstrapTMLEFit$target()
+        if(self$targeting){
+          bootstrapTMLEFit$target()
+        }else{
+          bootstrapTMLEFit$inference_without_target()
+        }
 
         # get R2 term
         # predict Q#, g# on population data
@@ -122,7 +141,6 @@ ateBootstrap <- R6Class("ateBootstrap",
         R2 <- mean(part1 - part0)
         return(c(bootstrapTMLEFit$Psi - R2))
       }
-      library(foreach)
       all_bootstrap_estimates <- foreach(it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
                                          .inorder = FALSE,
                                          .packages = c('R6'),

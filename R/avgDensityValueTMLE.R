@@ -1,4 +1,6 @@
 library(R6)
+library(SuperLearner)
+library(hal9001)
 
 #' onestep TMLE of average density parameter
 #'
@@ -47,8 +49,6 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     fit_density = function(bin_width = .1,
                           lambda_grid = c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1),
                           n_fold = 3) {
-      library(SuperLearner)
-      library(hal9001)
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
       # longDFOut <- self$longDataOut$generate_df()
       longDFOut <- self$longDataOut$generate_df_compress()
@@ -118,6 +118,41 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       upper <- self$Psi + 1.96/sqrt(length(self$EIC))*sd_EIC
       lower <- self$Psi - 1.96/sqrt(length(self$EIC))*sd_EIC
       self$CI <- c(lower, upper)
+    },
+    compute_min_phi_ratio = function(){
+      # return the ratio of 1 in the basis.
+      # argmin over all columns where there are non-zero beta value (intercept excluded)
+      Qbasis_list <- self$HAL_tuned$basis_list
+      Qcopy_map <- self$HAL_tuned$copy_map
+      # recover longitudinal form data. do weighted average by sample frequency
+      df_compressed <- self$longDataOut$generate_df_compress(x = self$x)
+      freq_weight <- df_compressed$Freq
+      X = df_compressed[,'box']
+
+      if(length(Qbasis_list) > 0){
+        x_basis <- hal9001:::make_design_matrix(as.matrix(X), Qbasis_list)
+        unique_columns <- as.numeric(names(Qcopy_map))
+        # design matrix. each column correspond to Q_fit$coefs. don't have intercept column
+        x_basis <- x_basis[, unique_columns]
+        # dim(x_basis)
+        # length(freq_weight)
+        # length(self$HAL_tuned$coefs)
+        phi_ratio <- Matrix::colSums(x_basis * freq_weight)/sum(freq_weight)
+
+        beta_nonIntercept <- self$HAL_tuned$coefs[-1]
+        beta_nonzero <- beta_nonIntercept != 0
+        nonzeroBeta_phiRatio <- phi_ratio[beta_nonzero]
+      }else{
+        # there is no coef left
+        nonzeroBeta_phiRatio <- numeric()
+      }
+
+      # return NULL if:
+      # all beta are zero
+      # Qbasis has zero length
+      if (length(nonzeroBeta_phiRatio) != 0) return(min(nonzeroBeta_phiRatio)) else return(NULL)
     }
+
+
   )
 )

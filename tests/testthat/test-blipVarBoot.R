@@ -37,8 +37,8 @@ df <- data$df
 bootstrapFit <- blipVarianceBootstrap_contY$new(data = df)
 bootstrapFitExact <- bootstrapFit$clone(deep = TRUE) # deep copy point tmle, less repeat
 
-bootstrapFit$bootstrap(REPEAT_BOOTSTRAP = 2e2)
-bootstrapFitExact$exact_bootstrap(REPEAT_BOOTSTRAP = 2e2)
+bootstrapFit$bootstrap(REPEAT_BOOTSTRAP = 2e1)
+bootstrapFitExact$exact_bootstrap(REPEAT_BOOTSTRAP = 2e1)
 regularCI <- bootstrapFit$all_boot_CI()
 taylorCI <- bootstrapFitExact$all_boot_CI()
 
@@ -52,8 +52,20 @@ out <- list(wald = regularCI$wald,
             taylor_scale = taylorCI$scale,
             taylor_scale_pen = taylorCI$scale_penalized)
 
+# without targeting
+bootOut_HALMLE <- blipVarianceBootstrap_contY$new(data = df, targeting = FALSE)
+bootOut_HALMLE$bootstrap(2e1)
+halmleCI <- bootOut_HALMLE$all_boot_CI()
+
 ################################################################################
 test_that("blipVarianceBoot results should not be NA", {
   expect_true(all(!sapply(out, is.na)))
 })
 
+test_that("HAL-MLE bootstrap results should not be NA", {
+  expect_true(all(!sapply(halmleCI, is.na)))
+})
+
+test_that("HALselect some beta", {
+  expect_true(!is.null(bootOut_HALMLE$pointTMLE$compute_min_phi_ratio()))
+})

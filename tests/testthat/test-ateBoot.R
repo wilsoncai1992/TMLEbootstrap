@@ -35,8 +35,8 @@ data_sim <- simulate_data(n_sim = n_sim, a1 = a1, a2 = a2, b1 = b1)
 bootOut <- ateBootstrap$new(data = data_sim)
 bootOutExact <- bootOut$clone(deep = TRUE) # deep copy point tmle, less repeat
 
-bootOut$bootstrap(2e2)
-bootOutExact$exact_bootstrap(2e2)
+bootOut$bootstrap(2e1)
+bootOutExact$exact_bootstrap(2e1)
 # combine exact boot with existing results
 regularCI <- bootOut$all_boot_CI()
 taylorCI <- bootOutExact$all_boot_CI()
@@ -49,8 +49,21 @@ out <- list(wald = regularCI$wald,
             taylor_pen = taylorCI$penalized,
             taylor_scale = taylorCI$scale,
             taylor_scale_pen = taylorCI$scale_penalized)
+
+# without targeting
+bootOut_HALMLE <- ateBootstrap$new(data = data_sim, targeting = FALSE)
+bootOut_HALMLE$bootstrap(2e1)
+halmleCI <- bootOut_HALMLE$all_boot_CI()
 ################################################################################
 test_that("ateBootstrap results should not be NA", {
   expect_true(all(!sapply(out, is.na)))
+})
+
+test_that("HAL-MLE bootstrap results should not be NA", {
+  expect_true(all(!sapply(halmleCI, is.na)))
+})
+
+test_that("HALselect some beta", {
+  expect_true(!is.null(bootOut_HALMLE$pointTMLE$compute_min_phi_ratio()))
 })
 

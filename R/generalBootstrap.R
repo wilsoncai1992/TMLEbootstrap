@@ -72,7 +72,7 @@ generalBootstrap <- R6Class("generalBootstrap",
       scale_penalized <- self$penalized_CI(bootCI = scale)
       scale_penalized_half <- self$penalized_CI_half(bootCI = scale)
 
-      shift2 <- self$shift2()
+      shift2 <- self$shift2(bootCI = scale)
       # centered versions
       center <- self$center_CI()
       penalized_center <- self$center_CI(bootCI = penalized)

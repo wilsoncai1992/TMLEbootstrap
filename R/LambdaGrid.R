@@ -169,14 +169,15 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
       self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
       self$inflate_lambda <- inflate_lambda
     },
-    add_lambda = function(lambda_grid = NULL) {
+    add_lambda = function(lambda_grid = NULL, ...) {
       new_ls <- list()
       for (lambda in lambda_grid) {
         boot_here <- comprehensiveBootstrap$new(parameter = avgDensityBootstrap,
                                                 x = self$data$x,
                                                 bin_width = self$bin_width,
                                                 lambda_grid = lambda,
-                                                epsilon_step = self$epsilon_step)
+                                                epsilon_step = self$epsilon_step,
+                                                ...)
         boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
                             inflate_lambda = self$inflate_lambda)
         boot_here$all_CI()
@@ -202,12 +203,13 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
       self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
       self$inflate_lambda <- inflate_lambda
     },
-    add_lambda = function(lambda_grid = NULL) {
+    add_lambda = function(lambda_grid = NULL, ...) {
       new_ls <- list()
       for (lambda1 in lambda_grid) {
         boot_here <- comprehensiveBootstrap$new(parameter = ateBootstrap,
                                                 data = self$data,
-                                                lambda1 = lambda1)
+                                                lambda1 = lambda1,
+                                                ...)
         boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
         boot_here$all_CI()
         boot_here$compute_width()
@@ -232,12 +234,13 @@ blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
       self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
       self$inflate_lambda <- inflate_lambda
     },
-    add_lambda = function(lambda_grid = NULL) {
+    add_lambda = function(lambda_grid = NULL, ...) {
       new_ls <- list()
       for (lambda1 in lambda_grid) {
         boot_here <- comprehensiveBootstrap$new(parameter = blipVarianceBootstrap_contY,
                                                 data = self$data,
-                                                lambda1 = lambda1)
+                                                lambda1 = lambda1,
+                                                ...)
         boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
         boot_here$all_CI()
         boot_here$compute_width()

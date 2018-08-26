@@ -1,11 +1,11 @@
 Package: fixedHAL
 Title: TEMP
-Version: 2.3
+Version: 2.4
 Authors@R: c(
   person("Weixin", "Cai", email = "wcai@berkeley.edu",
          role = c("aut", "cre", "cph"),
          comment = c(ORCID = "0000-0003-2680-3066")))
-Description: TEMP
+Description: HAL-TMLE nonparametric bootstrap.
 Depends:
   R (>= 3.0.0)
 License: GPL-2
@@ -25,10 +25,11 @@ Suggests:
   knitr,
   testthat,
   truncnorm,
-  nnls
+  nnls,
+  Matrix
 Remotes:
   github::jeremyrcoyle/origami,
   github::wilsoncai1992/hal9001,
   github::jeremyrcoyle/gentmle2
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1.9000
+RoxygenNote: 6.0.1
