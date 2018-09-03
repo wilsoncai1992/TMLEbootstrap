@@ -8,10 +8,10 @@ simulate_data <- function(n_sim, a1, a2, b1) {
   thresholding <- function(x, min, max) pmin(pmax(x, min), max)
 
   W <- truncnorm::rtruncnorm(n = n_sim, a = -10, b = 10, mean = 0, sd = 4)
-  A <- rbinom(n_sim, size = 1, prob = thresholding(.3 + 0.1*W*sin(a2*W), 0.3, 0.7) + rnorm(n_sim, mean = 0, sd = 0.05))
+  A <- rbinom(n_sim, size = 1, prob = thresholding(.3 + 0.1 * W * sin(a2 * W), 0.3, 0.7) + rnorm(n_sim, mean = 0, sd = 0.05))
 
   # Y <- 0.05*W^2 + b1*sin(W*a1) + A + rnorm(n_sim, 0, 1)
-  Y <- b1*sin(W*a1) + A + rnorm(n_sim, 0, 1)
+  Y <- b1 * sin(W * a1) + A + rnorm(n_sim, 0, 1)
 
   X_matrix_0 <- data.frame(A, W)
   all_df <- data.frame(Y, A, W)
@@ -25,11 +25,11 @@ simulate_data <- function(n_sim, a1, a2, b1) {
 ################################################################################
 # simulation
 ################################################################################
-n_sim = 2e2
-a1 = 1
-b1 = 3
-a2 = .1
-INFLATE_LAMBDA = 1
+n_sim <- 2e2
+a1 <- 1
+b1 <- 3
+a2 <- .1
+INFLATE_LAMBDA <- 1
 
 data_sim <- simulate_data(n_sim = n_sim, a1 = a1, a2 = a2, b1 = b1)
 bootOut <- ateBootstrap$new(data = data_sim)
@@ -40,15 +40,17 @@ bootOutExact$exact_bootstrap(2e1)
 # combine exact boot with existing results
 regularCI <- bootOut$all_boot_CI()
 taylorCI <- bootOutExact$all_boot_CI()
-out <- list(wald = regularCI$wald,
-            reg = regularCI$boot,
-            reg_pen = regularCI$penalized,
-            reg_scale = regularCI$scale,
-            reg_scale_pen = regularCI$scale_penalized,
-            taylor = taylorCI$boot,
-            taylor_pen = taylorCI$penalized,
-            taylor_scale = taylorCI$scale,
-            taylor_scale_pen = taylorCI$scale_penalized)
+out <- list(
+  wald = regularCI$wald,
+  reg = regularCI$boot,
+  reg_pen = regularCI$penalized,
+  reg_scale = regularCI$scale,
+  reg_scale_pen = regularCI$scale_penalized,
+  taylor = taylorCI$boot,
+  taylor_pen = taylorCI$penalized,
+  taylor_scale = taylorCI$scale,
+  taylor_scale_pen = taylorCI$scale_penalized
+)
 
 # without targeting
 bootOut_HALMLE <- ateBootstrap$new(data = data_sim, targeting = FALSE)
@@ -66,4 +68,3 @@ test_that("HAL-MLE bootstrap results should not be NA", {
 test_that("HALselect some beta", {
   expect_true(!is.null(bootOut_HALMLE$pointTMLE$compute_min_phi_ratio()))
 })
-

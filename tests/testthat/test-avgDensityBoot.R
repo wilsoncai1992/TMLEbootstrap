@@ -5,13 +5,13 @@
 context("avgDensityBootstrap results should not be NA")
 simulate_data <- function(n_sim, n_mode) {
   modes <- seq(from = -4, to = 4, length.out = n_mode)
-  sigma <- 10/n_mode/6
+  sigma <- 10 / n_mode / 6
   # sample object
-  x = rnorm(n = n_sim, mean = sample(x = modes, size = n_sim, replace = TRUE), sd = sigma)
+  x <- rnorm(n = n_sim, mean = sample(x = modes, size = n_sim, replace = TRUE), sd = sigma)
   # function object
   dmixture <- function(x, modes, sigma) {
     all_d <- c()
-    for(mode_here in modes) all_d <- c(all_d, dnorm(x, mean = mode_here, sd = sigma))
+    for (mode_here in modes) all_d <- c(all_d, dnorm(x, mean = mode_here, sd = sigma))
     return(mean(all_d))
   }
   foo2 <- Vectorize(function(x) dmixture(x = x, modes = modes, sigma = sigma))
@@ -34,15 +34,17 @@ bootstrapFitExact$exact_bootstrap(REPEAT_BOOTSTRAP = 2e2)
 regularCI <- bootstrapFit$all_boot_CI()
 taylorCI <- bootstrapFitExact$all_boot_CI()
 
-out <- list(wald = regularCI$wald,
-            reg = regularCI$boot,
-            reg_pen = regularCI$penalized,
-            reg_scale = regularCI$scale,
-            reg_scale_pen = regularCI$scale_penalized,
-            taylor = taylorCI$boot,
-            taylor_pen = taylorCI$penalized,
-            taylor_scale = taylorCI$scale,
-            taylor_scale_pen = taylorCI$scale_penalized)
+out <- list(
+  wald = regularCI$wald,
+  reg = regularCI$boot,
+  reg_pen = regularCI$penalized,
+  reg_scale = regularCI$scale,
+  reg_scale_pen = regularCI$scale_penalized,
+  taylor = taylorCI$boot,
+  taylor_pen = taylorCI$penalized,
+  taylor_scale = taylorCI$scale,
+  taylor_scale_pen = taylorCI$scale_penalized
+)
 
 # without targeting
 bootOut_HALMLE <- avgDensityBootstrap$new(x = data_out$x, bin_width = bin_width, targeting = FALSE)

@@ -39,16 +39,16 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     longDataOut = NULL,
     HAL_tuned = NULL,
     initialize = function(x,
-                          epsilon_step = NULL,
-                          verbose = NULL) {
+                              epsilon_step = NULL,
+                              verbose = NULL) {
       self$x <- x
-      self$tol <- 1/length(x)
+      self$tol <- 1 / length(x)
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       if (!is.null(verbose)) self$verbose <- verbose
     },
     fit_density = function(bin_width = .1,
-                          lambda_grid = c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1),
-                          n_fold = 3) {
+                               lambda_grid = c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1),
+                               n_fold = 3) {
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
       # longDFOut <- self$longDataOut$generate_df()
       longDFOut <- self$longDataOut$generate_df_compress()
@@ -69,13 +69,13 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       self$HAL_tuned <- HAL_tuned
       # self$HAL_tuned <- hal9001::squash_hal_fit(HAL_tuned)
     },
-    calc_Psi = function(){
+    calc_Psi = function() {
       # compute Psi; use x, p_hat
       # self$Psi <- mean(self$p_hat$p_density)
 
       dummy_df <- data.frame(id = 1:length(self$x), x = self$x, p_density = self$p_hat$p_density)
-      dummy_df <- dummy_df[order(dummy_df$x),]
-      dx <- c(0,diff(dummy_df$x))
+      dummy_df <- dummy_df[order(dummy_df$x), ]
+      dx <- c(0, diff(dummy_df$x))
       self$Psi <- sum(dummy_df$p_density^2 * dx)
     },
     calc_EIC = function() {
@@ -92,9 +92,9 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       # recursive targeting of onestep
       n_iter <- 0
       meanEIC_prev <- abs(mean(self$EIC))
-      while(abs(mean(self$EIC)) >= self$tol){
-      # while(abs(mean(self$EIC)) >= 1e-20){
-      # while(TRUE){
+      while (abs(mean(self$EIC)) >= self$tol) {
+        # while(abs(mean(self$EIC)) >= 1e-20){
+        # while(TRUE){
         meanEIC_prev <- abs(mean(self$EIC))
         self$calc_Psi()
         self$calc_EIC()
@@ -102,24 +102,24 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         self$updateOnce()
         if (self$verbose | verbose) print(c(mean(self$EIC), self$Psi))
         n_iter <- n_iter + 1
-        if (abs(mean(self$EIC)) > meanEIC_prev){
+        if (abs(mean(self$EIC)) > meanEIC_prev) {
           self$epsilon_step <- -self$epsilon_step
           # message('not stable!')
         }
-        if (n_iter >= self$max_iter){
+        if (n_iter >= self$max_iter) {
           break()
-          message('max iteration number reached!')
+          message("max iteration number reached!")
         }
       }
     },
-    inference = function(){
+    inference = function() {
       # generate CI using EIC
       sd_EIC <- sd(self$EIC)
-      upper <- self$Psi + 1.96/sqrt(length(self$EIC))*sd_EIC
-      lower <- self$Psi - 1.96/sqrt(length(self$EIC))*sd_EIC
+      upper <- self$Psi + 1.96 / sqrt(length(self$EIC)) * sd_EIC
+      lower <- self$Psi - 1.96 / sqrt(length(self$EIC)) * sd_EIC
       self$CI <- c(lower, upper)
     },
-    compute_min_phi_ratio = function(){
+    compute_min_phi_ratio = function() {
       # return the ratio of 1 in the basis.
       # argmin over all columns where there are non-zero beta value (intercept excluded)
       Qbasis_list <- self$HAL_tuned$basis_list
@@ -127,9 +127,9 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       # recover longitudinal form data. do weighted average by sample frequency
       df_compressed <- self$longDataOut$generate_df_compress(x = self$x)
       freq_weight <- df_compressed$Freq
-      X = df_compressed[,'box']
+      X <- df_compressed[, "box"]
 
-      if(length(Qbasis_list) > 0){
+      if (length(Qbasis_list) > 0) {
         x_basis <- hal9001:::make_design_matrix(as.matrix(X), Qbasis_list)
         unique_columns <- as.numeric(names(Qcopy_map))
         # design matrix. each column correspond to Q_fit$coefs. don't have intercept column
@@ -137,12 +137,12 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         # dim(x_basis)
         # length(freq_weight)
         # length(self$HAL_tuned$coefs)
-        phi_ratio <- Matrix::colSums(x_basis * freq_weight)/sum(freq_weight)
+        phi_ratio <- Matrix::colSums(x_basis * freq_weight) / sum(freq_weight)
 
         beta_nonIntercept <- self$HAL_tuned$coefs[-1]
         beta_nonzero <- beta_nonIntercept != 0
         nonzeroBeta_phiRatio <- phi_ratio[beta_nonzero]
-      }else{
+      } else {
         # there is no coef left
         nonzeroBeta_phiRatio <- numeric()
       }
@@ -152,7 +152,5 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       # Qbasis has zero length
       if (length(nonzeroBeta_phiRatio) != 0) return(min(nonzeroBeta_phiRatio)) else return(NULL)
     }
-
-
   )
 )

@@ -13,10 +13,11 @@ scaleX <- R6Class("scaleX",
       self$maxX <- max(X)
       self$rangeX <- self$maxX - self$minX
     },
-    scale01 = function(newX = NULL){
+    scale01 = function(newX = NULL) {
       return((newX - self$minX) / self$rangeX)
     },
-    scaleOriginal = function(newX = NULL){
+    scaleOriginal = function(newX = NULL) {
       return(newX * self$rangeX + self$minX)
     }
-))
+  )
+)
