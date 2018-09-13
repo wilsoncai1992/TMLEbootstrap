@@ -102,10 +102,24 @@ LambdaGrid <- R6Class("LambdaGrid",
     select_lambda_psi_grad = function(df_Psi) {
       grad_Psi <- diff(df_Psi$Psi)
       grad_se <- diff(df_Psi$se_Psi)
+
+      monotonicfy_the_grad = function(grad){
+        sign_first_IsPositive <- tail(grad, 1) > 0
+        if (sign_first_IsPositive) {
+          grad[grad<0] <- 0
+        }else{
+          grad[grad>0] <- 0
+        }
+        return(grad)
+      }
+      grad_Psi = monotonicfy_the_grad(grad_Psi)
+      grad_se = monotonicfy_the_grad(grad_se)
+
       alpha <- 1.96
       objective1 <- abs(grad_Psi - alpha * grad_se)
       objective2 <- abs(grad_Psi + alpha * grad_se)
-      lambda_index <- which.min(c(objective1, objective2)) %% length(objective1)
+      # -1 and +1 is to make the indexing start from 0, so that mod operator will minus the length when needed
+      lambda_index <- (which.min(c(objective1, objective2))-1) %% length(objective1) + 1
       lambda_balanceMSE <- df_Psi$lambda[lambda_index]
       return(lambda_balanceMSE)
     }
