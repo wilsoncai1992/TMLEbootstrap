@@ -62,6 +62,7 @@ LambdaGrid <- R6Class("LambdaGrid",
       }
       df2 <- do.call(rbind, df_ls)
       self$df_lambda_width <- df2[grep("ctr", df2$kindCI, invert = TRUE), ] # not use centered version
+      return(self$df_lambda_width)
     },
     plot_width = function() {
       # plot CIwidth v.s. log(lambda)
@@ -72,16 +73,15 @@ LambdaGrid <- R6Class("LambdaGrid",
         ylab("width of interval")
       return(p)
     },
-    select_lambda_pleateau_wald = function() {
+    select_lambda_pleateau_wald = function(df_lambda_width) {
       # grab pleateau (when wald plateaus)
       df_ls <- list()
       count <- 1
       for (kind in "wald") {
-        tempDf <- self$df_lambda_width[self$df_lambda_width$kindCI == kind, ]
+        tempDf <- df_lambda_width[df_lambda_width$kindCI == kind, ]
         tempDf <- tempDf[order(tempDf$lambda), ]
 
         platOut <- grabPlateau$new(x = log10(tempDf$lambda), y = tempDf$width)
-        # coordOut <- platOut$plateau_1()
         coordOut <- platOut$plateau_2()
         coordOut$kindCI <- kind
 
@@ -90,6 +90,24 @@ LambdaGrid <- R6Class("LambdaGrid",
       }
       allPlateaus <- do.call(rbind, df_ls)
       return(10^allPlateaus$x)
+    },
+    get_Psi_df = function(){
+      lambdas <- self$get_lambda()
+      CI_list <- self$get_value()
+      Psi_all <- sapply(CI_list, function(x) x$Psi)
+      se_Psi <- sapply(CI_list, function(x) x$bootOut$pointTMLE$se_Psi)
+      df_Psi <- data.frame(lambda = lambdas, Psi = Psi_all, se_Psi = se_Psi)
+      return(df_Psi)
+    },
+    select_lambda_psi_grad = function(df_Psi) {
+      grad_Psi <- diff(df_Psi$Psi)
+      grad_se <- diff(df_Psi$se_Psi)
+      alpha <- 1.96
+      objective1 <- abs(grad_Psi - alpha * grad_se)
+      objective2 <- abs(grad_Psi + alpha * grad_se)
+      lambda_index <- which.min(c(objective1, objective2)) %% length(objective1)
+      lambda_balanceMSE <- df_Psi$lambda[lambda_index]
+      return(lambda_balanceMSE)
     }
     # select_lambda_pleateau_reg = function(){
     #   # grab pleateau (when reg plateaus)
