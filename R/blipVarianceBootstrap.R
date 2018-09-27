@@ -194,7 +194,7 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
   inherit = blipVarianceBootstrap,
   public = list(
     Q_0W_rescale = NULL,
-    initialize = function(data, lambda1 = NULL, lambda2 = NULL, verbose = NULL, targeting = TRUE) {
+    initialize = function(data, lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL, verbose = NULL, targeting = TRUE) {
       # subclass of `blipVarianceBootstrap` for continuous Y;
       # pointTMLE replaced by `blipVarianceTMLE_gentmle_contY` class
       # bootstrap method replaced by continuous hal fit; feed into `blipVarianceTMLE_gentmle_contY` class
@@ -204,7 +204,7 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
       if (!is.null(verbose)) self$verbose <- verbose
       self$pointTMLE <- blipVarianceTMLE_gentmle_contY$new(data = data)
       self$pointTMLE$scaleY()
-      self$pointTMLE$initial_fit(lambda1 = lambda1, lambda2 = lambda2)
+      self$pointTMLE$initial_fit(lambda1 = lambda1, lambda2 = lambda2, M1 = M1, M2 = M2)
       if (self$targeting) {
         self$pointTMLE$target()
       } else {

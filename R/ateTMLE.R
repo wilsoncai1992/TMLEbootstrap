@@ -24,20 +24,20 @@ ateTMLE <- R6Class("ateTMLE",
       self$data <- data
       if (class(data$W) != "data.frame") message("W not data.frame")
     },
-    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL){
+    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {
       use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
       use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
 
-      if (use_penalized_mode & use_constrained_mode){
-        stop('cannot do two modes!')
+      if (use_penalized_mode & use_constrained_mode) {
+        stop("cannot do two modes!")
       }
-      if (use_penalized_mode){
+      if (use_penalized_mode) {
         self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2)
       }
-      if (use_constrained_mode){
+      if (use_constrained_mode) {
         self$initial_fit_constrained_form(M1 = M1, M2 = M2)
       }
-      if (!use_penalized_mode & !use_constrained_mode){
+      if (!use_penalized_mode & !use_constrained_mode) {
         # when user have NULL for everything: default to CV
         self$initial_fit_pen_likeli(NULL, NULL)
       }
