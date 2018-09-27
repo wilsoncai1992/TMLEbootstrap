@@ -24,7 +24,31 @@ ateTMLE <- R6Class("ateTMLE",
       self$data <- data
       if (class(data$W) != "data.frame") message("W not data.frame")
     },
-    initial_fit = function(lambda1 = NULL, lambda2 = NULL) {
+    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL){
+      use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
+      use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
+
+      if (use_penalized_mode & use_constrained_mode){
+        stop('cannot do two modes!')
+      }
+      if (use_penalized_mode){
+        self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2)
+      }
+      if (use_constrained_mode){
+        self$initial_fit_constrained_form(M1 = M1, M2 = M2)
+      }
+      if (!use_penalized_mode & !use_constrained_mode){
+        # when user have NULL for everything: default to CV
+        self$initial_fit_pen_likeli(NULL, NULL)
+      }
+
+      # get Q_1W, Q_0W
+      self$Q_1W <- stats::predict(object = self$Q_fit, new_data = data.frame(1, self$data$W))
+      self$Q_0W <- stats::predict(object = self$Q_fit, new_data = data.frame(0, self$data$W))
+      # get g1_W
+      self$g1_W <- plogis(stats::predict(object = self$g_fit, new_data = data.frame(self$data$W)))
+    },
+    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL) {
       # lambda1 for Q fit
       # lambda2 for g fit
       self$lambda1 <- lambda1
@@ -41,7 +65,7 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE,
           yolo = FALSE
         )
-      } else { # use manual lambda1
+      } else if (lambda1 >= 0) { # use manual lambda1
         self$Q_fit <- hal9001::fit_hal_single_lambda(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
@@ -52,7 +76,6 @@ ateTMLE <- R6Class("ateTMLE",
           yolo = FALSE
         )
       }
-      # Q_HAL_tuned <- squash_hal_fit(Qfit)
       # g fit
       if (is.null(lambda2)) { # use CV
         self$g_fit <- hal9001::fit_hal(
@@ -75,12 +98,56 @@ ateTMLE <- R6Class("ateTMLE",
           yolo = FALSE
         )
       }
-      # g_HAL_tuned <- hal9001::squash_hal_fit(gfit)
-      # get Q_1W, Q_0W
-      self$Q_1W <- stats::predict(object = self$Q_fit, new_data = data.frame(1, self$data$W))
-      self$Q_0W <- stats::predict(object = self$Q_fit, new_data = data.frame(0, self$data$W))
-      # get g1_W
-      self$g1_W <- plogis(stats::predict(object = self$g_fit, new_data = data.frame(self$data$W)))
+    },
+    initial_fit_constrained_form = function(M1 = NULL, M2 = NULL) {
+      # M1 for Q fit
+      # M2 for g fit
+      # self$M1 <- M1
+      # self$M2 <- M2
+
+      # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
+      # Q fit
+      if (is.null(M1)) {
+        self$Q_fit <- hal9001::fit_hal(
+          X = data.frame(self$data$A, self$data$W),
+          Y = self$data$Y,
+          family = "gaussian",
+          fit_type = "glmnet",
+          n_folds = 3,
+          use_min = TRUE,
+          yolo = FALSE
+        )
+      } else if (M1 >= 0) { # use manual M1
+        self$Q_fit <- hal9001::fit_hal_constraint_form(
+          X = data.frame(self$data$A, self$data$W),
+          Y = self$data$Y,
+          family = "gaussian",
+          fit_type = "glmnet",
+          yolo = FALSE,
+          M = M1,
+        )
+      }
+      # g fit
+      if (is.null(M2)) { # use CV
+        self$g_fit <- hal9001::fit_hal(
+          X = data.frame(self$data$W),
+          Y = self$data$A,
+          family = "binomial",
+          fit_type = "glmnet",
+          n_folds = 3,
+          use_min = TRUE,
+          yolo = FALSE
+        )
+      } else { # use manual M1
+        self$g_fit <- hal9001::fit_hal_constraint_form(
+          X = data.frame(self$data$W),
+          Y = self$data$A,
+          family = "binomial",
+          fit_type = "glmnet",
+          yolo = FALSE,
+          M = M2,
+        )
+      }
     },
     plot_Q1W = function(foo = NULL) {
       # plot the Q(1,W) function (optional: against a foo function)

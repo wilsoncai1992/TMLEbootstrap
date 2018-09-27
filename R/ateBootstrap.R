@@ -6,14 +6,17 @@ ateBootstrap <- R6Class("ateBootstrap",
   public = list(
     data = NULL,
     lambda1 = NULL,
+    M1 = NULL,
     pointTMLE = NULL,
 
     bootstrap_estimates = NULL,
     targeting = NULL,
     initialize = function(data,
-                              lambda1 = NULL,
-                              lambda2 = NULL,
-                              targeting = TRUE) {
+                          lambda1 = NULL,
+                          lambda2 = NULL,
+                          M1 = NULL,
+                          M2 = NULL,
+                          targeting = TRUE) {
       # data is in list
       # lambda1 is a grid of lambda for Q
       # lambda2 is a grid of lambda for g
@@ -22,7 +25,7 @@ ateBootstrap <- R6Class("ateBootstrap",
       self$targeting <- targeting
       if (class(data$W) != "data.frame") message("W not data.frame")
       tmleOut <- ateTMLE$new(data = self$data)
-      tmleOut$initial_fit(lambda1 = lambda1, lambda2 = lambda2)
+      tmleOut$initial_fit(lambda1 = lambda1, lambda2 = lambda2, M1 = M1, M2 = M2)
       if (self$targeting) {
         tmleOut$target()
       } else {
@@ -77,7 +80,8 @@ ateBootstrap <- R6Class("ateBootstrap",
       }
       library(foreach)
       all_bootstrap_estimates <- foreach(
-        it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
+        it2 = 1:(REPEAT_BOOTSTRAP),
+        .combine = c,
         .inorder = FALSE,
         .packages = c("R6"),
         # .errorhandling = 'remove',
@@ -154,7 +158,8 @@ ateBootstrap <- R6Class("ateBootstrap",
         return(c(bootstrapTMLEFit$Psi - R2))
       }
       all_bootstrap_estimates <- foreach(
-        it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
+        it2 = 1:(REPEAT_BOOTSTRAP),
+        .combine = c,
         .inorder = FALSE,
         .packages = c("R6"),
         # .errorhandling = 'remove',
