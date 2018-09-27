@@ -47,32 +47,65 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       if (!is.null(verbose)) self$verbose <- verbose
     },
     fit_density = function(bin_width = .1,
-                           lambda_grid = c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1),
+                           lambda_grid = NULL,  # NULL for auto lambda
+                           M = NULL,
                            n_fold = 3) {
+      use_penalized_mode <- !is.null(lambda_grid)
+      use_constrained_mode <- !is.null(M)
+
+      if (use_constrained_mode) {
+        hal_out <- self$fit_density_constrained_form(bin_width = bin_width, lambda_grid = lambda_grid, M = M)
+      } else {
+        hal_out <- self$fit_density_pen_likeli(bin_width = bin_width, lambda_grid = lambda_grid, n_fold = n_fold)
+      }
+      yhat <- hal_out$predict(new_x = self$longDataOut$x)
+      density_intial <- empiricalDensity$new(p_density = yhat, x = self$x)
+      self$p_hat <- density_intial$normalize()
+    },
+    fit_density_pen_likeli = function(bin_width = .1,
+                                     lambda_grid = NULL,  # NULL for auto lambda
+                                     n_fold = 3) {
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
-      # longDFOut <- self$longDataOut$generate_df()
-      longDFOut <- self$longDataOut$generate_df_compress()
+      # longDFOut <- self$longDataOut$generate_df_compress()
 
       verbose <- FALSE
       # tune HAL for density
       cvHAL_fit <- cv_densityHAL$new(x = self$x, longiData = self$longDataOut)
       cvHAL_fit$assign_fold(n_fold = n_fold)
       cvHAL_fit$cv_lambda_grid(lambda_grid = lambda_grid)
-      # cvHAL_fit$cv_lambda_grid(lambda_grid = NULL) # auto lambda
       hal_out <- cvHAL_fit$compute_best_model()
-      HAL_tuned <- hal_out$hal_fit
-      yhat <- hal_out$predict(new_x = self$longDataOut$x)
+      self$HAL_tuned <- hal_out$hal_fit
+      return(hal_out)
+    },
+    fit_density_constrained_form = function(bin_width = .1,
+                                    lambda_grid = NULL,  # NULL for auto lambda
+                                     M = NULL) {
+      self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
+      # longDFOut <- self$longDataOut$generate_df_compress()
 
-      density_intial <- empiricalDensity$new(p_density = yhat, x = self$x)
-      self$p_hat <- density_intial$normalize()
-
-      self$HAL_tuned <- HAL_tuned
-      # self$HAL_tuned <- hal9001::squash_hal_fit(HAL_tuned)
+      hal_list <- list()
+      for (lambda in lambda_grid) {
+        HALfit <- densityHAL$new(x = self$x, longiData = self$longDataOut)
+        HALfit$fit(lambda = lambda)
+        hal_list[[as.character(lambda)]] <- HALfit
+      }
+      l1_norms <- sapply(hal_list, FUN = function(x) sum(abs(x$hal_fit$coefs[,1])))
+      coefss <- lapply(hal_list, FUN = function(x) x$hal_fit$coefs[,1])
+      coefss <- do.call(cbind, coefss)
+      l1_norm <- l1_norms
+      l1_norm[l1_norm > M] <- NaN
+      M_candidate <- which.max(l1_norm)
+      # browser()
+      # corner case when all lambda candidates are larger than M
+      if (length(M_candidate) == 0) M_candidate <- which.min(l1_norms)
+      lambda_star <- lambda_grid[M_candidate]
+      coefs <- as.matrix(coefss[, M_candidate])
+      hal_out <- hal_list[[M_candidate]]
+      self$HAL_tuned <- hal_out$hal_fit
+      return(hal_out)
     },
     calc_Psi = function() {
       # compute Psi; use x, p_hat
-      # self$Psi <- mean(self$p_hat$p_density)
-
       dummy_df <- data.frame(id = 1:length(self$x), x = self$x, p_density = self$p_hat$p_density)
       dummy_df <- dummy_df[order(dummy_df$x), ]
       dx <- c(0, diff(dummy_df$x))
@@ -93,8 +126,6 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       n_iter <- 0
       meanEIC_prev <- abs(mean(self$EIC))
       while (abs(mean(self$EIC)) >= self$tol) {
-        # while(abs(mean(self$EIC)) >= 1e-20){
-        # while(TRUE){
         meanEIC_prev <- abs(mean(self$EIC))
         self$calc_Psi()
         self$calc_EIC()
@@ -134,9 +165,6 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         unique_columns <- as.numeric(names(Qcopy_map))
         # design matrix. each column correspond to Q_fit$coefs. don't have intercept column
         x_basis <- x_basis[, unique_columns]
-        # dim(x_basis)
-        # length(freq_weight)
-        # length(self$HAL_tuned$coefs)
         phi_ratio <- Matrix::colSums(x_basis * freq_weight) / sum(freq_weight)
 
         beta_nonIntercept <- self$HAL_tuned$coefs[-1]

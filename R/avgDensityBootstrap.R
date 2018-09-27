@@ -11,14 +11,15 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     initialize = function(x,
                               epsilon_step = NULL,
                               bin_width = .3,
-                              lambda_grid = c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1),
+                              lambda_grid = NULL, # c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1)
+                              M = NULL,
                               targeting = TRUE) {
       # bootstrap average density parameter; first do a pointTMLE;
       self$x <- x
       self$targeting <- targeting
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       onestepFit <- avgDensityTMLE$new(x = self$x, epsilon_step = self$epsilon_step, verbose = TRUE)
-      onestepFit$fit_density(bin_width = bin_width, lambda_grid = lambda_grid)
+      onestepFit$fit_density(bin_width = bin_width, lambda_grid = lambda_grid, M = M, n_fold = 3)
       onestepFit$calc_Psi()
       onestepFit$calc_EIC()
       if (self$targeting) onestepFit$onestepTarget()
