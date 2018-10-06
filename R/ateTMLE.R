@@ -27,7 +27,6 @@ ateTMLE <- R6Class("ateTMLE",
     initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {
       use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
       use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
-
       if (use_penalized_mode & use_constrained_mode) {
         stop("cannot do two modes!")
       }
@@ -172,27 +171,61 @@ ateTMLE <- R6Class("ateTMLE",
       self$se_Psi <- sqrt(self$tmle_object$estimates$ATE$var.psi)
       self$CI <- self$tmle_object$estimates$ATE$CI
     },
-    inference_without_target = function() {
+    compute_EIC = function(A, gk, Y, Qk, Q1k, Q0k, psi) {
+      HA <- A / gk - (1 - A) / (1 - gk)
+      EIC <- HA * (Y - Qk) + Q1k - Q0k - psi
+      return(EIC)
+    },
+    inference_without_target = function(data, Q_fit = NULL, g_fit = NULL, to_return = TRUE) {
+      # input: data from `simulate_data`: named list with W, A, Y
+      if (class(Q_fit) == 'hal9001') {
+        # if the Q is a hal9001 fit, do the prediction routine
+        Q_1W <- stats::predict(object = Q_fit, new_data = data.frame(1, data$W))
+        Q_0W <- stats::predict(object = Q_fit, new_data = data.frame(0, data$W))
+      } else if (class(Q_fit) == 'function'){
+        # if the Q is the true fit (in function format). evaluate the true Q function
+        Q_1W <- Q_fit(w = data$W$W, a = 1)
+        Q_0W <- Q_fit(w = data$W$W, a = 0)
+      } else if (is.null(Q_fit)) {
+        # if NULL, assume Q_1W has been manually input
+        Q_1W <- self$Q_1W
+        Q_0W <- self$Q_0W
+      }
+
+      if (class(g_fit) == 'hal9001') {
+        # if the g is a hal9001 fit, do the prediction routine
+        g1_W <- plogis(stats::predict(object = g_fit, new_data = data.frame(data$W)))
+      } else if (class(g_fit) == 'function') {
+        # if the g is the true fit (in function format). evaluate the true Q function
+        g1_W <- g_fit(w = data$W$W)
+      } else if (is.null(g_fit)) {
+        # if NULL, assume g1_W has been manually input
+        g1_W <- self$g1_W
+      }
       # apply parameter mapping without doing any targeting
       # A has to be 0/1 coding
-      self$Psi <- mean(self$Q_1W - self$Q_0W)
-      compute_EIC <- function(A, gk, Y, Qk, Q1k, Q0k, psi) {
-        HA <- A / gk - (1 - A) / (1 - gk)
-        EIC <- HA * (Y - Qk) + Q1k - Q0k - psi
-        return(EIC)
-      }
-      EIC <- compute_EIC(
-        A = self$data$A,
-        gk = self$g1_W,
-        Y = self$data$Y,
-        Qk = self$Q_1W * self$data$A + self$Q_0W * (1 - self$data$A),
-        Q1k = self$Q_1W,
-        Q0k = self$Q_0W,
-        psi = self$Psi
+      Psi <- mean(Q_1W - Q_0W)
+      EIC <- self$compute_EIC(
+        A = data$A,
+        gk = g1_W,
+        Y = data$Y,
+        Qk = Q_1W * data$A + Q_0W * (1 - data$A),
+        Q1k = Q_1W,
+        Q0k = Q_0W,
+        psi = Psi
       )
-      self$se_Psi <- sqrt(var(EIC) / length(EIC))
-      self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
-      self$EIC <- EIC
+      se_Psi <- sqrt(var(EIC) / length(EIC))
+      CI <- Psi + c(-1.96, 1.96) * se_Psi
+      EIC <- EIC
+      if (to_return){
+        return(list(Psi = Psi, EIC = EIC))
+      } else {
+        self$Psi <- Psi
+        self$se_Psi <- se_Psi
+        self$CI <- CI
+        self$EIC <- EIC
+        if (!is.null(Q_fit)) self$Q_fit <- Q_fit
+      }
     },
     compute_min_phi_ratio = function() {
       # return the ratio of 1 in the basis.

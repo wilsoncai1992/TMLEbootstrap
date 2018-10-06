@@ -29,7 +29,7 @@ ateBootstrap <- R6Class("ateBootstrap",
       if (self$targeting) {
         tmleOut$target()
       } else {
-        tmleOut$inference_without_target()
+        tmleOut$inference_without_target(data = self$data, tmleOut$Q_fit, tmleOut$g_fit, to_return = FALSE)
       }
 
       self$pointTMLE <- tmleOut
@@ -73,7 +73,7 @@ ateBootstrap <- R6Class("ateBootstrap",
         if (self$targeting) {
           bootstrapTMLEFit$target()
         } else {
-          bootstrapTMLEFit$inference_without_target()
+          bootstrapTMLEFit$inference_without_target(data = d, NULL, NULL, to_return = FALSE)
         }
         # browser()
         return(c(bootstrapTMLEFit$Psi))
@@ -142,7 +142,7 @@ ateBootstrap <- R6Class("ateBootstrap",
         if (self$targeting) {
           bootstrapTMLEFit$target()
         } else {
-          bootstrapTMLEFit$inference_without_target()
+          bootstrapTMLEFit$inference_without_target(data = d, NULL, NULL, to_return = FALSE)
         }
 
         # get R2 term
