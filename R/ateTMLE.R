@@ -24,21 +24,21 @@ ateTMLE <- R6Class("ateTMLE",
       self$data <- data
       if (class(data$W) != "data.frame") message("W not data.frame")
     },
-    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {
+    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL, ...) {
       use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
       use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
       if (use_penalized_mode & use_constrained_mode) {
         stop("cannot do two modes!")
       }
       if (use_penalized_mode) {
-        self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2)
+        self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2, ...)
       }
       if (use_constrained_mode) {
-        self$initial_fit_constrained_form(M1 = M1, M2 = M2)
+        self$initial_fit_constrained_form(M1 = M1, M2 = M2, ...)
       }
       if (!use_penalized_mode & !use_constrained_mode) {
         # when user have NULL for everything: default to CV
-        self$initial_fit_pen_likeli(NULL, NULL)
+        self$initial_fit_pen_likeli(NULL, NULL, ...)
       }
 
       # get Q_1W, Q_0W
@@ -47,7 +47,7 @@ ateTMLE <- R6Class("ateTMLE",
       # get g1_W
       self$g1_W <- plogis(stats::predict(object = self$g_fit, new_data = data.frame(self$data$W)))
     },
-    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL) {
+    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL) {
       # lambda1 for Q fit
       # lambda2 for g fit
       self$lambda1 <- lambda1
@@ -64,6 +64,23 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE,
           yolo = FALSE
         )
+        # WILSON hack the lambda_min_ratio
+        if (!is.null(lambda_min_ratio)) {
+          lambda_max = max(self$Q_fit$hal_lasso$lambda)
+          lambda_min = lambda_max * lambda_min_ratio
+          log_lambda_range <- log(c(lambda_min, lambda_max))
+          lambda_grid_new <- exp(seq(log_lambda_range[2], log_lambda_range[1], length.out = 1e2))
+          self$Q_fit <- hal9001::fit_hal(
+            X = data.frame(self$data$A, self$data$W),
+            Y = self$data$Y,
+            family = "gaussian",
+            fit_type = "glmnet",
+            n_folds = 3,
+            use_min = TRUE,
+            lambda = lambda_grid_new,
+            yolo = FALSE
+          )
+        }
       } else if (lambda1 >= 0) { # use manual lambda1
         self$Q_fit <- hal9001::fit_hal_single_lambda(
           X = data.frame(self$data$A, self$data$W),
