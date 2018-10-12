@@ -1,6 +1,6 @@
 Package: fixedHAL
 Title: TEMP
-Version: 2.4
+Version: 2.5
 Authors@R: c(
   person("Weixin", "Cai", email = "wcai@berkeley.edu",
          role = c("aut", "cre", "cph"),
@@ -18,7 +18,6 @@ Imports:
   SuperLearner,
   R6,
   hal9001 (>= 0.0.9),
-  rje,
   origami (>= 0.8.2),
   gentmle2
 Suggests:
@@ -32,4 +31,4 @@ Remotes:
   github::wilsoncai1992/hal9001,
   github::jeremyrcoyle/gentmle2
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

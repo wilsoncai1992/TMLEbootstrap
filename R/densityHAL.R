@@ -29,7 +29,7 @@ densityHAL <- R6Class("densityHAL",
     predict = function(new_x = NULL) {
       # predict density p_hat on `new_x`
       if (length(new_x) > 1e4) return(self$predict_long(new_x = new_x))
-      return(rje::expit(predict(self$hal_fit, new_data = new_x)))
+      return(expit(predict(self$hal_fit, new_data = new_x)))
     },
     predict_long = function(new_x = NULL) {
       # make prediction faster on larger x
@@ -134,3 +134,5 @@ cv_densityHAL <- R6Class("cv_densityHAL",
 
 #' @export
 cross_entropy <- function(y, yhat) -log(yhat) * as.numeric(y == 1) - log(1 - yhat) * as.numeric(y == 0)
+
+expit <- function(x) {exp(x)/(1+exp(x))}
