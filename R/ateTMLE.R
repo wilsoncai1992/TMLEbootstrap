@@ -47,7 +47,7 @@ ateTMLE <- R6Class("ateTMLE",
       # get g1_W
       self$g1_W <- plogis(stats::predict(object = self$g_fit, new_data = data.frame(self$data$W)))
     },
-    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL) {
+    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL, n_folds = 3) {
       # lambda1 for Q fit
       # lambda2 for g fit
       self$lambda1 <- lambda1
@@ -75,7 +75,7 @@ ateTMLE <- R6Class("ateTMLE",
             Y = self$data$Y,
             family = "gaussian",
             fit_type = "glmnet",
-            n_folds = 3,
+            n_folds = n_folds,
             use_min = TRUE,
             lambda = lambda_grid_new,
             yolo = FALSE
@@ -99,7 +99,7 @@ ateTMLE <- R6Class("ateTMLE",
           Y = self$data$A,
           family = "binomial",
           fit_type = "glmnet",
-          n_folds = 3,
+          n_folds = n_folds,
           use_min = TRUE,
           yolo = FALSE
         )
@@ -115,7 +115,7 @@ ateTMLE <- R6Class("ateTMLE",
         )
       }
     },
-    initial_fit_constrained_form = function(M1 = NULL, M2 = NULL) {
+    initial_fit_constrained_form = function(M1 = NULL, M2 = NULL, n_folds = 3) {
       # M1 for Q fit
       # M2 for g fit
       # self$M1 <- M1
@@ -129,7 +129,7 @@ ateTMLE <- R6Class("ateTMLE",
           Y = self$data$Y,
           family = "gaussian",
           fit_type = "glmnet",
-          n_folds = 3,
+          n_folds = n_folds,
           use_min = TRUE,
           yolo = FALSE
         )
@@ -150,7 +150,7 @@ ateTMLE <- R6Class("ateTMLE",
           Y = self$data$A,
           family = "binomial",
           fit_type = "glmnet",
-          n_folds = 3,
+          n_folds = n_folds,
           use_min = TRUE,
           yolo = FALSE
         )
@@ -170,8 +170,6 @@ ateTMLE <- R6Class("ateTMLE",
       plot(self$Q_1W ~ self$data$W[, 1], col = "blue")
       if (!is.null(foo)) curve(expr = foo, from = -10, to = 10, add = TRUE, lty = 2, n = 1e3)
       points(self$data$Y[self$data$A == 1] ~ self$data$W[self$data$A == 1, 1], col = "grey")
-
-      # plot(Q_1W - Q_0W ~ self$data$W)
     },
     target = function() {
       # perform iterative TMLE
