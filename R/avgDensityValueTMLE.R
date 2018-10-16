@@ -54,9 +54,15 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       use_constrained_mode <- !is.null(M)
 
       if (use_constrained_mode) {
-        hal_out <- self$fit_density_constrained_form(bin_width = bin_width, lambda_grid = lambda_grid, M = M)
+        hal_out <- self$fit_density_constrained_form(bin_width = bin_width,
+                                                      lambda_grid = lambda_grid,
+                                                      M = M
+                                                    )
       } else {
-        hal_out <- self$fit_density_pen_likeli(bin_width = bin_width, lambda_grid = lambda_grid, n_fold = n_fold)
+        hal_out <- self$fit_density_pen_likeli(bin_width = bin_width,
+                                                lambda_grid = lambda_grid,
+                                                n_fold = n_fold
+                                              )
       }
       yhat <- hal_out$predict(new_x = self$longDataOut$x)
       density_intial <- empiricalDensity$new(p_density = yhat, x = self$x)
@@ -66,7 +72,6 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
                                      lambda_grid = NULL,  # NULL for auto lambda
                                      n_fold = 3) {
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
-      # longDFOut <- self$longDataOut$generate_df_compress()
 
       verbose <- FALSE
       # tune HAL for density
@@ -81,7 +86,6 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
                                     lambda_grid = NULL,  # NULL for auto lambda
                                      M = NULL) {
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
-      # longDFOut <- self$longDataOut$generate_df_compress()
 
       hal_list <- list()
       for (lambda in lambda_grid) {
@@ -95,7 +99,6 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       l1_norm <- l1_norms
       l1_norm[l1_norm > M] <- NaN
       M_candidate <- which.max(l1_norm)
-      # browser()
       # corner case when all lambda candidates are larger than M
       if (length(M_candidate) == 0) M_candidate <- which.min(l1_norms)
       lambda_star <- lambda_grid[M_candidate]
@@ -104,16 +107,21 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       self$HAL_tuned <- hal_out$hal_fit
       return(hal_out)
     },
-    calc_Psi = function() {
+    calc_Psi = function(p_hat, to_return = FALSE) {
       # compute Psi; use x, p_hat
-      dummy_df <- data.frame(id = 1:length(self$x), x = self$x, p_density = self$p_hat$p_density)
+      dummy_df <- data.frame(id = 1:length(p_hat$x),
+                              x = p_hat$x,
+                              p_density = p_hat$p_density
+                            )
       dummy_df <- dummy_df[order(dummy_df$x), ]
       dx <- c(0, diff(dummy_df$x))
-      self$Psi <- sum(dummy_df$p_density^2 * dx)
+      Psi <- sum(dummy_df$p_density^2 * dx)
+      if (to_return) return(Psi) else self$Psi <- Psi
     },
-    calc_EIC = function() {
+    calc_EIC = function(p_hat, Psi, to_return = FALSE) {
       # calc EIC
-      self$EIC <- 2 * (self$p_hat$p_density - self$Psi)
+      EIC <- 2 * (p_hat$p_density - Psi)
+      if (to_return) return(EIC) else self$EIC <- EIC
     },
     updateOnce = function() {
       # one iteration in onestep tmle
@@ -127,15 +135,13 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       meanEIC_prev <- abs(mean(self$EIC))
       while (abs(mean(self$EIC)) >= self$tol) {
         meanEIC_prev <- abs(mean(self$EIC))
-        self$calc_Psi()
-        self$calc_EIC()
-        # self$p_hat$display()
+        self$calc_Psi(self$p_hat, to_return = FALSE)
+        self$calc_EIC(self$p_hat, self$Psi, to_return = FALSE)
         self$updateOnce()
         if (self$verbose | verbose) print(c(mean(self$EIC), self$Psi))
         n_iter <- n_iter + 1
         if (abs(mean(self$EIC)) > meanEIC_prev) {
           self$epsilon_step <- -self$epsilon_step
-          # message('not stable!')
         }
         if (n_iter >= self$max_iter) {
           break()
@@ -178,7 +184,11 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       # return NULL if:
       # all beta are zero
       # Qbasis has zero length
-      if (length(nonzeroBeta_phiRatio) != 0) return(min(nonzeroBeta_phiRatio)) else return(NULL)
+      if (length(nonzeroBeta_phiRatio) != 0) {
+        return(min(nonzeroBeta_phiRatio))
+      } else {
+        return(NULL)
+      }
     }
   )
 )

@@ -83,7 +83,6 @@ cv_densityHAL <- R6Class("cv_densityHAL",
 
         HALfit <- densityHAL$new(x = train_data, longiData = longiData)
         HALfit$fit(lambda = lambda)
-        # return(HALfit$eval_misclass_loss(new_x = valid_data))
         return(list(loss = HALfit$eval_crossentropy_loss(new_x = valid_data)))
       }
       cv_results <- origami::cross_validate(
@@ -93,11 +92,15 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       )
       return(mean(cv_results$loss))
     },
-    cv_lambda_grid = function(lambda_grid = NULL) {
+    cv_lambda_grid = function(lambda_grid = NULL, lambda_min_ratio = NULL) {
       # repeat `cv` with a grid of lambda; store the error for each lambda; pick the lambda minimizer of validation loss
       # c(1e-6,2e-5)
       # OPTIONAL: glmnet to get lambda_grid
-      if (is.null(lambda_grid)) {
+      get_lambda_grid_from_cv <- is.null(lambda_grid)
+      if ((!get_lambda_grid_from_cv) & (!is.null(lambda_min_ratio))) {
+        stop('do not set `lambda_min_ratio` if you do not CV!')
+      }
+      if (get_lambda_grid_from_cv) {
         df_compressed <- self$longiData$generate_df_compress(x = self$x)
         hal_for_lambda <- hal9001::fit_hal(
           X = df_compressed[, "box"],
@@ -109,6 +112,24 @@ cv_densityHAL <- R6Class("cv_densityHAL",
           yolo = FALSE
         )
         lambda_grid <- hal_for_lambda$lambda_grid
+        if (!is.null(lambda_min_ratio)) {
+          # manually increase the range of lambda grid
+          create_lambda_grid_by_ratio <- function(lambda_grid, lambda_min_ratio){
+            lambda_max = max(cv_lambda_grid)
+            lambda_min = lambda_max * lambda_min_ratio
+            log_lambda_range <- log(c(lambda_min, lambda_max))
+            lambda_grid_new <- exp(
+                                seq(
+                                  log_lambda_range[2],
+                                  log_lambda_range[1],
+                                  length.out = 1e2
+                                  )
+                                )
+            return(lambda_grid_new)
+          }
+          lambda_grid <- create_lambda_grid_by_ratio(lambda_grid,
+                                                    lambda_min_ratio)
+        }
       }
 
       list_df <- list()
