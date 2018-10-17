@@ -9,19 +9,19 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     bootstrap_estimates = NULL,
     targeting = NULL,
     initialize = function(x,
-                              epsilon_step = NULL,
-                              bin_width = .3,
-                              lambda_grid = NULL, # c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1)
-                              M = NULL,
-                              targeting = TRUE) {
+                          epsilon_step = NULL,
+                          bin_width = .3,
+                          lambda_grid = NULL,
+                          M = NULL,
+                          targeting = TRUE) {
       # bootstrap average density parameter; first do a pointTMLE;
       self$x <- x
       self$targeting <- targeting
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       onestepFit <- avgDensityTMLE$new(x = self$x, epsilon_step = self$epsilon_step, verbose = TRUE)
       onestepFit$fit_density(bin_width = bin_width, lambda_grid = lambda_grid, M = M, n_fold = 3)
-      onestepFit$calc_Psi()
-      onestepFit$calc_EIC()
+      onestepFit$compute_Psi(p_hat = onestepFit$p_hat, FALSE)
+      onestepFit$compute_EIC(p_hat = onestepFit$p_hat, Psi = onestepFit$Psi, FALSE)
       if (self$targeting) onestepFit$onestepTarget()
       onestepFit$inference()
 
@@ -32,8 +32,8 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       # regular bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
       betfun <- function(data,
-                               epsilon_step = self$epsilon_step,
-                               inflate_lambda) {
+                         epsilon_step = self$epsilon_step,
+                         inflate_lambda) {
         # indices is the random indexes for the bootstrap sample
         indices <- sample(1:length(data), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
         d <- data[indices]
@@ -55,8 +55,8 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         density_boot <- empiricalDensity$new(p_density = yhat_boot, x = d)
         bootstrapOnestepFit$p_hat <- density_boot$normalize()
         # target new fit
-        bootstrapOnestepFit$calc_Psi()
-        bootstrapOnestepFit$calc_EIC()
+        bootstrapOnestepFit$compute_Psi(p_hat = bootstrapOnestepFit$p_hat, FALSE)
+        bootstrapOnestepFit$compute_EIC(p_hat = bootstrapOnestepFit$p_hat, Psi = bootstrapOnestepFit$Psi, FALSE)
         if (self$targeting) bootstrapOnestepFit$onestepTarget()
 
         return(c(bootstrapOnestepFit$Psi))
@@ -116,8 +116,8 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         density_boot <- empiricalDensity$new(p_density = yhat_boot, x = d)
         bootstrapOnestepFit$p_hat <- density_boot$normalize()
         # target new fit
-        bootstrapOnestepFit$calc_Psi()
-        bootstrapOnestepFit$calc_EIC()
+        bootstrapOnestepFit$compute_Psi(p_hat = bootstrapOnestepFit$p_hat, FALSE)
+        bootstrapOnestepFit$compute_EIC(p_hat = bootstrapOnestepFit$p_hat, Psi = bootstrapOnestepFit$Psi, FALSE)
         if (self$targeting) bootstrapOnestepFit$onestepTarget()
 
         # get R2 term
@@ -192,8 +192,8 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     #     density_boot <- empiricalDensity$new(p_density = yhat_boot, x = d)
     #     bootstrapOnestepFit$p_hat <- density_boot$normalize()
     #     # target new fit
-    #     bootstrapOnestepFit$calc_Psi()
-    #     bootstrapOnestepFit$calc_EIC()
+    #     bootstrapOnestepFit$compute_Psi(p_hat = bootstrapOnestepFit$p_hat, FALSE)
+    #     bootstrapOnestepFit$compute_EIC(p_hat = bootstrapOnestepFit$p_hat, Psi = bootstrapOnestepFit$Psi, FALSE)
     #     if (self$targeting)  bootstrapOnestepFit$onestepTarget()
 
     #     return(c(bootstrapOnestepFit$Psi))

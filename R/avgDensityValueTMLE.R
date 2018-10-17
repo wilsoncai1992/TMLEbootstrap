@@ -37,6 +37,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     verbose = FALSE,
     max_iter = 1e2,
     longDataOut = NULL,
+    hal_best = NULL,
     HAL_tuned = NULL,
     initialize = function(x,
                               epsilon_step = NULL,
@@ -49,27 +50,32 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     fit_density = function(bin_width = .1,
                            lambda_grid = NULL,  # NULL for auto lambda
                            M = NULL,
-                           n_fold = 3) {
+                           n_fold = 3,
+                           ...) {
       use_penalized_mode <- !is.null(lambda_grid)
       use_constrained_mode <- !is.null(M)
 
       if (use_constrained_mode) {
         hal_out <- self$fit_density_constrained_form(bin_width = bin_width,
                                                       lambda_grid = lambda_grid,
-                                                      M = M
+                                                      M = M,
+                                                      ...
                                                     )
       } else {
         hal_out <- self$fit_density_pen_likeli(bin_width = bin_width,
                                                 lambda_grid = lambda_grid,
-                                                n_fold = n_fold
+                                                n_fold = n_fold,
+                                                ...
                                               )
       }
       yhat <- hal_out$predict(new_x = self$longDataOut$x)
       density_intial <- empiricalDensity$new(p_density = yhat, x = self$x)
       self$p_hat <- density_intial$normalize()
+      self$hal_best <- hal_out
     },
     fit_density_pen_likeli = function(bin_width = .1,
                                      lambda_grid = NULL,  # NULL for auto lambda
+                                     lambda_min_ratio = NULL,
                                      n_fold = 3) {
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
 
@@ -77,14 +83,15 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       # tune HAL for density
       cvHAL_fit <- cv_densityHAL$new(x = self$x, longiData = self$longDataOut)
       cvHAL_fit$assign_fold(n_fold = n_fold)
-      cvHAL_fit$cv_lambda_grid(lambda_grid = lambda_grid)
-      hal_out <- cvHAL_fit$compute_best_model()
+      cvHAL_fit$cv_lambda_grid(lambda_grid = lambda_grid, lambda_min_ratio = lambda_min_ratio)
+      hal_out <- cvHAL_fit$compute_model_full_data(cvHAL_fit$lambda.min)
       self$HAL_tuned <- hal_out$hal_fit
       return(hal_out)
     },
     fit_density_constrained_form = function(bin_width = .1,
-                                    lambda_grid = NULL,  # NULL for auto lambda
-                                     M = NULL) {
+                                            lambda_grid = NULL,
+                                            M = NULL) {
+      # NULL for auto lambda
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
 
       hal_list <- list()
@@ -107,7 +114,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       self$HAL_tuned <- hal_out$hal_fit
       return(hal_out)
     },
-    calc_Psi = function(p_hat, to_return = FALSE) {
+    compute_Psi = function(p_hat, to_return = FALSE) {
       # compute Psi; use x, p_hat
       dummy_df <- data.frame(id = 1:length(p_hat$x),
                               x = p_hat$x,
@@ -118,7 +125,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       Psi <- sum(dummy_df$p_density^2 * dx)
       if (to_return) return(Psi) else self$Psi <- Psi
     },
-    calc_EIC = function(p_hat, Psi, to_return = FALSE) {
+    compute_EIC = function(p_hat, Psi, to_return = FALSE) {
       # calc EIC
       EIC <- 2 * (p_hat$p_density - Psi)
       if (to_return) return(EIC) else self$EIC <- EIC
@@ -135,8 +142,8 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       meanEIC_prev <- abs(mean(self$EIC))
       while (abs(mean(self$EIC)) >= self$tol) {
         meanEIC_prev <- abs(mean(self$EIC))
-        self$calc_Psi(self$p_hat, to_return = FALSE)
-        self$calc_EIC(self$p_hat, self$Psi, to_return = FALSE)
+        self$compute_Psi(self$p_hat, to_return = FALSE)
+        self$compute_EIC(self$p_hat, self$Psi, to_return = FALSE)
         self$updateOnce()
         if (self$verbose | verbose) print(c(mean(self$EIC), self$Psi))
         n_iter <- n_iter + 1

@@ -253,7 +253,6 @@ ateTMLE <- R6Class("ateTMLE",
         unique_columns <- as.numeric(names(Qcopy_map))
         # design matrix. each column correspond to Q_fit$coefs. don't have intercept column
         x_basis <- x_basis[, unique_columns]
-        # dim(x_basis)
         phi_ratio <- Matrix::colMeans(x_basis)
 
         length(self$Q_fit$coefs)
@@ -268,7 +267,11 @@ ateTMLE <- R6Class("ateTMLE",
       # return NULL if:
       # all beta are zero
       # Qbasis has zero length
-      if (length(nonzeroBeta_phiRatio) != 0) return(min(nonzeroBeta_phiRatio)) else return(NULL)
+      if (length(nonzeroBeta_phiRatio) != 0) {
+        return(min(nonzeroBeta_phiRatio))
+      } else {
+        return(NULL)
+      }
     }
   )
 )

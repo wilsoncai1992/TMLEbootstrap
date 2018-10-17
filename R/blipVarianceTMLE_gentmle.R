@@ -318,12 +318,6 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
       }
     },
     initial_fit_constrained_form = function(M1 = NULL, M2 = NULL) {
-      # M1 for Q fit
-      # M2 for g fit
-      # self$M1 <- M1
-      # self$M2 <- M2
-
-      # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
       # Q fit
       if (is.null(M1)) {
         self$Q_fit <- hal9001::fit_hal(

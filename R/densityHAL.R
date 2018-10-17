@@ -102,6 +102,7 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       }
       if (get_lambda_grid_from_cv) {
         df_compressed <- self$longiData$generate_df_compress(x = self$x)
+        # WILSON: has bug. There can be all Y=0 in the training sample
         hal_for_lambda <- hal9001::fit_hal(
           X = df_compressed[, "box"],
           Y = df_compressed$Y,
@@ -144,10 +145,10 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       self$results <- results
       self$lambda.min <- results$lambda[which.min(results$loss)]
     },
-    compute_best_model = function() {
+    compute_model_full_data = function(lambda) {
       # re-fit the best lambda model on the entire dataset; output the `densityHAL` object
       HALfit_out <- densityHAL$new(x = self$x, longiData = self$longiData)
-      HALfit_out$fit(lambda = self$lambda.min)
+      HALfit_out$fit(lambda = lambda)
       return(HALfit_out)
     }
   )
