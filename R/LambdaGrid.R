@@ -64,13 +64,19 @@ LambdaGrid <- R6Class("LambdaGrid",
       self$df_lambda_width <- df2[grep("ctr", df2$kindCI, invert = TRUE), ] # not use centered version
       return(self$df_lambda_width)
     },
-    plot_width = function() {
+    plot_width = function(type_CI = NULL) {
       # plot CIwidth v.s. log(lambda)
       library(ggplot2)
-      p <- ggplot(self$df_lambda_width, aes(x = log10(lambda), y = width, group = kindCI, color = kindCI)) +
+      if (is.null(type_CI)) type_CI <- unique(self$df_lambda_width$kindCI)
+      p <- ggplot(
+          self$df_lambda_width[self$df_lambda_width$kindCI %in% type_CI, ],
+          aes(x = lambda, y = width, group = kindCI, color = kindCI)
+        ) +
         geom_point() +
         geom_line() +
-        ylab("width of interval")
+        ylab("width of interval") +
+        scale_x_log10() +
+        theme_bw()
       return(p)
     },
     select_lambda_pleateau_wald = function(df_lambda_width) {
@@ -123,63 +129,6 @@ LambdaGrid <- R6Class("LambdaGrid",
       lambda_balanceMSE <- df_Psi$lambda[lambda_index]
       return(lambda_balanceMSE)
     }
-    # select_lambda_pleateau_reg = function(){
-    #   # grab pleateau (when reg plateaus)
-    #   df_ls <- list()
-    #   count <- 1
-    #   for (kind in 'reg_scale') {
-    #     tempDf <- self$df_lambda_width[self$df_lambda_width$kindCI == kind,]
-    #     tempDf <- tempDf[order(tempDf$lambda),]
-
-    #     platOut <- grabPlateau$new(x = log10(tempDf$lambda), y = tempDf$width)
-    # coordOut <- platOut$plateau_1()
-    #     coordOut <- platOut$plateau_2()
-    #     coordOut$kindCI <- kind
-
-    #     df_ls[[count]] <- coordOut
-    #     count <- count + 1
-    #   }
-    #   allPlateaus <- do.call(rbind, df_ls)
-    #   return(10^allPlateaus$x)
-    # },
-    # select_lambda_pleateau_secscalepen = function(){
-    #   # grab pleateau (when secOrd + pen + scale plateaus)
-    #   df_ls <- list()
-    #   count <- 1
-    #   for (kind in 'secOrd_scale_pen') {
-    #     tempDf <- self$df_lambda_width[self$df_lambda_width$kindCI == kind,]
-    #     tempDf <- tempDf[order(tempDf$lambda),]
-
-    #     platOut <- grabPlateau$new(x = log10(tempDf$lambda), y = tempDf$width)
-    # coordOut <- platOut$plateau_1()
-    #     coordOut <- platOut$plateau_2()
-    #     coordOut$kindCI <- kind
-
-    #     df_ls[[count]] <- coordOut
-    #     count <- count + 1
-    #   }
-    #   allPlateaus <- do.call(rbind, df_ls)
-    #   return(10^allPlateaus$x)
-    # },
-    # select_lambda_pleateau_all = function(){
-    #   # grab pleateau (when average width plateaus)
-    #   df_ls <- list()
-    #   count <- 1
-    #   for (kind in unique(self$df_lambda_width$kindCI)) {
-    #     tempDf <- self$df_lambda_width[self$df_lambda_width$kindCI == kind,]
-    #     tempDf <- tempDf[order(tempDf$lambda),]
-
-    #     platOut <- grabPlateau$new(x = log10(tempDf$lambda), y = tempDf$width)
-    # coordOut <- platOut$plateau_1()
-    #     coordOut <- platOut$plateau_2()
-    #     # browser()
-    #     coordOut$kindCI <- kind
-    #     df_ls[[count]] <- coordOut
-    #     count <- count + 1
-    #   }
-    #   allPlateaus <- do.call(rbind, df_ls)
-    #   return(10^median(allPlateaus$x))
-    # }
   )
 )
 
