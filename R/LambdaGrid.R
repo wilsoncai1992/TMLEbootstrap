@@ -92,7 +92,7 @@ LambdaGrid <- R6Class("LambdaGrid",
         tempDf <- tempDf[order(tempDf$lambda), ]
 
         platOut <- grabPlateau$new(x = log10(tempDf$lambda), y = tempDf$width)
-        coordOut <- platOut$plateau_2()
+        coordOut <- platOut$plateau_start()
         coordOut$kindCI <- kind
 
         df_ls[[count]] <- coordOut
@@ -288,15 +288,26 @@ grabPlateau <- R6Class("grabPlateau",
       self$x <- x
       self$y <- y
     },
-    plateau_1 = function() {
-      # immediate after largest cliff
-      firstDiff <- diff(self$y) / diff(self$x)
-      # plot(firstDiff)
-      idx <- which.min(firstDiff) - 1
+    # plateau_1 = function() {
+    #   # immediate after largest cliff
+    #   firstDiff <- diff(self$y) / diff(self$x)
+    #   # plot(firstDiff)
+    #   idx <- which.min(firstDiff) - 1
+    #   if (idx == 0) idx <- 1 # fix when there is no plateau
+    #   return(data.frame(y = self$y[idx], x = self$x[idx]))
+    # },
+    plateau_start = function() {
+      # argmin(sec diff)
+      dx <- diff(self$x)
+      dx_shift <- c(dx[2:length(dx)], NA)
+      denom <- dx * dx_shift
+      denom <- denom[!is.na(denom)]
+      secDiff <- diff(diff(self$y)) / (denom)
+      idx <- which.max(secDiff)
       if (idx == 0) idx <- 1 # fix when there is no plateau
       return(data.frame(y = self$y[idx], x = self$x[idx]))
     },
-    plateau_2 = function() {
+    plateau_end = function() {
       # argmin(sec diff)
       dx <- diff(self$x)
       dx_shift <- c(dx[2:length(dx)], NA)
