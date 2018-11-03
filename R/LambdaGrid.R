@@ -150,25 +150,57 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
       self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
       self$inflate_lambda <- inflate_lambda
     },
-    add_lambda = function(lambda_grid = NULL, ...) {
+    add_lambda = function(lambda_grid = NULL, to_parallel = FALSE, ...) {
+      if (to_parallel) {
+        library(foreach)
+        library(doSNOW)
+        library(tcltk)
+        nw <- parallel:::detectCores()  # number of workers
+        cl <- makeSOCKcluster(nw)
+        registerDoSNOW(cl)
+        new_ls <- foreach(lambda = lambda_grid,
+                          .combine = c,
+                          .packages = c('R6', 'fixedHAL', 'hal9001'),
+                          .inorder = TRUE,
+                          .errorhandling = 'pass',
+                          .export = c('self'),
+                          .verbose = T) %dopar% {
+          boot_here <- comprehensiveBootstrap$new(
+            parameter = avgDensityBootstrap,
+            x = self$data$x,
+            bin_width = self$bin_width,
+            lambda_grid = lambda,
+            epsilon_step = self$epsilon_step
+          )
+          boot_here$bootstrap(
+            REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
+            inflate_lambda = self$inflate_lambda
+          )
+          boot_here$all_CI()
+          boot_here$compute_width()
+          return(boot_here)
+        }
+        stopCluster(cl)
+      } else {
       new_ls <- list()
-      for (lambda in lambda_grid) {
-        boot_here <- comprehensiveBootstrap$new(
-          parameter = avgDensityBootstrap,
-          x = self$data$x,
-          bin_width = self$bin_width,
-          lambda_grid = lambda,
-          epsilon_step = self$epsilon_step,
-          ...
-        )
-        boot_here$bootstrap(
-          REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
-          inflate_lambda = self$inflate_lambda
-        )
-        boot_here$all_CI()
-        boot_here$compute_width()
-        new_ls <- c(new_ls, boot_here)
-        message(paste(lambda, "is added"))
+        for (lambda in lambda_grid) {
+          boot_here <- comprehensiveBootstrap$new(
+            parameter = avgDensityBootstrap,
+            x = self$data$x,
+            bin_width = self$bin_width,
+            lambda_grid = lambda,
+            epsilon_step = self$epsilon_step,
+            ...
+          )
+          boot_here$bootstrap(
+            REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
+            inflate_lambda = self$inflate_lambda
+          )
+          boot_here$all_CI()
+          boot_here$compute_width()
+          new_ls <- c(new_ls, boot_here)
+          message(paste(lambda, "is added"))
+        }
       }
       names(new_ls) <- lambda_grid # named list. the name is the lambda used for fitting
       self$dict_boot <- c(self$dict_boot, new_ls)
