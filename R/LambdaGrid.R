@@ -81,6 +81,10 @@ LambdaGrid <- R6Class("LambdaGrid",
     },
     select_lambda_pleateau_wald = function(df_lambda_width) {
       # grab pleateau (when wald plateaus)
+      if (!is.null(self$lambdaCV)) {
+        # don't check for plateau for lambda >= lambda_CV
+        df_lambda_width <- df_lambda_width[df_lambda_width$lambda <= self$lambdaCV,]
+      }
       df_ls <- list()
       count <- 1
       for (kind in "wald") {
