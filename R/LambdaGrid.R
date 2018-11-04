@@ -233,9 +233,11 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
           lambda1 = lambda1,
           ...
         )
-        boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
-        boot_here$all_CI()
-        boot_here$compute_width()
+        # boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
+        # boot_here$all_CI()
+        # boot_here$compute_width()
+        # this hacks away from computing bootstrap for all lambdas
+        boot_here$compute_wald_width()
         new_ls <- c(new_ls, boot_here)
         message(paste(lambda1, "is added"))
       }

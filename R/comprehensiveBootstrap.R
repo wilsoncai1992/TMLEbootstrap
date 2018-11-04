@@ -84,9 +84,17 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
     },
     compute_width = function() {
       # compute a list of all widths
-      get_width <- function(list) vapply(list, diff, FUN.VALUE = numeric(1)) # loop over list, take diff of the CI bounds
+      # loop over list, take diff of the CI bounds
+      get_width <- function(list) vapply(
+        list,
+        diff,
+        FUN.VALUE = numeric(1)
+        )
       self$width_all <- as.list(get_width(self$CI_all))
       names(self$width_all) <- names(self$CI_all)
+    },
+    compute_wald_width = function() {
+      self$width_all <- list(wald = diff(self$bootOut$pointTMLE$CI))
     }
   )
 )
