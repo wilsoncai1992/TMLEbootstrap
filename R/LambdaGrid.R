@@ -30,7 +30,12 @@ LambdaGrid <- R6Class("LambdaGrid",
       count <- 1
       for (i in 1:length(CI_all)) {
         for (j in 1:length(CI_all[[i]])) {
-          df_ls[[count]] <- data.frame(lambda = lambdas[i], CI_low = CI_all[[i]][[j]][1], CI_upp = CI_all[[i]][[j]][2], kindCI = names(CI_all[[i]][j]))
+          df_ls[[count]] <- data.frame(
+            lambda = lambdas[i],
+            CI_low = CI_all[[i]][[j]][1],
+            CI_upp = CI_all[[i]][[j]][2],
+            kindCI = names(CI_all[[i]][j])
+            )
           count <- count + 1
         }
       }
@@ -40,7 +45,12 @@ LambdaGrid <- R6Class("LambdaGrid",
       df2$center <- (df2$CI_low + df2$CI_upp) / 2
 
       library(ggplot2)
-      p <- ggplot(df2, aes(x = logLambda, y = center, group = interaction(logLambda, kindCI), color = kindCI)) +
+      p <- ggplot(df2, aes(
+        x = logLambda,
+        y = center,
+        group = interaction(logLambda, kindCI),
+        color = kindCI
+        )) +
         geom_point(position = position_dodge(0.5)) +
         geom_errorbar(aes(ymin = CI_low, ymax = CI_upp), width = .5, position = position_dodge(0.5)) +
         ylab("")
@@ -176,12 +186,13 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
             lambda_grid = lambda,
             epsilon_step = self$epsilon_step
           )
-          boot_here$bootstrap(
-            REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
-            inflate_lambda = self$inflate_lambda
-          )
-          boot_here$all_CI()
-          boot_here$compute_width()
+          # boot_here$bootstrap(
+          #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
+          #   inflate_lambda = self$inflate_lambda
+          # )
+          # boot_here$all_CI()
+          # boot_here$compute_width()
+          boot_here$compute_wald_width()
           return(boot_here)
         }
         stopCluster(cl)
@@ -196,12 +207,13 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
             epsilon_step = self$epsilon_step,
             ...
           )
-          boot_here$bootstrap(
-            REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
-            inflate_lambda = self$inflate_lambda
-          )
-          boot_here$all_CI()
-          boot_here$compute_width()
+          # boot_here$bootstrap(
+          #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
+          #   inflate_lambda = self$inflate_lambda
+          # )
+          # boot_here$all_CI()
+          # boot_here$compute_width()
+          boot_here$compute_wald_width()
           new_ls <- c(new_ls, boot_here)
           message(paste(lambda, "is added"))
         }
