@@ -102,7 +102,8 @@ LambdaGrid <- R6Class("LambdaGrid",
         tempDf <- tempDf[order(tempDf$lambda), ]
 
         platOut <- grabPlateau$new(x = log10(tempDf$lambda), y = tempDf$width)
-        coordOut <- platOut$plateau_start()
+        # coordOut <- platOut$find_plateau(find_plateau_start = TRUE)
+        coordOut <- platOut$find_plateau(find_plateau_start = FALSE)
         coordOut$kindCI <- kind
 
         df_ls[[count]] <- coordOut
@@ -310,26 +311,18 @@ grabPlateau <- R6Class("grabPlateau",
     #   if (idx == 0) idx <- 1 # fix when there is no plateau
     #   return(data.frame(y = self$y[idx], x = self$x[idx]))
     # },
-    plateau_start = function() {
+    find_plateau = function(find_plateau_start = TRUE) {
       # argmin(sec diff)
       dx <- diff(self$x)
       dx_shift <- c(dx[2:length(dx)], NA)
       denom <- dx * dx_shift
       denom <- denom[!is.na(denom)]
       secDiff <- diff(diff(self$y)) / (denom)
-      idx <- which.max(secDiff)
-      if (idx == 0) idx <- 1 # fix when there is no plateau
-      return(data.frame(y = self$y[idx], x = self$x[idx]))
-    },
-    plateau_end = function() {
-      # argmin(sec diff)
-      dx <- diff(self$x)
-      dx_shift <- c(dx[2:length(dx)], NA)
-      denom <- dx * dx_shift
-      denom <- denom[!is.na(denom)]
-      secDiff <- diff(diff(self$y)) / (denom)
-      # plot(secDiff)
-      idx <- which.min(secDiff)
+      if (find_plateau_start) {
+        idx <- which.max(secDiff)
+      } else {
+        idx <- which.min(secDiff)
+      }
       if (idx == 0) idx <- 1 # fix when there is no plateau
       return(data.frame(y = self$y[idx], x = self$x[idx]))
     }
