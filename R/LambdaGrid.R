@@ -102,8 +102,8 @@ LambdaGrid <- R6Class("LambdaGrid",
         tempDf <- tempDf[order(tempDf$lambda), ]
 
         platOut <- grabPlateau$new(x = log10(tempDf$lambda), y = tempDf$width)
-        # coordOut <- platOut$find_plateau(find_plateau_start = TRUE)
-        coordOut <- platOut$find_plateau(find_plateau_start = FALSE)
+        coordOut <- platOut$find_plateau(find_plateau_start = TRUE)
+        # coordOut <- platOut$find_plateau(find_plateau_start = FALSE)
         coordOut$kindCI <- kind
 
         df_ls[[count]] <- coordOut
