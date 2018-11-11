@@ -168,11 +168,11 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
     add_lambda = function(lambda_grid = NULL, to_parallel = FALSE, ...) {
       if (to_parallel) {
         library(foreach)
-        library(doSNOW)
-        library(tcltk)
-        nw <- parallel:::detectCores()  # number of workers
-        cl <- makeSOCKcluster(nw)
-        registerDoSNOW(cl)
+        library(Rmpi)
+        library(doMPI)
+        cl = startMPIcluster()
+        registerDoMPI(cl)
+        clusterSize(cl) # just to check
         new_ls <- foreach(lambda = lambda_grid,
                           .combine = c,
                           .packages = c('R6', 'fixedHAL', 'hal9001'),
@@ -196,7 +196,7 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
           # boot_here$compute_wald_width()
           return(boot_here)
         }
-        stopCluster(cl)
+        closeCluster(cl)
       } else {
       new_ls <- list()
         for (lambda in lambda_grid) {
