@@ -1,3 +1,4 @@
+library(ggplot2)
 #' @export
 LambdaGrid <- R6Class("LambdaGrid",
   # lambda plateau method
@@ -76,7 +77,6 @@ LambdaGrid <- R6Class("LambdaGrid",
     },
     plot_width = function(type_CI = NULL) {
       # plot CIwidth v.s. log(lambda)
-      library(ggplot2)
       if (is.null(type_CI)) type_CI <- unique(self$df_lambda_width$kindCI)
       p <- ggplot(
           self$df_lambda_width[self$df_lambda_width$kindCI %in% type_CI, ],

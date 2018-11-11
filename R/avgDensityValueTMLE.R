@@ -39,6 +39,8 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     longDataOut = NULL,
     hal_best = NULL,
     HAL_tuned = NULL,
+
+    p_hat_best = NULL,
     initialize = function(x,
                               epsilon_step = NULL,
                               verbose = NULL) {
@@ -130,13 +132,16 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       EIC <- 2 * (p_hat$p_density - Psi)
       if (to_return) return(EIC) else self$EIC <- EIC
     },
-    updateOnce = function() {
+    update_once = function() {
       # one iteration in onestep tmle
       if (mean(self$EIC) < 0) self$epsilon_step <- -self$epsilon_step
       self$p_hat$p_density <- self$p_hat$p_density * exp(self$epsilon_step * self$EIC)
       self$p_hat$normalize()
     },
     onestepTarget = function(verbose = FALSE) {
+      # initiate the best one
+      self$p_hat_best <- self$p_hat
+      meanEIC_best <- Inf
       # recursive targeting of onestep
       n_iter <- 0
       meanEIC_prev <- abs(mean(self$EIC))
@@ -144,17 +149,29 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         meanEIC_prev <- abs(mean(self$EIC))
         self$compute_Psi(self$p_hat, to_return = FALSE)
         self$compute_EIC(self$p_hat, self$Psi, to_return = FALSE)
-        self$updateOnce()
+        self$update_once()
         if (self$verbose | verbose) print(c(mean(self$EIC), self$Psi))
         n_iter <- n_iter + 1
         if (abs(mean(self$EIC)) > meanEIC_prev) {
+          # the update caused PnEIC to increase, change direction
           self$epsilon_step <- -self$epsilon_step
+        }
+        if (abs(mean(self$EIC)) < abs(meanEIC_best)) {
+          # the update caused PnEIC to beat the current best
+          # update our best candidate
+          self$p_hat_best <- self$p_hat
+          meanEIC_best <- mean(self$EIC)
         }
         if (n_iter >= self$max_iter) {
           break()
           message("max iteration number reached!")
         }
       }
+      # always output the best candidate for final result
+      self$p_hat <- self$p_hat_best
+      self$compute_Psi(self$p_hat, to_return = FALSE)
+      self$compute_EIC(self$p_hat, self$Psi, to_return = FALSE)
+      # print(paste('the min(Pn(D*)) =', meanEIC_best))
     },
     inference = function() {
       # generate CI using EIC
