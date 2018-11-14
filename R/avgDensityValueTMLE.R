@@ -140,7 +140,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     },
     onestepTarget = function(verbose = FALSE) {
       # initiate the best one
-      self$p_hat_best <- self$p_hat
+      self$p_hat_best <- self$p_hat$clone(deep = TRUE)
       meanEIC_best <- Inf
       # recursive targeting of onestep
       n_iter <- 0
@@ -159,7 +159,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         if (abs(mean(self$EIC)) < abs(meanEIC_best)) {
           # the update caused PnEIC to beat the current best
           # update our best candidate
-          self$p_hat_best <- self$p_hat
+          self$p_hat_best <- self$p_hat$clone(deep = TRUE)
           meanEIC_best <- mean(self$EIC)
         }
         if (n_iter >= self$max_iter) {
