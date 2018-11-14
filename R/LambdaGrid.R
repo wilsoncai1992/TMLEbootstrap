@@ -219,7 +219,8 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
           message(paste(lambda, "is added"))
         }
       }
-      names(new_ls) <- lambda_grid # named list. the name is the lambda used for fitting
+      # named list. the name is the lambda used for fitting
+      names(new_ls) <- formatC(lambda_grid, format = "e", digits = 5)
       self$dict_boot <- c(self$dict_boot, new_ls)
     }
   )
