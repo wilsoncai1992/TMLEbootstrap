@@ -187,13 +187,13 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
             lambda_grid = lambda,
             epsilon_step = self$epsilon_step
           )
-          boot_here$bootstrap(
-            REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
-            inflate_lambda = self$inflate_lambda
-          )
-          boot_here$all_CI()
-          boot_here$compute_width()
-          # boot_here$compute_wald_width()
+          # boot_here$bootstrap(
+          #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
+          #   inflate_lambda = self$inflate_lambda
+          # )
+          # boot_here$all_CI()
+          # boot_here$compute_width()
+          boot_here$compute_wald_width()
           return(boot_here)
         }
         closeCluster(cl)
@@ -208,13 +208,13 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
             epsilon_step = self$epsilon_step,
             ...
           )
-          boot_here$bootstrap(
-            REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
-            inflate_lambda = self$inflate_lambda
-          )
-          boot_here$all_CI()
-          boot_here$compute_width()
-          # boot_here$compute_wald_width()
+          # boot_here$bootstrap(
+          #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
+          #   inflate_lambda = self$inflate_lambda
+          # )
+          # boot_here$all_CI()
+          # boot_here$compute_width()
+          boot_here$compute_wald_width()
           new_ls <- c(new_ls, boot_here)
           message(paste(lambda, "is added"))
         }
