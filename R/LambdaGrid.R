@@ -255,7 +255,7 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
         new_ls <- c(new_ls, boot_here)
         message(paste(lambda1, "is added"))
       }
-      names(new_ls) <- lambda_grid # named list. the name is the lambda1 used for fitting
+      names(new_ls) <- formatC(lambda_grid, format = "e", digits = 5)
       self$dict_boot <- c(self$dict_boot, new_ls)
     }
   )
@@ -288,7 +288,7 @@ blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
         new_ls <- c(new_ls, boot_here)
         message(paste(lambda1, "is added"))
       }
-      names(new_ls) <- lambda_grid # named list. the name is the lambda1 used for fitting
+      names(new_ls) <- formatC(lambda_grid, format = "e", digits = 5)
       self$dict_boot <- c(self$dict_boot, new_ls)
     }
   )
