@@ -28,7 +28,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       self$pointTMLE <- onestepFit
       self$Psi <- onestepFit$Psi
     },
-    bootstrap = function(REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1) {
+    bootstrap = function(REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1, to_parallel = FALSE) {
       # regular bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
       betfun <- function(data,
@@ -62,18 +62,39 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         return(c(bootstrapOnestepFit$Psi))
       }
       library(foreach)
-      all_bootstrap_estimates <- foreach(
-        it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
-        .inorder = FALSE,
-        .packages = c("R6", "SuperLearner"),
-        # .errorhandling = 'remove',
-        .errorhandling = "pass",
-        .export = c("self"),
-        .verbose = F
-      ) %do% {
-        # .verbose = T) %dopar% {
-        if (it2 %% 10 == 0) print(it2)
-        betfun(self$x, self$epsilon_step, inflate_lambda = inflate_lambda)
+      if (to_parallel) {
+        library(doSNOW)
+        library(tcltk)
+        nw <- parallel:::detectCores()  # number of workers
+        cl <- makeSOCKcluster(nw)
+        registerDoSNOW(cl)
+
+        all_bootstrap_estimates <- foreach(
+          it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
+          .inorder = FALSE,
+          .packages = c("R6", "SuperLearner"),
+          # .errorhandling = 'remove',
+          .errorhandling = "pass",
+          .export = c("self"),
+          .verbose = F
+        ) %dopar% {
+          if (it2 %% 10 == 0) print(it2)
+          betfun(self$x, self$epsilon_step, inflate_lambda = inflate_lambda)
+        }
+        stopCluster(cl)
+      } else {
+        all_bootstrap_estimates <- foreach(
+          it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
+          .inorder = FALSE,
+          .packages = c("R6", "SuperLearner"),
+          # .errorhandling = 'remove',
+          .errorhandling = "pass",
+          .export = c("self"),
+          .verbose = F
+        ) %do% {
+          if (it2 %% 10 == 0) print(it2)
+          betfun(self$x, self$epsilon_step, inflate_lambda = inflate_lambda)
+        }
       }
       # save(all_bootstrap_estimates, file = 'all_bootstrap_estimates.rda')
       ALPHA <- 0.05
@@ -135,24 +156,51 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       }
 
       library(foreach)
-      all_bootstrap_estimates <- foreach(
-        it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
-        .inorder = FALSE,
-        .packages = c("R6", "SuperLearner"),
-        # .errorhandling = 'remove',
-        .errorhandling = "pass",
-        .export = c("self"),
-        .verbose = F
-      ) %do% {
-        # .verbose = T) %dopar% {
-        if (it2 %% 10 == 0) print(it2)
-        betfun(self$x,
-          epsilon_step = self$epsilon_step,
-          population_x = self$x,
-          population_tmle = self$pointTMLE,
-          inflate_lambda = inflate_lambda
-        )
+      if (to_parallel) {
+        library(doSNOW)
+        library(tcltk)
+        nw <- parallel:::detectCores()  # number of workers
+        cl <- makeSOCKcluster(nw)
+        registerDoSNOW(cl)
+
+        all_bootstrap_estimates <- foreach(
+          it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
+          .inorder = FALSE,
+          .packages = c("R6", "SuperLearner"),
+          .errorhandling = "pass",
+          .export = c("self"),
+          .verbose = F
+        ) %dopar% {
+          if (it2 %% 10 == 0) print(it2)
+          betfun(self$x,
+            epsilon_step = self$epsilon_step,
+            population_x = self$x,
+            population_tmle = self$pointTMLE,
+            inflate_lambda = inflate_lambda
+          )
+        }
+      stopCluster(cl)
+      } else {
+        all_bootstrap_estimates <- foreach(
+          it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
+          .inorder = FALSE,
+          .packages = c("R6", "SuperLearner"),
+          .errorhandling = "pass",
+          .export = c("self"),
+          .verbose = F
+        ) %do% {
+          if (it2 %% 10 == 0) print(it2)
+          betfun(self$x,
+            epsilon_step = self$epsilon_step,
+            population_x = self$x,
+            population_tmle = self$pointTMLE,
+            inflate_lambda = inflate_lambda
+          )
+        }
       }
+
+
+
       ALPHA <- 0.05
       # remove errors
       if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) message(paste("Error happens.", sum(sapply(all_bootstrap_estimates, class) == "numeric"), "bootstraps are correct"))
