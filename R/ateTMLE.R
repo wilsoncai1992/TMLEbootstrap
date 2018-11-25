@@ -174,7 +174,9 @@ ateTMLE <- R6Class("ateTMLE",
     target = function() {
       # perform iterative TMLE
       self$tmle_object <- tmle::tmle(
-        Y = self$data$Y, A = self$data$A, W = as.matrix(self$data$W),
+        Y = self$data$Y,
+        A = self$data$A,
+        W = as.matrix(self$data$W),
         Q = cbind(self$Q_0W, self$Q_1W),
         g1W = self$g1_W,
         family = "gaussian",

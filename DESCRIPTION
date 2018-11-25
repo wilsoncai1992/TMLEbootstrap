@@ -31,4 +31,4 @@ Remotes:
   github::wilsoncai1992/hal9001,
   github::jeremyrcoyle/gentmle2
 VignetteBuilder: knitr
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
