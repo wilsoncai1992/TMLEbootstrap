@@ -114,6 +114,8 @@ predict.fixed_HAL <- function(object, ..., new_data) {
     preds <- as.numeric(as.matrix(pred_x_basis) %*% beta_hat)
   }
 
+  if (object$family == "gaussian") {} # do nothing if gaussian glm
+  if (object$family == "binomial") preds <- plogis(preds) # transform if binomial glm
   return(preds)
 }
 

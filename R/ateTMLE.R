@@ -202,7 +202,7 @@ ateTMLE <- R6Class("ateTMLE",
         Q = cbind(self$Q_0W, self$Q_1W),
         g1W = self$g1_W,
         family = "gaussian",
-        fluctuation = "linear",
+        fluctuation = "logistic",
         V = 3,
         verbose = FALSE
       )
