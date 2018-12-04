@@ -154,11 +154,9 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
     data = NULL,
     bin_width = NULL,
     epsilon_step = NULL,
-    initialize = function(data,
-                              bin_width,
-                              epsilon_step,
-                              REPEAT_BOOTSTRAP = 2e2,
-                              inflate_lambda = 1) {
+    initialize = function(
+      data, bin_width, epsilon_step, REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1
+    ) {
       self$data <- data
       self$bin_width <- bin_width
       self$epsilon_step <- epsilon_step
@@ -175,10 +173,10 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
         clusterSize(cl) # just to check
         new_ls <- foreach(lambda = lambda_grid,
                           .combine = c,
-                          .packages = c('R6', 'fixedHAL', 'hal9001'),
+                          .packages = c("R6", "fixedHAL", "hal9001"),
                           .inorder = TRUE,
-                          .errorhandling = 'pass',
-                          .export = c('self'),
+                          .errorhandling = "pass",
+                          .export = c("self"),
                           .verbose = T) %dopar% {
           boot_here <- comprehensiveBootstrap$new(
             parameter = avgDensityBootstrap,

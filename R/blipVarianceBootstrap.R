@@ -31,7 +31,9 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
       betfun <- function(data) {
         # indices is the random indexes for the bootstrap sample
-        indices <- sample(1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
+        indices <- sample(
+          1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE
+        ) # user specify sample size
         d <- list(
           Y = data$Y[indices],
           A = data$A[indices],
@@ -83,14 +85,14 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         .export = c("self"),
         .verbose = F
       ) %do% {
-        # .verbose = T) %dopar% {
-        if (it2 %% 10 == 0) print(it2)
         betfun(self$data)
       }
       # save(all_bootstrap_estimates, file = 'all_bootstrap_estimates.rda')
       ALPHA <- 0.05
       # remove errors
-      if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) message(paste("Error happens.", sum(sapply(all_bootstrap_estimates, class) == "numeric"), "bootstraps are correct"))
+      if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) {
+        message(paste("Error happens.", sum(sapply(all_bootstrap_estimates, class) == "numeric"), "bootstraps are correct"))
+      }
       all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
       self$bootstrap_estimates <- all_bootstrap_estimates
 
@@ -103,7 +105,9 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
       betfun <- function(data, population_tmle) {
         # indices is the random indexes for the bootstrap sample
-        indices <- sample(1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
+        indices <- sample(
+          1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE
+        ) # user specify sample size
         d <- list(
           Y = data$Y[indices],
           A = data$A[indices],
@@ -151,7 +155,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         # get R2 term
         term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi)^2
         # population_tmle$gentmle_object$tmledata$Q1k
-        term2 <- mean((population_tmle$Q_1W - population_tmle$Q_0W - B_pound)^2)
+        term2 <- mean((population_tmle$Q_1W - population_tmle$Q_0W - B_pound) ^ 2)
         cross_prod <- (population_tmle$g_1W - g_pound_1) / g_pound_1 * (population_tmle$Q_1W - Q_pound_1) -
           (1 - population_tmle$g_1W - (1 - g_pound_1)) / (1 - g_pound_1) * (population_tmle$Q_0W - Q_pound_0)
         term3 <- mean(2 * (B_pound - bootstrapTmleFit$Psi) * cross_prod)
@@ -169,8 +173,6 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         .export = c("self"),
         .verbose = F
       ) %do% {
-        # .verbose = F) %dopar% {
-        if (it2 %% 10 == 0) print(it2)
         betfun(data = self$data, population_tmle = self$pointTMLE)
       }
       # save(all_bootstrap_estimates, file = 'all_bootstrap_estimates.rda')
@@ -194,7 +196,15 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
   inherit = blipVarianceBootstrap,
   public = list(
     Q_0W_rescale = NULL,
-    initialize = function(data, lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL, verbose = NULL, targeting = TRUE) {
+    initialize = function(
+      data,
+      lambda1 = NULL,
+      lambda2 = NULL,
+      M1 = NULL,
+      M2 = NULL,
+      verbose = NULL,
+      targeting = TRUE
+    ) {
       # subclass of `blipVarianceBootstrap` for continuous Y;
       # pointTMLE replaced by `blipVarianceTMLE_gentmle_contY` class
       # bootstrap method replaced by continuous hal fit; feed into `blipVarianceTMLE_gentmle_contY` class

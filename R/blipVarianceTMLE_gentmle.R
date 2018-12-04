@@ -22,12 +22,15 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
     EIC = NULL,
     verbose = FALSE,
     initialize = function(data, epsilon_step = NULL, verbose = NULL) {
-      # HAL initial fit for blip variance TMLE (iterative); targeting is done in gentmle2
+      # HAL initial fit for blip variance TMLE (iterative);
+      # targeting is done in gentmle2
       self$data <- data
       if (class(data$W) != "data.frame") message("W not data.frame")
       if (!is.null(verbose)) self$verbose <- verbose
     },
-    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {
+    initial_fit = function(
+      lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL
+    ) {
       use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
       use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
 
@@ -46,11 +49,11 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
       }
 
       # get Q_1W, Q_0W
-      self$Q_AW <- plogis(hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(self$data$A, self$data$W)))
-      self$Q_1W <- plogis(hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(1, self$data$W)))
-      self$Q_0W <- plogis(hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(0, self$data$W)))
+      self$Q_AW <- hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(self$data$A, self$data$W))
+      self$Q_1W <- hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(1, self$data$W))
+      self$Q_0W <- hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(0, self$data$W))
       # get g1_W
-      self$g_1W <- plogis(hal9001:::predict.hal9001(self$g_fit, new_data = data.frame(self$data$W)))
+      self$g_1W <- hal9001:::predict.hal9001(self$g_fit, new_data = data.frame(self$data$W))
     },
     initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL) {
       # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
@@ -62,15 +65,17 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           n_folds = 3,
           family = "binomial",
           fit_type = "glmnet",
+          return_lasso = TRUE,
           yolo = FALSE
         )
       } else {
-        self$Q_fit <- hal9001::fit_hal_single_lambda(
+        self$Q_fit <- hal9001::fit_hal(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
           family = "binomial",
           fit_type = "glmnet",
           lambda = lambda1,
+          return_lasso = TRUE,
           yolo = FALSE
         )
       }
@@ -82,6 +87,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           n_folds = 3,
           fit_type = "glmnet",
           family = "binomial",
+          return_lasso = TRUE,
           yolo = FALSE
         )
       } else {
@@ -91,6 +97,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           fit_type = "glmnet",
           family = "binomial",
           lambda = lambda2,
+          return_lasso = TRUE,
           yolo = FALSE
         )
       }
@@ -107,10 +114,11 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
         self$Q_fit <- hal9001::fit_hal(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
-          family = "gaussian",
+          family = "binomial",
           fit_type = "glmnet",
           n_folds = 3,
           use_min = TRUE,
+          return_lasso = TRUE,
           yolo = FALSE
         )
       } else if (M1 >= 0) { # use manual M1
@@ -120,6 +128,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           family = "binomial",
           fit_type = "glmnet",
           yolo = FALSE,
+          return_lasso = TRUE,
           M = M1,
         )
       }
@@ -132,6 +141,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           fit_type = "glmnet",
           n_folds = 3,
           use_min = TRUE,
+          return_lasso = TRUE,
           yolo = FALSE
         )
       } else { # use manual M1
@@ -141,6 +151,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           family = "binomial",
           fit_type = "glmnet",
           yolo = FALSE,
+          return_lasso = TRUE,
           M = M2,
         )
       }
@@ -240,8 +251,8 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
       self$Y_rescale <- self$scale_Y$scale01(newX = self$data$Y)
     },
     scaleBack_afterTMLE = function() {
-      self$Psi <- self$Psi * self$scale_Y$rangeX^2 # variance is rescaled
-      self$se_Psi <- self$se_Psi * self$scale_Y$rangeX^2 # EIC is scaled by the same amount
+      self$Psi <- self$Psi * self$scale_Y$rangeX ^ 2 # variance is rescaled
+      self$se_Psi <- self$se_Psi * self$scale_Y$rangeX ^ 2 # EIC is scaled by the same amount
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
     },
     initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {
@@ -267,7 +278,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
       self$Q_1W <- hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(1, self$data$W))
       self$Q_0W <- hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(0, self$data$W))
       # get g1_W
-      self$g_1W <- plogis(hal9001:::predict.hal9001(self$g_fit, new_data = data.frame(self$data$W)))
+      self$g_1W <- hal9001:::predict.hal9001(self$g_fit, new_data = data.frame(self$data$W))
       # scale Q to (0,1)
       self$scale_Q <- scaleX$new(X = c(self$Q_1W, self$Q_0W))
       self$Q_AW_rescale <- self$scale_Q$scale01(newX = self$Q_AW)
@@ -284,15 +295,17 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           n_folds = 3,
           fit_type = "glmnet",
           family = "gaussian",
+          return_lasso = TRUE,
           yolo = FALSE
         )
       } else {
-        self$Q_fit <- hal9001::fit_hal_single_lambda(
+        self$Q_fit <- hal9001::fit_hal(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
           fit_type = "glmnet",
           family = "gaussian",
           lambda = lambda1,
+          return_lasso = TRUE,
           yolo = FALSE
         )
       }
@@ -304,15 +317,17 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           n_folds = 3,
           fit_type = "glmnet",
           family = "binomial",
+          return_lasso = TRUE,
           yolo = FALSE
         )
       } else {
-        self$g_fit <- hal9001::fit_hal_single_lambda(
+        self$g_fit <- hal9001::fit_hal(
           X = self$data$W,
           Y = self$data$A,
           fit_type = "glmnet",
           family = "binomial",
           lambda = lambda2,
+          return_lasso = TRUE,
           yolo = FALSE
         )
       }
@@ -327,6 +342,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           fit_type = "glmnet",
           n_folds = 3,
           use_min = TRUE,
+          return_lasso = TRUE,
           yolo = FALSE
         )
       } else if (M1 >= 0) { # use manual M1
@@ -336,6 +352,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           family = "gaussian",
           fit_type = "glmnet",
           yolo = FALSE,
+          return_lasso = TRUE,
           M = M1,
         )
       }
@@ -348,6 +365,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           fit_type = "glmnet",
           n_folds = 3,
           use_min = TRUE,
+          return_lasso = TRUE,
           yolo = FALSE
         )
       } else { # use manual M1
@@ -356,6 +374,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           Y = self$data$A,
           family = "binomial",
           fit_type = "glmnet",
+          return_lasso = TRUE,
           yolo = FALSE,
           M = M2,
         )
