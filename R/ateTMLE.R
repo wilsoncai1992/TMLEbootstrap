@@ -24,7 +24,9 @@ ateTMLE <- R6Class("ateTMLE",
       self$data <- data
       if (class(data$W) != "data.frame") message("W not data.frame")
     },
-    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL, ...) {
+    initial_fit = function(
+      lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL, ...
+    ) {
       use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
       use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
       if (use_penalized_mode & use_constrained_mode) {
@@ -45,16 +47,19 @@ ateTMLE <- R6Class("ateTMLE",
       self$Q_1W <- stats::predict(object = self$Q_fit, new_data = data.frame(1, self$data$W))
       self$Q_0W <- stats::predict(object = self$Q_fit, new_data = data.frame(0, self$data$W))
       # get g1_W
-      self$g1_W <- plogis(stats::predict(object = self$g_fit, new_data = data.frame(self$data$W)))
+      self$g1_W <- stats::predict(object = self$g_fit, new_data = data.frame(self$data$W))
     },
-    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL, n_folds = 3) {
+    initial_fit_pen_likeli = function(
+      lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL, n_folds = 3
+    ) {
       # lambda1 for Q fit
       # lambda2 for g fit
       self$lambda1 <- lambda1
       self$lambda2 <- lambda2
       # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
       # Q fit
-      if (is.null(lambda1)) { # use CV
+      if (is.null(lambda1)) {
+        # use CV
         self$Q_fit <- hal9001::fit_hal(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
@@ -62,6 +67,7 @@ ateTMLE <- R6Class("ateTMLE",
           fit_type = "glmnet",
           n_folds = 3,
           use_min = TRUE,
+          return_lasso = TRUE,
           yolo = FALSE
         )
         # WILSON hack the lambda_min_ratio
@@ -78,22 +84,26 @@ ateTMLE <- R6Class("ateTMLE",
             n_folds = n_folds,
             use_min = TRUE,
             lambda = lambda_grid_new,
+            return_lasso = TRUE,
             yolo = FALSE
           )
         }
-      } else if (lambda1 >= 0) { # use manual lambda1
-        self$Q_fit <- hal9001::fit_hal_single_lambda(
+      } else if (lambda1 >= 0) {
+        # use manual lambda1
+        self$Q_fit <- hal9001::fit_hal(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
           family = "gaussian",
           lambda = lambda1,
           fit_type = "glmnet",
           use_min = TRUE, # useless
+          return_lasso = TRUE,
           yolo = FALSE
         )
       }
       # g fit
-      if (is.null(lambda2)) { # use CV
+      if (is.null(lambda2)) {
+        # use CV
         self$g_fit <- hal9001::fit_hal(
           X = data.frame(self$data$W),
           Y = self$data$A,
@@ -101,16 +111,19 @@ ateTMLE <- R6Class("ateTMLE",
           fit_type = "glmnet",
           n_folds = n_folds,
           use_min = TRUE,
+          return_lasso = TRUE,
           yolo = FALSE
         )
-      } else { # use manual lambda1
-        self$g_fit <- hal9001::fit_hal_single_lambda(
+      } else {
+        # use manual lambda1
+        self$g_fit <- hal9001::fit_hal(
           X = data.frame(self$data$W),
           Y = self$data$A,
           family = "binomial",
           lambda = lambda2,
           fit_type = "glmnet",
           use_min = TRUE, # useless
+          return_lasso = TRUE,
           yolo = FALSE
         )
       }
@@ -131,6 +144,7 @@ ateTMLE <- R6Class("ateTMLE",
           fit_type = "glmnet",
           n_folds = n_folds,
           use_min = TRUE,
+          return_lasso = TRUE,
           yolo = FALSE
         )
       } else if (M1 >= 0) { # use manual M1
@@ -140,6 +154,7 @@ ateTMLE <- R6Class("ateTMLE",
           family = "gaussian",
           fit_type = "glmnet",
           yolo = FALSE,
+          return_lasso = TRUE,
           M = M1,
         )
       }
@@ -152,6 +167,7 @@ ateTMLE <- R6Class("ateTMLE",
           fit_type = "glmnet",
           n_folds = n_folds,
           use_min = TRUE,
+          return_lasso = TRUE,
           yolo = FALSE
         )
       } else { # use manual M1
@@ -161,6 +177,7 @@ ateTMLE <- R6Class("ateTMLE",
           family = "binomial",
           fit_type = "glmnet",
           yolo = FALSE,
+          return_lasso = TRUE,
           M = M2,
         )
       }
@@ -168,8 +185,13 @@ ateTMLE <- R6Class("ateTMLE",
     plot_Q1W = function(foo = NULL) {
       # plot the Q(1,W) function (optional: against a foo function)
       plot(self$Q_1W ~ self$data$W[, 1], col = "blue")
-      if (!is.null(foo)) curve(expr = foo, from = -10, to = 10, add = TRUE, lty = 2, n = 1e3)
-      points(self$data$Y[self$data$A == 1] ~ self$data$W[self$data$A == 1, 1], col = "grey")
+      if (!is.null(foo)) {
+        curve(expr = foo, from = -10, to = 10, add = TRUE, lty = 2, n = 1e3)
+      }
+      points(
+        self$data$Y[self$data$A == 1] ~ self$data$W[self$data$A == 1, 1],
+        col = "grey"
+      )
     },
     target = function() {
       # perform iterative TMLE
@@ -211,7 +233,7 @@ ateTMLE <- R6Class("ateTMLE",
 
       if (class(g_fit) == 'hal9001') {
         # if the g is a hal9001 fit, do the prediction routine
-        g1_W <- plogis(stats::predict(object = g_fit, new_data = data.frame(data$W)))
+        g1_W <- stats::predict(object = g_fit, new_data = data.frame(data$W))
       } else if (class(g_fit) == 'function') {
         # if the g is the true fit (in function format). evaluate the true Q function
         g1_W <- g_fit(w = data$W$W)

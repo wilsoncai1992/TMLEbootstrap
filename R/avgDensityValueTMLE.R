@@ -41,44 +41,41 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     HAL_tuned = NULL,
 
     p_hat_best = NULL,
-    initialize = function(x,
-                              epsilon_step = NULL,
-                              verbose = NULL) {
+    initialize = function(x, epsilon_step = NULL, verbose = NULL) {
       self$x <- x
       self$tol <- 1e-3 / length(x)
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       if (!is.null(verbose)) self$verbose <- verbose
     },
-    fit_density = function(bin_width = .1,
-                           lambda_grid = NULL,  # NULL for auto lambda
-                           M = NULL,
-                           n_fold = 3,
-                           ...) {
+    fit_density = function(
+      bin_width = .1, lambda_grid = NULL, M = NULL, n_fold = 3, ...
+    ) {
       use_penalized_mode <- !is.null(lambda_grid)
       use_constrained_mode <- !is.null(M)
 
       if (use_constrained_mode) {
-        hal_out <- self$fit_density_constrained_form(bin_width = bin_width,
-                                                      lambda_grid = lambda_grid,
-                                                      M = M,
-                                                      ...
-                                                    )
+        hal_out <- self$fit_density_constrained_form(
+          bin_width = bin_width,
+          lambda_grid = lambda_grid,
+          M = M,
+          ...
+        )
       } else {
-        hal_out <- self$fit_density_pen_likeli(bin_width = bin_width,
-                                                lambda_grid = lambda_grid,
-                                                n_fold = n_fold,
-                                                ...
-                                              )
+        hal_out <- self$fit_density_pen_likeli(
+          bin_width = bin_width,
+          lambda_grid = lambda_grid,
+          n_fold = n_fold,
+          ...
+        )
       }
       yhat <- hal_out$predict(new_x = self$longDataOut$x)
       density_intial <- empiricalDensity$new(p_density = yhat, x = self$x)
       self$p_hat <- density_intial$normalize()
       self$hal_best <- hal_out
     },
-    fit_density_pen_likeli = function(bin_width = .1,
-                                     lambda_grid = NULL,  # NULL for auto lambda
-                                     lambda_min_ratio = NULL,
-                                     n_fold = 3) {
+    fit_density_pen_likeli = function(
+      bin_width = .1, lambda_grid = NULL, lambda_min_ratio = NULL, n_fold = 3
+    ) {
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
 
       verbose <- FALSE
@@ -90,10 +87,9 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       self$HAL_tuned <- hal_out$hal_fit
       return(hal_out)
     },
-    fit_density_constrained_form = function(bin_width = .1,
-                                            lambda_grid = NULL,
-                                            M = NULL) {
-      # NULL for auto lambda
+    fit_density_constrained_form = function(
+      bin_width = .1, lambda_grid = NULL, M = NULL
+    ) {
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
 
       hal_list <- list()
@@ -118,13 +114,12 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     },
     compute_Psi = function(p_hat, to_return = FALSE) {
       # compute Psi; use x, p_hat
-      dummy_df <- data.frame(id = 1:length(p_hat$x),
-                              x = p_hat$x,
-                              p_density = p_hat$p_density
-                            )
+      dummy_df <- data.frame(
+        id = 1:length(p_hat$x), x = p_hat$x, p_density = p_hat$p_density
+      )
       dummy_df <- dummy_df[order(dummy_df$x), ]
       dx <- c(0, diff(dummy_df$x))
-      Psi <- sum(dummy_df$p_density^2 * dx)
+      Psi <- sum(dummy_df$p_density ^ 2 * dx)
       if (to_return) return(Psi) else self$Psi <- Psi
     },
     compute_EIC = function(p_hat, Psi, to_return = FALSE) {

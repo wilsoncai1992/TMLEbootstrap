@@ -64,7 +64,7 @@ ateBootstrap <- R6Class("ateBootstrap",
           hal9001_object = self$pointTMLE$g_fit,
           family = stats::binomial()
         )
-        g1_W_boot <- predict.fixed_HAL(g_boot, new_data = data.frame(d$W)) # fixedHAL binomial does not need `plogis` transform
+        g1_W_boot <- predict.fixed_HAL(g_boot, new_data = data.frame(d$W))
 
         bootstrapTMLEFit$Q_1W <- Q_1W_boot
         bootstrapTMLEFit$Q_0W <- Q_0W_boot
@@ -133,7 +133,7 @@ ateBootstrap <- R6Class("ateBootstrap",
           hal9001_object = self$pointTMLE$g_fit,
           family = stats::binomial()
         )
-        g1_W_boot <- predict.fixed_HAL(g_boot, new_data = data.frame(d$W)) # fixedHAL binomial does not need `plogis` transform
+        g1_W_boot <- predict.fixed_HAL(g_boot, new_data = data.frame(d$W))
         # plug into tmle object
         bootstrapTMLEFit$Q_1W <- Q_1W_boot
         bootstrapTMLEFit$Q_0W <- Q_0W_boot

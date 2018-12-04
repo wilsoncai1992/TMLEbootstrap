@@ -15,7 +15,7 @@ densityHAL <- R6Class("densityHAL",
     fit = function(lambda = 2e-5) {
       # use `longiData` to transform `x`; fit a single lambda HAL on the data
       df_compressed <- self$longiData$generate_df_compress(x = self$x)
-      self$hal_fit <- hal9001::fit_hal_single_lambda(
+      self$hal_fit <- hal9001::fit_hal(
         X = df_compressed[, "box"],
         Y = df_compressed$Y,
         weights = df_compressed$Freq,
@@ -23,13 +23,15 @@ densityHAL <- R6Class("densityHAL",
         lambda = lambda,
         fit_type = "glmnet",
         use_min = TRUE, # useless
+        return_lasso = TRUE,
         yolo = FALSE
       )
     },
     predict = function(new_x = NULL) {
       # predict density p_hat on `new_x`
       if (length(new_x) > 1e4) return(self$predict_long(new_x = new_x))
-      return(expit(predict(self$hal_fit, new_data = new_x)))
+      # return(expit(predict(self$hal_fit, new_data = new_x)))
+      return(predict(self$hal_fit, new_data = new_x))
     },
     predict_long = function(new_x = NULL) {
       # make prediction faster on larger x
@@ -110,26 +112,28 @@ cv_densityHAL <- R6Class("cv_densityHAL",
           family = "binomial",
           fit_type = "glmnet",
           use_min = TRUE,
+          return_lasso = TRUE,
           yolo = FALSE
         )
-        lambda_grid <- hal_for_lambda$lambda_grid
+        lambda_grid <- hal_for_lambda$hal_lasso$lambda
         if (!is.null(lambda_min_ratio)) {
           # manually increase the range of lambda grid
-          create_lambda_grid_by_ratio <- function(lambda_grid, lambda_min_ratio){
-            lambda_max = max(cv_lambda_grid)
-            lambda_min = lambda_max * lambda_min_ratio
+          create_lambda_grid_by_ratio <- function(
+            lambda_grid, lambda_min_ratio
+          ){
+            lambda_max <- max(cv_lambda_grid)
+            lambda_min <- lambda_max * lambda_min_ratio
             log_lambda_range <- log(c(lambda_min, lambda_max))
-            lambda_grid_new <- exp(
-                                seq(
+            lambda_grid_new <- exp(seq(
                                   log_lambda_range[2],
                                   log_lambda_range[1],
                                   length.out = 1e2
-                                  )
-                                )
+                                ))
             return(lambda_grid_new)
           }
-          lambda_grid <- create_lambda_grid_by_ratio(lambda_grid,
-                                                    lambda_min_ratio)
+          lambda_grid <- create_lambda_grid_by_ratio(
+            lambda_grid, lambda_min_ratio
+          )
         }
       }
 
@@ -146,7 +150,8 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       self$lambda.min <- results$lambda[which.min(results$loss)]
     },
     compute_model_full_data = function(lambda) {
-      # re-fit the best lambda model on the entire dataset; output the `densityHAL` object
+      # re-fit the best lambda model on the entire dataset;
+      # output the `densityHAL` object
       HALfit_out <- densityHAL$new(x = self$x, longiData = self$longiData)
       HALfit_out$fit(lambda = lambda)
       return(HALfit_out)
@@ -155,6 +160,8 @@ cv_densityHAL <- R6Class("cv_densityHAL",
 )
 
 #' @export
-cross_entropy <- function(y, yhat) -log(yhat) * as.numeric(y == 1) - log(1 - yhat) * as.numeric(y == 0)
+cross_entropy <- function(y, yhat) {
+  -log(yhat) * as.numeric(y == 1) - log(1 - yhat) * as.numeric(y == 0)
+}
 
-expit <- function(x) {exp(x)/(1+exp(x))}
+expit <- function(x) exp(x) / (1 + exp(x))

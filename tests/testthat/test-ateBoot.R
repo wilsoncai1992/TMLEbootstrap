@@ -8,7 +8,12 @@ simulate_data <- function(n_sim, a1, a2, b1) {
   thresholding <- function(x, min, max) pmin(pmax(x, min), max)
 
   W <- truncnorm::rtruncnorm(n = n_sim, a = -10, b = 10, mean = 0, sd = 4)
-  A <- rbinom(n_sim, size = 1, prob = thresholding(.3 + 0.1 * W * sin(a2 * W), 0.3, 0.7) + rnorm(n_sim, mean = 0, sd = 0.05))
+  A <- rbinom(
+    n_sim, 
+    size = 1, 
+    prob = thresholding(.3 + 0.1 * W * sin(a2 * W), 0.3, 0.7) + 
+      rnorm(n_sim, mean = 0, sd = 0.05)
+  )
 
   # Y <- 0.05*W^2 + b1*sin(W*a1) + A + rnorm(n_sim, 0, 1)
   Y <- b1 * sin(W * a1) + A + rnorm(n_sim, 0, 1)

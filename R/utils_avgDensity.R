@@ -11,7 +11,9 @@ empiricalDensity <- R6Class("empiricalDensity",
       self$x <- x
     },
     normalize = function() {
-      dummy_df <- data.frame(id = 1:length(self$x), x = self$x, p_density = self$p_density)
+      dummy_df <- data.frame(
+        id = 1:length(self$x), x = self$x, p_density = self$p_density
+      )
       dummy_df <- dummy_df[order(dummy_df$x), ]
       dx <- c(0, diff(dummy_df$x))
       dummy_df$p_density <- dummy_df$p_density / sum(dummy_df$p_density * dx)
@@ -49,8 +51,7 @@ longiData <- R6Class("longiData",
       all_df <- list()
       b <- 1
       for (i in self$grids) {
-        # Y <- ((i <= x) & (x < i+bin_width)) + 0L
-        Y <- ((i - .5 * self$bin_width <= x) & (x < i + .5 * self$bin_width)) + 0L
+        Y <- ( (i - .5 * self$bin_width <= x) & (x < i + .5 * self$bin_width)) + 0L
         all_df[[b]] <- data.frame(id = 1:length(x), Y = Y, box = i)
         b <- b + 1
       }
@@ -91,7 +92,9 @@ longiData_resample <- R6Class("longiData_resample",
     create_folds = function(n_fold = 3) {
       artificial_ind <- rep(1:self$n_row, self$df_compressed$Freq)
       sample_per_fold <- ceiling(self$n_sample / n_fold)
-      fold_assign <- sample(head(rep(1:n_fold, each = sample_per_fold), n = self$n_sample))
+      fold_assign <- sample(
+        head(rep(1:n_fold, each = sample_per_fold), n = self$n_sample)
+      )
 
       df_compressed_folds <- list()
       for (i in 1:n_fold) {
@@ -104,7 +107,9 @@ longiData_resample <- R6Class("longiData_resample",
       return(df_compressed_folds)
     },
     bootstrap_with_replacement = function(n = self$n_sample) {
-      samp_idx <- sample(seq_len(self$n_row), n, prob = self$df_compressed$Freq, replace = TRUE)
+      samp_idx <- sample(
+        seq_len(self$n_row), n, prob = self$df_compressed$Freq, replace = TRUE
+      )
       samp_idx_tbl <- as.data.frame(table(samp_idx))
       samp_idx_tbl$samp_idx <- as.numeric(as.character(samp_idx_tbl$samp_idx))
       new_df_compressed <- self$df_compressed[samp_idx_tbl$samp_idx, ]
@@ -122,6 +127,11 @@ sum_longiData_resample <- function(list) {
   library(dplyr)
   list_df <- lapply(list, function(x) x$df_compressed)
   df_long <- do.call(rbind, list_df)
-  out <- data.frame(df_long %>% group_by(box, Y) %>% summarise(Freq = sum(Freq)) %>% ungroup())
+  out <- data.frame(
+    df_long %>%
+    group_by(box, Y) %>%
+    summarise(Freq = sum(Freq)) %>%
+    ungroup()
+  )
   return(longiData_resample$new(df_compressed = out))
 }
