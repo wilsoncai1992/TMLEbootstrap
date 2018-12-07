@@ -22,6 +22,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       onestepFit <- avgDensityTMLE$new(
         x = self$x, epsilon_step = self$epsilon_step, verbose = TRUE
+        # x = self$x, epsilon_step = self$epsilon_step, verbose = FALSE
       )
       onestepFit$fit_density(
         bin_width = bin_width, lambda_grid = lambda_grid, M = M, n_fold = 3
@@ -46,7 +47,9 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         indices <- sample(1:length(data), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
         d <- data[indices]
 
-        bootstrapOnestepFit <- avgDensityTMLE$new(x = d, epsilon_step = epsilon_step)
+        bootstrapOnestepFit <- avgDensityTMLE$new(
+          x = d, epsilon_step = epsilon_step, verbose = FALSE
+        )
         # fit new density
         longDFOut_new <- self$pointTMLE$longDataOut$generate_df_compress(x = d)
         HAL_boot <- fit_fixed_HAL(
@@ -128,7 +131,9 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         indices <- sample(1:length(data), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
         d <- data[indices]
 
-        bootstrapOnestepFit <- avgDensityTMLE$new(x = d, epsilon_step = epsilon_step)
+        bootstrapOnestepFit <- avgDensityTMLE$new(
+          x = d, epsilon_step = epsilon_step, verbose = FALSE
+        )
         # fit new density
         longDFOut_new <- self$pointTMLE$longDataOut$generate_df_compress(x = d)
         HAL_boot <- fit_fixed_HAL(

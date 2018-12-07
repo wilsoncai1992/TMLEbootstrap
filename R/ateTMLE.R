@@ -68,7 +68,7 @@ ateTMLE <- R6Class("ateTMLE",
           n_folds = 3,
           use_min = TRUE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
         # WILSON hack the lambda_min_ratio
@@ -86,7 +86,7 @@ ateTMLE <- R6Class("ateTMLE",
             use_min = TRUE,
             lambda = lambda_grid_new,
             return_lasso = TRUE,
-            return_x_basis = TRUE,
+            return_x_basis = FALSE,
             yolo = FALSE
           )
         }
@@ -100,7 +100,7 @@ ateTMLE <- R6Class("ateTMLE",
           fit_type = "glmnet",
           use_min = TRUE, # useless
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       }
@@ -115,7 +115,7 @@ ateTMLE <- R6Class("ateTMLE",
           n_folds = n_folds,
           use_min = TRUE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       } else {
@@ -128,7 +128,7 @@ ateTMLE <- R6Class("ateTMLE",
           fit_type = "glmnet",
           use_min = TRUE, # useless
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       }
@@ -150,7 +150,7 @@ ateTMLE <- R6Class("ateTMLE",
           n_folds = n_folds,
           use_min = TRUE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       } else if (M1 >= 0) { # use manual M1
@@ -161,7 +161,7 @@ ateTMLE <- R6Class("ateTMLE",
           fit_type = "glmnet",
           yolo = FALSE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           M = M1,
         )
       }
@@ -175,7 +175,7 @@ ateTMLE <- R6Class("ateTMLE",
           n_folds = n_folds,
           use_min = TRUE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       } else { # use manual M1
@@ -186,7 +186,7 @@ ateTMLE <- R6Class("ateTMLE",
           fit_type = "glmnet",
           yolo = FALSE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           M = M2,
         )
       }

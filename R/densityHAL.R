@@ -24,7 +24,7 @@ densityHAL <- R6Class("densityHAL",
         fit_type = "glmnet",
         use_min = TRUE, # useless
         return_lasso = TRUE,
-        return_x_basis = TRUE,
+        return_x_basis = FALSE,
         yolo = FALSE
       )
     },
@@ -114,7 +114,7 @@ cv_densityHAL <- R6Class("cv_densityHAL",
           fit_type = "glmnet",
           use_min = TRUE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
         lambda_grid <- hal_for_lambda$hal_lasso$lambda

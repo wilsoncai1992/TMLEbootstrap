@@ -66,7 +66,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           family = "binomial",
           fit_type = "glmnet",
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       } else {
@@ -77,7 +77,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           fit_type = "glmnet",
           lambda = lambda1,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       }
@@ -90,7 +90,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           fit_type = "glmnet",
           family = "binomial",
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       } else {
@@ -101,7 +101,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           family = "binomial",
           lambda = lambda2,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       }
@@ -123,7 +123,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           n_folds = 3,
           use_min = TRUE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       } else if (M1 >= 0) { # use manual M1
@@ -134,7 +134,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           fit_type = "glmnet",
           yolo = FALSE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           M = M1,
         )
       }
@@ -148,7 +148,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           n_folds = 3,
           use_min = TRUE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       } else { # use manual M1
@@ -159,7 +159,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           fit_type = "glmnet",
           yolo = FALSE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           M = M2,
         )
       }
@@ -304,7 +304,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           fit_type = "glmnet",
           family = "gaussian",
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       } else {
@@ -315,7 +315,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           family = "gaussian",
           lambda = lambda1,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       }
@@ -328,7 +328,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           fit_type = "glmnet",
           family = "binomial",
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       } else {
@@ -339,7 +339,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           family = "binomial",
           lambda = lambda2,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       }
@@ -355,7 +355,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           n_folds = 3,
           use_min = TRUE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       } else if (M1 >= 0) { # use manual M1
@@ -366,7 +366,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           fit_type = "glmnet",
           yolo = FALSE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           M = M1,
         )
       }
@@ -380,7 +380,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           n_folds = 3,
           use_min = TRUE,
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE
         )
       } else { # use manual M1
@@ -390,7 +390,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           family = "binomial",
           fit_type = "glmnet",
           return_lasso = TRUE,
-          return_x_basis = TRUE,
+          return_x_basis = FALSE,
           yolo = FALSE,
           M = M2,
         )

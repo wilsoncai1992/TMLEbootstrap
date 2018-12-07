@@ -134,24 +134,31 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       self$p_hat$normalize()
     },
     onestepTarget = function(verbose = FALSE) {
-      # initiate the best one
-      self$p_hat_best <- self$p_hat$clone(deep = TRUE)
-      meanEIC_best <- Inf
       # recursive targeting of onestep
       n_iter <- 0
-      meanEIC_prev <- abs(mean(self$EIC))
-      while (abs(mean(self$EIC)) >= self$tol) {
-        meanEIC_prev <- abs(mean(self$EIC))
+      absmeanEIC_prev <- abs(mean(self$EIC))
+      absmeanEIC_current <- abs(mean(self$EIC))
+      # initiate the best one
+      meanEIC_best <- mean(self$EIC)
+      self$p_hat_best <- self$p_hat$clone(deep = TRUE)
+      while (absmeanEIC_current >= self$tol) {
+        if (self$verbose | verbose) {
+          df_debug <- data.frame(n_iter, mean(self$EIC), self$Psi)
+          colnames(df_debug) <- NULL
+          print(df_debug)
+          # if (n_iter %% 1 == 0) self$p_hat$display(main = n_iter) # WILSON: DEBUG
+        }
+        absmeanEIC_prev <- abs(mean(self$EIC))
         self$compute_Psi(self$p_hat, to_return = FALSE)
         self$compute_EIC(self$p_hat, self$Psi, to_return = FALSE)
         self$update_once()
-        if (self$verbose | verbose) print(c(mean(self$EIC), self$Psi))
+        absmeanEIC_current <- abs(mean(self$EIC))
         n_iter <- n_iter + 1
-        if (abs(mean(self$EIC)) > meanEIC_prev) {
+        if (absmeanEIC_current > absmeanEIC_prev) {
           # the update caused PnEIC to increase, change direction
           self$epsilon_step <- -self$epsilon_step
         }
-        if (abs(mean(self$EIC)) < abs(meanEIC_best)) {
+        if (absmeanEIC_current < abs(meanEIC_best)) {
           # the update caused PnEIC to beat the current best
           # update our best candidate
           self$p_hat_best <- self$p_hat$clone(deep = TRUE)
@@ -166,7 +173,14 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       self$p_hat <- self$p_hat_best
       self$compute_Psi(self$p_hat, to_return = FALSE)
       self$compute_EIC(self$p_hat, self$Psi, to_return = FALSE)
-      # print(paste('the min(Pn(D*)) =', meanEIC_best))
+      if (self$verbose | verbose) {
+        message(paste(
+          "Pn(EIC)=",
+          formatC(meanEIC_best, format = "e", digits = 2),
+          "Psi=",
+          formatC(self$Psi, format = "e", digits = 2)
+        ))
+      }
     },
     inference = function() {
       # generate CI using EIC
