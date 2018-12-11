@@ -229,9 +229,9 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
   inherit = LambdaGrid,
   public = list(
     data = NULL,
-    initialize = function(data,
-                              REPEAT_BOOTSTRAP = 2e2,
-                              inflate_lambda = 1) {
+    initialize = function(
+      data, REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1
+    ) {
       self$data <- data
       self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
       self$inflate_lambda <- inflate_lambda
@@ -245,11 +245,11 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
           lambda1 = lambda1,
           ...
         )
-        boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
-        boot_here$all_CI()
-        boot_here$compute_width()
+        # boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
+        # boot_here$all_CI()
+        # boot_here$compute_width()
         # this hacks away from computing bootstrap for all lambdas
-        # boot_here$compute_wald_width()
+        boot_here$compute_wald_width()
         new_ls <- c(new_ls, boot_here)
         message(paste(lambda1, "is added"))
       }
@@ -264,9 +264,9 @@ blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
   inherit = LambdaGrid,
   public = list(
     data = NULL,
-    initialize = function(data,
-                              REPEAT_BOOTSTRAP = 2e2,
-                              inflate_lambda = 1) {
+    initialize = function(
+      data, REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1
+    ) {
       self$data <- data
       self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
       self$inflate_lambda <- inflate_lambda
