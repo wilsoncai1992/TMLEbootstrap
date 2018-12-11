@@ -40,7 +40,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     ) {
       # regular bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
-      betfun <- function(
+      bootstrap_once <- function(
         data, epsilon_step = self$epsilon_step, inflate_lambda
       ) {
         # indices is the random indexes for the bootstrap sample
@@ -67,7 +67,9 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         bootstrapOnestepFit$p_hat <- density_boot$normalize()
         # target new fit
         bootstrapOnestepFit$compute_Psi(p_hat = bootstrapOnestepFit$p_hat, FALSE)
-        bootstrapOnestepFit$compute_EIC(p_hat = bootstrapOnestepFit$p_hat, Psi = bootstrapOnestepFit$Psi, FALSE)
+        bootstrapOnestepFit$compute_EIC(
+          p_hat = bootstrapOnestepFit$p_hat, Psi = bootstrapOnestepFit$Psi, FALSE
+        )
         if (self$targeting) bootstrapOnestepFit$onestepTarget()
 
         return(bootstrapOnestepFit$Psi)
@@ -86,10 +88,9 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
           .inorder = FALSE,
           .packages = c("R6", "SuperLearner"),
           .errorhandling = "pass",
-          .export = c("self"),
-          .verbose = F
+          .export = c("self")
         ) %dopar% {
-          betfun(self$x, self$epsilon_step, inflate_lambda = inflate_lambda)
+          bootstrap_once(self$x, self$epsilon_step, inflate_lambda = inflate_lambda)
         }
         stopCluster(cl)
       } else {
@@ -98,21 +99,32 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
           .inorder = FALSE,
           .packages = c("R6", "SuperLearner"),
           .errorhandling = "pass",
-          .export = c("self"),
-          .verbose = F
+          .export = c("self")
         ) %do% {
-          betfun(self$x, self$epsilon_step, inflate_lambda = inflate_lambda)
+          bootstrap_once(self$x, self$epsilon_step, inflate_lambda = inflate_lambda)
         }
       }
       # save(all_bootstrap_estimates, file = 'all_bootstrap_estimates.rda')
       ALPHA <- 0.05
       # remove errors
-      if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) message(paste("Error happens.", sum(sapply(all_bootstrap_estimates, class) == "numeric"), "bootstraps are correct"))
+      if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) {
+        message(paste(
+          "Error happens.",
+          sum(sapply(all_bootstrap_estimates, class) == "numeric"),
+          "bootstraps are correct"
+        ))
+      }
       all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
       self$bootstrap_estimates <- all_bootstrap_estimates
 
-      boot1_CI <- quantile(all_bootstrap_estimates, probs = c(ALPHA / 2, 1 - ALPHA / 2))
+      Z_quantile <- quantile(
+        all_bootstrap_estimates - self$pointTMLE$Psi,
+        probs = c(ALPHA / 2, 1 - ALPHA / 2)
+      )
       normal_CI <- self$pointTMLE$CI
+      boot1_CI <- c(
+        self$pointTMLE$Psi - Z_quantile[2], self$pointTMLE$Psi - Z_quantile[1]
+      )
       self$CI_all <- list(normal_CI, boot1_CI)
     },
     exact_bootstrap = function(
@@ -120,7 +132,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     ) {
       # exact second order expansion bootstrap
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
-      betfun <- function(
+      bootstrap_once <- function(
         data,
         epsilon_step = self$epsilon_step,
         population_x = self$x,
@@ -165,7 +177,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         dx <- c(0, diff(dummy_df$x))
         R_2 <- -sum((dummy_df$p_pound - dummy_df$p_n)^2 * dx)
 
-        return(c(bootstrapOnestepFit$Psi - R_2))
+        return(bootstrapOnestepFit$Psi - R_2)
       }
 
       library(foreach)
@@ -181,10 +193,9 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
           .inorder = FALSE,
           .packages = c("R6", "SuperLearner"),
           .errorhandling = "pass",
-          .export = c("self"),
-          .verbose = F
+          .export = c("self")
         ) %dopar% {
-          betfun(self$x,
+          bootstrap_once(self$x,
             epsilon_step = self$epsilon_step,
             population_x = self$x,
             population_tmle = self$pointTMLE,
@@ -198,10 +209,9 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
           .inorder = FALSE,
           .packages = c("R6", "SuperLearner"),
           .errorhandling = "pass",
-          .export = c("self"),
-          .verbose = F
+          .export = c("self")
         ) %do% {
-          betfun(self$x,
+          bootstrap_once(self$x,
             epsilon_step = self$epsilon_step,
             population_x = self$x,
             population_tmle = self$pointTMLE,
@@ -213,19 +223,158 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       ALPHA <- 0.05
       # remove errors
       if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) {
-        message(paste("Error happens.", sum(sapply(all_bootstrap_estimates, class) == "numeric"), "bootstraps are correct"))
+        message(paste(
+          "Error happens.",
+          sum(sapply(all_bootstrap_estimates, class) == "numeric"),
+          "bootstraps are correct"
+        ))
       }
       all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
       self$bootstrap_estimates <- all_bootstrap_estimates
 
-      boot1_CI <- quantile(all_bootstrap_estimates, probs = c(ALPHA / 2, 1 - ALPHA / 2))
+      Z_quantile <- quantile(
+        all_bootstrap_estimates - self$pointTMLE$Psi,
+        probs = c(ALPHA / 2, 1 - ALPHA / 2)
+      )
       normal_CI <- self$pointTMLE$CI
+      boot1_CI <- c(
+        self$pointTMLE$Psi - Z_quantile[2], self$pointTMLE$Psi - Z_quantile[1]
+      )
+      self$CI_all <- list(normal_CI, boot1_CI)
+    },
+    exact_bootstrap_paper = function(
+      REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1, to_parallel = FALSE
+    ) {
+      # exact second order expansion bootstrap
+      SAMPLE_PER_BOOTSTRAP <- length(self$x)
+      bootstrap_once <- function(
+        data,
+        epsilon_step = self$epsilon_step,
+        population_x = self$x,
+        population_tmle = self$pointTMLE,
+        inflate_lambda
+      ) {
+        # indices is the random indexes for the bootstrap sample
+        indices <- sample(1:length(data), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
+        d <- data[indices]
+
+        bootstrapOnestepFit <- avgDensityTMLE$new(
+          x = d, epsilon_step = epsilon_step, verbose = FALSE
+        )
+        # fit new density
+        longDFOut_new <- self$pointTMLE$longDataOut$generate_df_compress(x = d)
+        HAL_boot <- fit_fixed_HAL(
+          Y = longDFOut_new$Y,
+          X = longDFOut_new[, "box"],
+          weights = longDFOut_new$Freq, # for df_compress only
+          hal9001_object = self$pointTMLE$HAL_tuned,
+          family = stats::binomial(),
+          inflate_lambda = inflate_lambda
+        )
+        yhat_boot <- predict.fixed_HAL(HAL_boot, new_data = d)
+
+        yhat_boot[yhat_boot > 2 * quantile(yhat_boot, probs = .75)] <- 0 # temporarily fix hal9001 extrapolation error
+        density_boot <- empiricalDensity$new(p_density = yhat_boot, x = d)
+        bootstrapOnestepFit$p_hat <- density_boot$normalize()
+        # target new fit
+        bootstrapOnestepFit$compute_Psi(p_hat = bootstrapOnestepFit$p_hat, FALSE)
+        bootstrapOnestepFit$compute_EIC(p_hat = bootstrapOnestepFit$p_hat, Psi = bootstrapOnestepFit$Psi, FALSE)
+        if (self$targeting) bootstrapOnestepFit$onestepTarget()
+
+        # get R2 term
+        yhat_population <- predict.fixed_HAL(HAL_boot, new_data = population_x)
+        yhat_population[yhat_population > 2 * quantile(yhat_population, probs = .75)] <- 0 # temporarily fix hal9001 extrapolation error
+        density_population <- empiricalDensity$new(p_density = yhat_population, x = population_x)
+        density_population$normalize()
+        ## integration
+        dummy_df <- data.frame(
+          id = 1:length(population_x),
+          x = population_x,
+          p_pound = density_population$p_density,
+          p_n = population_tmle$p_hat$p_density
+        )
+        dummy_df <- dummy_df[order(dummy_df$x), ]
+        dx <- c(0, diff(dummy_df$x))
+        R_2 <- -sum( (dummy_df$p_pound - dummy_df$p_n) ^ 2 * dx)
+
+        dummy_df_d <- data.frame(
+          id = 1:length(density_boot$x),
+          x = density_boot$x,
+          p_density = density_boot$p_density
+        )
+        dummy_df_d <- dummy_df_d[order(dummy_df_d$x), ]
+        dx_d <- c(0, diff(dummy_df_d$x))
+        PnDstar <- 2 * mean(density_boot$p_density - sum( dummy_df_d$p_density ^ 2 * dx_d))
+        P0Dstar <- 2 * mean(dummy_df$p_pound - sum( dummy_df$p_pound ^ 2 * dx))
+        return(PnDstar - P0Dstar + R_2)
+      }
+
+      library(foreach)
+      if (to_parallel) {
+        library(doSNOW)
+        library(tcltk)
+        nw <- parallel:::detectCores()  # number of workers
+        cl <- makeSOCKcluster(nw)
+        registerDoSNOW(cl)
+
+        all_bootstrap_estimates <- foreach(
+          it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
+          .inorder = FALSE,
+          .packages = c("R6", "SuperLearner"),
+          .errorhandling = "pass",
+          .export = c("self")
+        ) %dopar% {
+          bootstrap_once(self$x,
+            epsilon_step = self$epsilon_step,
+            population_x = self$x,
+            population_tmle = self$pointTMLE,
+            inflate_lambda = inflate_lambda
+          )
+        }
+      stopCluster(cl)
+      } else {
+        all_bootstrap_estimates <- foreach(
+          it2 = 1:(REPEAT_BOOTSTRAP), .combine = c,
+          .inorder = FALSE,
+          .packages = c("R6", "SuperLearner"),
+          .errorhandling = "pass",
+          .export = c("self")
+        ) %do% {
+          bootstrap_once(self$x,
+            epsilon_step = self$epsilon_step,
+            population_x = self$x,
+            population_tmle = self$pointTMLE,
+            inflate_lambda = inflate_lambda
+          )
+        }
+      }
+
+      ALPHA <- 0.05
+      # remove errors
+      if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) {
+        message(paste(
+          "Error happens.",
+          sum(sapply(all_bootstrap_estimates, class) == "numeric"),
+          "bootstraps are correct"
+        ))
+      }
+      all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
+      self$bootstrap_estimates <- all_bootstrap_estimates
+
+      Z_quantile <- quantile(
+        all_bootstrap_estimates,
+        probs = c(ALPHA / 2, 1 - ALPHA / 2)
+      )
+      normal_CI <- self$pointTMLE$CI
+      boot1_CI <- c(
+        self$pointTMLE$Psi - Z_quantile[2], self$pointTMLE$Psi - Z_quantile[1]
+      )
       self$CI_all <- list(normal_CI, boot1_CI)
     }
     # convex_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1, alpha = 0.4){
     #   # exact second order expansion bootstrap
     #   SAMPLE_PER_BOOTSTRAP <- length(self$x)
-    #   betfun <- function(data,
+    #   bootstrap_once <- function(data,
     #                      epsilon_step = self$epsilon_step,
     #                      population_x = self$x,
     #                      population_tmle = self$pointTMLE,
@@ -263,11 +412,10 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     #                                      .packages = c('R6', 'SuperLearner'),
     #                                      # .errorhandling = 'remove',
     #                                      .errorhandling = 'pass',
-    #                                      .export = c('self'),
-    #                                      .verbose = F) %do% {
+    #                                      .export = c('self')
     #                                      # .verbose = T) %dopar% {
     #     if(it2 %% 10 == 0) print(it2)
-    #     betfun(self$x, self$epsilon_step, inflate_lambda = inflate_lambda, alpha = alpha)
+    #     bootstrap_once(self$x, self$epsilon_step, inflate_lambda = inflate_lambda, alpha = alpha)
     #   }
     #   # save(all_bootstrap_estimates, file = 'all_bootstrap_estimates.rda')
     #   ALPHA <- 0.05

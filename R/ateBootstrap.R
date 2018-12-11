@@ -1,5 +1,3 @@
-library(foreach)
-
 #' @export
 ateBootstrap <- R6Class("ateBootstrap",
   inherit = generalBootstrap,
@@ -267,7 +265,7 @@ ateBootstrap <- R6Class("ateBootstrap",
         part1 <- (g_pound_1 - self$pointTMLE$g1_W) / g_pound_1 * (Q_pound_1 - self$pointTMLE$Q_1W)
         part0 <- (g_pound_0 - (1 - self$pointTMLE$g1_W)) / g_pound_0 * (Q_pound_0 - self$pointTMLE$Q_0W)
         R2 <- mean(part1 - part0)
-        
+
         return(PnDstar - P0Dstar + R2)
       }
       library(foreach)

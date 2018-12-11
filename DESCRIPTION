@@ -27,7 +27,7 @@ Suggests:
   nnls,
   Matrix
 Remotes:
-  github::jeremyrcoyle/origami,
+  github::tlverse/origami,
   github::tlverse/hal9001,
   github::jeremyrcoyle/gentmle2
 VignetteBuilder: knitr
