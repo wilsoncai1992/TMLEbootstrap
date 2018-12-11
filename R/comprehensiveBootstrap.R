@@ -34,8 +34,8 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
       # input:
       # REPEAT_BOOTSTRAP
       self$bootOut$bootstrap(...)
-      self$bootOutExact$exact_bootstrap(...)
-      # self$bootOutExact$exact_bootstrap_paper(...)
+      # self$bootOutExact$exact_bootstrap(...)
+      self$bootOutExact$exact_bootstrap_paper(...)
       # self$bootOutConvex$convex_bootstrap(...)
 
       self$Psi <- self$bootOut$Psi # populate Psi_n
