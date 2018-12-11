@@ -9,9 +9,9 @@ simulate_data <- function(n_sim, a1, a2, b1) {
 
   W <- truncnorm::rtruncnorm(n = n_sim, a = -10, b = 10, mean = 0, sd = 4)
   A <- rbinom(
-    n_sim, 
-    size = 1, 
-    prob = thresholding(.3 + 0.1 * W * sin(a2 * W), 0.3, 0.7) + 
+    n_sim,
+    size = 1,
+    prob = thresholding(.3 + 0.1 * W * sin(a2 * W), 0.3, 0.7) +
       rnorm(n_sim, mean = 0, sd = 0.05)
   )
 
@@ -38,23 +38,30 @@ INFLATE_LAMBDA <- 1
 
 data_sim <- simulate_data(n_sim = n_sim, a1 = a1, a2 = a2, b1 = b1)
 bootOut <- ateBootstrap$new(data = data_sim)
-bootOutExact <- bootOut$clone(deep = TRUE) # deep copy point tmle, less repeat
+bootOutExact <- bootOut$clone(deep = TRUE)
+bootOutExact_paper <- bootOut$clone(deep = TRUE)
 
 bootOut$bootstrap(2e1)
 bootOutExact$exact_bootstrap(2e1)
+bootOutExact_paper$exact_bootstrap_paper(2e1)
 # combine exact boot with existing results
 regularCI <- bootOut$all_boot_CI()
-taylorCI <- bootOutExact$all_boot_CI()
+exact_CI <- bootOutExact$all_boot_CI()
+exact_CI_paper <- bootOutExact_paper$all_boot_CI()
 out <- list(
   wald = regularCI$wald,
   reg = regularCI$boot,
   reg_pen = regularCI$penalized,
   reg_scale = regularCI$scale,
   reg_scale_pen = regularCI$scale_penalized,
-  taylor = taylorCI$boot,
-  taylor_pen = taylorCI$penalized,
-  taylor_scale = taylorCI$scale,
-  taylor_scale_pen = taylorCI$scale_penalized
+  taylor = exact_CI$boot,
+  taylor_pen = exact_CI$penalized,
+  taylor_scale = exact_CI$scale,
+  taylor_scale_pen = exact_CI$scale_penalized,
+  taylor2 = exact_CI_paper$boot,
+  taylor2_pen = exact_CI_paper$penalized,
+  taylor2_scale = exact_CI_paper$scale,
+  taylor2_scale_pen = exact_CI_paper$scale_penalized
 )
 
 # without targeting

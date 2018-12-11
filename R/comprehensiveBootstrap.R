@@ -16,9 +16,14 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
       if (as.character(parameter$inherit) == "generalBootstrap") {
         classError <- FALSE
       } else {
-        if (as.character(parameter$get_inherit()$inherit) == "generalBootstrap") classError <- FALSE
+        if (as.character(parameter$get_inherit()$inherit) == "generalBootstrap") {
+          classError <- FALSE
+        }
       }
-      if (classError) stop("please input generalBootstrap class!") # if itself or its parent are not generalBootstrap class, throw error
+      if (classError) {
+        # if itself or its parent are not generalBootstrap class, throw error
+        stop("please input generalBootstrap class!")
+      }
 
       # create two boot objects
       self$bootOut <- parameter$new(...)
@@ -30,6 +35,7 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
       # REPEAT_BOOTSTRAP
       self$bootOut$bootstrap(...)
       self$bootOutExact$exact_bootstrap(...)
+      # self$bootOutExact$exact_bootstrap_paper(...)
       # self$bootOutConvex$convex_bootstrap(...)
 
       self$Psi <- self$bootOut$Psi # populate Psi_n
@@ -80,7 +86,6 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
         # convReg_pen_ctr = convexRegCI$penalized_ctr,
         # convReg_scale_ctr = convexRegCI$scale_ctr
       )
-      # return(self$CI_all)
     },
     compute_width = function() {
       # compute a list of all widths

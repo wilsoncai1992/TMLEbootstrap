@@ -10,14 +10,14 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
 
     bootstrap_estimates = NULL,
     targeting = NULL,
-    initialize = function(data, verbose = NULL, targeting = TRUE) {
+    initialize = function(data, verbose = NULL, targeting = TRUE, ...) {
       # bootstraping blip variance TMLE (binary Y)
       self$data <- data
       self$targeting <- targeting
       if (class(data$W) != "data.frame") message("W not data.frame")
       if (!is.null(verbose)) self$verbose <- verbose
       self$pointTMLE <- blipVarianceTMLE_gentmle$new(data = data)
-      self$pointTMLE$initial_fit()
+      self$pointTMLE$initial_fit(...)
       if (self$targeting) {
         self$pointTMLE$target()
       } else {
