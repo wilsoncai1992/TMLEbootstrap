@@ -44,7 +44,8 @@ fit_fixed_HAL <- function(
   if (!IS_GLM) {
     lasso_fit <- tryCatch({
       lasso_fit <- glmnet::glmnet(
-        x = x_basis, y = Y,
+        x = x_basis,
+        y = Y,
         family = family,
         weights = weights,
         alpha = 1,
@@ -164,7 +165,9 @@ basic_fixed_HAL <- function(
 # outputs a SL wrapper, that no longer depend on the hal9001 object. the output arguments conform with `SL` library convention
 #' @export
 generate_SL.fixed_HAL <- function(hal9001_object = NULL, inflate_lambda = 1) {
-  function(...) basic_fixed_HAL(..., hal9001_object = hal9001_object, inflate_lambda = inflate_lambda)
+  function(...) basic_fixed_HAL(
+    ..., hal9001_object = hal9001_object, inflate_lambda = inflate_lambda
+  )
 }
 
 # SL prediction function for the SL wrapper created

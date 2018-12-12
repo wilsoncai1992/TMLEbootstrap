@@ -189,7 +189,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
     compute_EIC = function(Y, A, Q1k, Q0k, Qk, gk, psi) {
       # helper function to compute EIC values. shared among blipVarianceTMLE class
       HA <- 2 * (Q1k - Q0k - mean(Q1k - Q0k)) * (A / gk - (1 - A) / (1 - gk))
-      IC <- HA * (Y - Qk) + (Q1k - Q0k - mean(Q1k - Q0k))^2 - psi
+      IC <- HA * (Y - Qk) + (Q1k - Q0k - mean(Q1k - Q0k)) ^ 2 - psi
       return(IC)
     },
     inference_without_target = function() {
