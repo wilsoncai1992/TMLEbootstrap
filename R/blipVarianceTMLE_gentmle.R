@@ -259,8 +259,10 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
       self$Y_rescale <- self$scale_Y$scale01(newX = self$data$Y)
     },
     scaleBack_afterTMLE = function() {
-      self$Psi <- self$Psi * self$scale_Y$rangeX ^ 2 # variance is rescaled
-      self$se_Psi <- self$se_Psi * self$scale_Y$rangeX ^ 2 # EIC is scaled by the same amount
+      # variance is rescaled
+      self$Psi <- self$Psi * self$scale_Y$rangeX ^ 2
+      # EIC is scaled by the same amount
+      self$se_Psi <- self$se_Psi * self$scale_Y$rangeX ^ 2
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
     },
     initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {

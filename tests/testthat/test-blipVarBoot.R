@@ -68,6 +68,11 @@ out <- list(
   taylor2_scale_pen = exact_ci_paper$scale_penalized
 )
 
+mean(out$wald)
+mean(out$reg)
+summary(bootstrapFit$bootstrap_estimates - bootstrapFit$pointTMLE$Psi)
+qs <- quantile(bootstrapFit$bootstrap_estimates - bootstrapFit$pointTMLE$Psi, probs = c(.025, .975))
+mean(out$wald) - mean(qs)
 # without targeting
 bootOut_HALMLE <- blipVarianceBootstrap_contY$new(data = df, targeting = FALSE)
 bootOut_HALMLE$bootstrap(2e1)

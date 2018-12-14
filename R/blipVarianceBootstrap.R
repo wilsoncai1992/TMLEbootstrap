@@ -288,7 +288,7 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
       }
       library(foreach)
       all_bootstrap_estimates <- foreach(
-        it2 = 1:(REPEAT_BOOTSTRAP),
+        it2 = 1:REPEAT_BOOTSTRAP,
         .combine = c,
         .inorder = FALSE,
         .packages = c("R6", "hal9001", "fixedHAL"),
