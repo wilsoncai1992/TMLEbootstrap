@@ -25,80 +25,102 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       }
       self$Psi <- self$pointTMLE$Psi
     },
-    bootstrap = function(REPEAT_BOOTSTRAP = 2e2) {
-      # regular bootstrap
+    bootstrap_once = function(self, data, population_tmle) {
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
-      bootstrap_once <- function(data) {
-        # indices is the random indexes for the bootstrap sample
-        indices <- sample(
-          1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE
-        ) # user specify sample size
-        d <- list(
-          Y = data$Y[indices],
-          A = data$A[indices],
-          W = data.frame(data$W[indices, ])
-        )
+      # indices is the random indexes for the bootstrap sample
+      indices <- sample(
+        1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE
+      ) # user specify sample size
+      d <- list(
+        Y = data$Y[indices],
+        A = data$A[indices],
+        W = data.frame(data$W[indices, ])
+      )
 
-        bootstrapTmleFit <- blipVarianceTMLE_gentmle$new(data = d)
-        # fit new Q, g
-        # Q fit
-        Q_HAL_boot <- fit_fixed_HAL(
-          Y = d$Y,
-          X = data.frame(d$A, d$W),
-          hal9001_object = self$pointTMLE$Q_fit,
-          family = stats::binomial()
-        )
-        Q_AW_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(d$A, d$W))
-        Q_1W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(1, d$W))
-        Q_0W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(0, d$W))
-        # g fit
-        g_HAL_boot <- fit_fixed_HAL(
-          Y = d$A,
-          X = d$W,
-          hal9001_object = self$pointTMLE$g_fit,
-          family = stats::binomial()
-        )
-        g_1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
-        # plug into tmle
-        bootstrapTmleFit$g_1W <- g_1W_boot
-        bootstrapTmleFit$Q_AW <- Q_AW_boot
-        bootstrapTmleFit$Q_1W <- Q_1W_boot
-        bootstrapTmleFit$Q_0W <- Q_0W_boot
-        bootstrapTmleFit$Q_fit <- Q_HAL_boot
-        bootstrapTmleFit$g_fit <- g_HAL_boot
-        if (self$targeting) {
-          bootstrapTmleFit$target()
-        } else {
-          bootstrapTmleFit$inference_without_target()
+      bootstrapTmleFit <- blipVarianceTMLE_gentmle$new(data = d)
+      # fit new Q, g
+      # Q fit
+      Q_HAL_boot <- fit_fixed_HAL(
+        Y = d$Y,
+        X = data.frame(d$A, d$W),
+        hal9001_object = self$pointTMLE$Q_fit,
+        family = stats::binomial()
+      )
+      Q_AW_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(d$A, d$W))
+      Q_1W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(1, d$W))
+      Q_0W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(0, d$W))
+      # g fit
+      g_HAL_boot <- fit_fixed_HAL(
+        Y = d$A,
+        X = d$W,
+        hal9001_object = self$pointTMLE$g_fit,
+        family = stats::binomial()
+      )
+      g_1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
+      # plug into tmle
+      bootstrapTmleFit$g_1W <- g_1W_boot
+      bootstrapTmleFit$Q_AW <- Q_AW_boot
+      bootstrapTmleFit$Q_1W <- Q_1W_boot
+      bootstrapTmleFit$Q_0W <- Q_0W_boot
+      bootstrapTmleFit$Q_fit <- Q_HAL_boot
+      bootstrapTmleFit$g_fit <- g_HAL_boot
+      if (self$targeting) {
+        bootstrapTmleFit$target()
+      } else {
+        bootstrapTmleFit$inference_without_target()
+      }
+
+      # predict Q#, g# on population data
+      g_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$g_fit, new_data = data.frame(data$W))
+      Q_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(1, data$W))
+      Q_pound_0 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(0, data$W))
+      B_pound <- Q_pound_1 - Q_pound_0
+      # get R2 term
+      term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi)^2
+      # population_tmle$gentmle_object$tmledata$Q1k
+      term2 <- mean((population_tmle$Q_1W - population_tmle$Q_0W - B_pound) ^ 2)
+      cross_prod <- (population_tmle$g_1W - g_pound_1) / g_pound_1 * (population_tmle$Q_1W - Q_pound_1) -
+        (1 - population_tmle$g_1W - (1 - g_pound_1)) / (1 - g_pound_1) * (population_tmle$Q_0W - Q_pound_0)
+      term3 <- mean(2 * (B_pound - bootstrapTmleFit$Psi) * cross_prod)
+      # compute R2
+      R2 <- term1 - term2 + term3
+      return(data.frame(
+        reg = bootstrapTmleFit$Psi - self$pointTMLE$Psi,
+        sec_ord = bootstrapTmleFit$Psi - R2 - self$pointTMLE$Psi
+      ))
+    },
+    run_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05, kind = NULL) {
+      # all bootstrap
+      if (is.null(self$bootstrap_estimates)) {
+        library(foreach)
+        all_bootstrap_estimates <- foreach(
+          it2 = 1:REPEAT_BOOTSTRAP,
+          .combine = "rbind",
+          .inorder = FALSE,
+          .packages = c("R6", "hal9001", "fixedHAL"),
+          .errorhandling = "remove",
+          .export = c("self")
+        ) %do% {
+          self$bootstrap_once(
+            self = self, data = self$data, population_tmle = self$pointTMLE
+          )
         }
-
-        return(bootstrapTmleFit$Psi)
+        # # remove errors
+        # if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) {
+        #   message(paste(
+        #     "Error happens.",
+        #     sum(sapply(all_bootstrap_estimates, class) == "numeric"),
+        #     "bootstraps are correct"
+        #   ))
+        # }
+        # all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
+        self$bootstrap_estimates <- all_bootstrap_estimates
+        dim(self$bootstrap_estimates)
+      } else {
+        message("invoke cached bootstrap results")
       }
-      library(foreach)
-      all_bootstrap_estimates <- foreach(
-        it2 = 1:(REPEAT_BOOTSTRAP),
-        .combine = c,
-        .inorder = FALSE,
-        .packages = c("R6", "hal9001", "fixedHAL"),
-        .errorhandling = "pass",
-        .export = c("self")
-      ) %do% {
-        bootstrap_once(self$data)
-      }
-      ALPHA <- 0.05
-      # remove errors
-      if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) {
-        message(paste(
-          "Error happens.",
-          sum(sapply(all_bootstrap_estimates, class) == "numeric"),
-          "bootstraps are correct"
-        ))
-      }
-      all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
-      self$bootstrap_estimates <- all_bootstrap_estimates
-
       Z_quantile <- quantile(
-        all_bootstrap_estimates - self$pointTMLE$Psi,
+        self$bootstrap_estimates[, kind],
         probs = c(ALPHA / 2, 1 - ALPHA / 2)
       )
       normal_CI <- self$pointTMLE$CI
@@ -107,95 +129,15 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       )
       self$CI_all <- list(normal_CI, boot1_CI)
     },
-    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2) {
-      # exact second order expansion bootstrap
-      SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
-      bootstrap_once <- function(data, population_tmle) {
-        # indices is the random indexes for the bootstrap sample
-        indices <- sample(
-          1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE
-        ) # user specify sample size
-        d <- list(
-          Y = data$Y[indices],
-          A = data$A[indices],
-          W = data.frame(data$W[indices, ])
-        )
-
-        bootstrapTmleFit <- blipVarianceTMLE_gentmle$new(data = d)
-        # fit new Q, g
-        # Q fit
-        Q_HAL_boot <- fit_fixed_HAL(
-          Y = d$Y,
-          X = data.frame(d$A, d$W),
-          hal9001_object = self$pointTMLE$Q_fit,
-          family = stats::binomial()
-        )
-        Q_AW_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(d$A, d$W))
-        Q_1W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(1, d$W))
-        Q_0W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(0, d$W))
-        # g fit
-        g_HAL_boot <- fit_fixed_HAL(
-          Y = d$A,
-          X = d$W,
-          hal9001_object = self$pointTMLE$g_fit,
-          family = stats::binomial()
-        )
-        g_1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
-        # plug into tmle
-        bootstrapTmleFit$g_1W <- g_1W_boot
-        bootstrapTmleFit$Q_AW <- Q_AW_boot
-        bootstrapTmleFit$Q_1W <- Q_1W_boot
-        bootstrapTmleFit$Q_0W <- Q_0W_boot
-        bootstrapTmleFit$Q_fit <- Q_HAL_boot
-        bootstrapTmleFit$g_fit <- g_HAL_boot
-        if (self$targeting) {
-          bootstrapTmleFit$target()
-        } else {
-          bootstrapTmleFit$inference_without_target()
-        }
-
-        # predict Q#, g# on population data
-        g_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$g_fit, new_data = data.frame(data$W))
-        Q_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(1, data$W))
-        Q_pound_0 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(0, data$W))
-        B_pound <- Q_pound_1 - Q_pound_0
-        # get R2 term
-        term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi)^2
-        # population_tmle$gentmle_object$tmledata$Q1k
-        term2 <- mean((population_tmle$Q_1W - population_tmle$Q_0W - B_pound) ^ 2)
-        cross_prod <- (population_tmle$g_1W - g_pound_1) / g_pound_1 * (population_tmle$Q_1W - Q_pound_1) -
-          (1 - population_tmle$g_1W - (1 - g_pound_1)) / (1 - g_pound_1) * (population_tmle$Q_0W - Q_pound_0)
-        term3 <- mean(2 * (B_pound - bootstrapTmleFit$Psi) * cross_prod)
-        # compute R2
-        R2 <- term1 - term2 + term3
-        return(bootstrapTmleFit$Psi - R2)
-      }
-      library(foreach)
-      all_bootstrap_estimates <- foreach(
-        it2 = 1:(REPEAT_BOOTSTRAP),
-        .combine = c,
-        .inorder = FALSE,
-        .packages = c("R6", "hal9001", "fixedHAL"),
-        .errorhandling = "pass",
-        .export = c("self")
-      ) %do% {
-        bootstrap_once(data = self$data, population_tmle = self$pointTMLE)
-      }
-      ALPHA <- 0.05
-      # remove errors
-      if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) message(paste("Error happens.", sum(sapply(all_bootstrap_estimates, class) == "numeric"), "bootstraps are correct"))
-      all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
-      self$bootstrap_estimates <- all_bootstrap_estimates
-
-      Z_quantile <- quantile(
-        all_bootstrap_estimates - self$pointTMLE$Psi,
-        probs = c(ALPHA / 2, 1 - ALPHA / 2)
+    bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05) {
+      self$run_bootstrap(
+        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "reg"
       )
-      normal_CI <- self$pointTMLE$CI
-      boot1_CI <- c(
-        self$pointTMLE$Psi - Z_quantile[2], self$pointTMLE$Psi - Z_quantile[1]
+    },
+    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05) {
+      self$run_bootstrap(
+        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "sec_ord"
       )
-      self$CI_all <- list(normal_CI, boot1_CI)
     }
   )
 )
@@ -235,76 +177,132 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
 
       self$Psi <- self$pointTMLE$Psi
     },
-    bootstrap = function(REPEAT_BOOTSTRAP = 2e2) {
-      # regular bootstrap; use continuous HAL bootstrap fit
+    bootstrap_once = function(self, data, population_tmle) {
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
-      bootstrap_once <- function(data) {
-        # indices is the random indexes for the bootstrap sample
-        indices <- sample(1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
-        d <- list(
-          Y = data$Y[indices],
-          A = data$A[indices],
-          W = data.frame(data$W[indices, ])
-        )
+      # indices is the random indexes for the bootstrap sample
+      indices <- sample(1:SAMPLE_PER_BOOTSTRAP, size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
+      d <- list(
+        Y = data$Y[indices],
+        A = data$A[indices],
+        W = data.frame(data$W[indices, ])
+      )
 
-        bootstrapTmleFit <- blipVarianceTMLE_gentmle_contY$new(data = d)
-        # bootstrapTmleFit$scaleY() # not rigorous; use population scale_Y
-        bootstrapTmleFit$scale_Y <- self$pointTMLE$scale_Y
-        bootstrapTmleFit$Y_rescale <- bootstrapTmleFit$scale_Y$scale01(newX = bootstrapTmleFit$data$Y)
-        # fit new Q, g
-        # Q fit
-        Q_HAL_boot <- fit_fixed_HAL(
-          Y = d$Y,
-          X = data.frame(d$A, d$W),
-          hal9001_object = self$pointTMLE$Q_fit,
-          family = stats::gaussian()
-        )
-        Q_AW_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(d$A, d$W))
-        Q_1W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(1, d$W))
-        Q_0W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(0, d$W))
-        # g fit
-        g_HAL_boot <- fit_fixed_HAL(
-          Y = d$A,
-          X = d$W,
-          hal9001_object = self$pointTMLE$g_fit,
-          family = stats::binomial()
-        )
-        g_1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
+      bootstrapTmleFit <- blipVarianceTMLE_gentmle_contY$new(data = d)
+      # bootstrapTmleFit$scaleY() # not rigorous; use population scale_Y
+      bootstrapTmleFit$scale_Y <- self$pointTMLE$scale_Y
+      bootstrapTmleFit$Y_rescale <- bootstrapTmleFit$scale_Y$scale01(newX = bootstrapTmleFit$data$Y)
+      # fit new Q, g
+      # Q fit
+      Q_HAL_boot <- fit_fixed_HAL(
+        Y = d$Y,
+        X = data.frame(d$A, d$W),
+        hal9001_object = self$pointTMLE$Q_fit,
+        family = stats::gaussian()
+      )
+      Q_AW_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(d$A, d$W))
+      Q_1W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(1, d$W))
+      Q_0W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(0, d$W))
+      # g fit
+      g_HAL_boot <- fit_fixed_HAL(
+        Y = d$A,
+        X = d$W,
+        hal9001_object = self$pointTMLE$g_fit,
+        family = stats::binomial()
+      )
+      g_1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
 
-        # plug into tmle
-        bootstrapTmleFit$g_1W <- g_1W_boot
-        bootstrapTmleFit$Q_AW_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_AW_boot) # scale to (0,1) because continuous
-        bootstrapTmleFit$Q_1W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_1W_boot)
-        bootstrapTmleFit$Q_0W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_0W_boot)
-        bootstrapTmleFit$Q_fit <- Q_HAL_boot
-        bootstrapTmleFit$g_fit <- g_HAL_boot
-        if (self$targeting) {
-          bootstrapTmleFit$target()
-        } else {
-          bootstrapTmleFit$inference_without_target()
+      # plug into tmle
+      bootstrapTmleFit$g_1W <- g_1W_boot
+      bootstrapTmleFit$Q_AW_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_AW_boot) # scale to (0,1) because continuous
+      bootstrapTmleFit$Q_1W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_1W_boot)
+      bootstrapTmleFit$Q_0W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_0W_boot)
+      bootstrapTmleFit$Q_fit <- Q_HAL_boot
+      bootstrapTmleFit$g_fit <- g_HAL_boot
+      if (self$targeting) {
+        bootstrapTmleFit$target()
+      } else {
+        bootstrapTmleFit$inference_without_target()
+      }
+      bootstrapTmleFit$scaleBack_afterTMLE() # cont Y
+      # PnD*
+      # the nuisance parameters need to be for continuous Y \in R
+      PnDstar <- mean(self$pointTMLE$compute_EIC(
+        A = d$A,
+        gk = g_1W_boot,
+        Y = d$Y,
+        Qk = Q_AW_boot,
+        Q1k = Q_1W_boot,
+        Q0k = Q_0W_boot,
+        psi = var(Q_1W_boot - Q_0W_boot)
+      ))
+      # predict Q#, g# on population data
+      g_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$g_fit, new_data = data.frame(data$W))
+      Q_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(1, data$W))
+      Q_pound_0 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(0, data$W))
+      # Q_pound_1 <- self$pointTMLE$scale_Q$scale01(newX = Q_pound_1)
+      # Q_pound_0 <- self$pointTMLE$scale_Q$scale01(newX = Q_pound_0)
+      Q_pound_A <- data$A * Q_pound_1 + (1 - data$A) * Q_pound_0
+      B_pound <- Q_pound_1 - Q_pound_0
+      # P0D*
+      P0Dstar <- mean(self$pointTMLE$compute_EIC(
+        A = data$A,
+        gk = g_pound_1,
+        Y = data$Y,
+        Qk = Q_pound_A,
+        Q1k = Q_pound_1,
+        Q0k = Q_pound_0,
+        psi = var(Q_pound_1 - Q_pound_0)
+      ))
+      # get R2 term
+      term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi) ^ 2
+      term2 <- mean(
+        (population_tmle$Q_1W - population_tmle$Q_0W - B_pound) ^ 2
+      )
+      cross_prod <- (population_tmle$g_1W - g_pound_1) / g_pound_1 *
+        (population_tmle$Q_1W - Q_pound_1) -
+        (1 - population_tmle$g_1W - (1 - g_pound_1)) / (1 - g_pound_1) *
+        (population_tmle$Q_0W - Q_pound_0)
+      term3 <- mean(2 * (B_pound - bootstrapTmleFit$Psi) * cross_prod)
+      # compute R2
+      R2 <- term1 - term2 + term3
+      return(data.frame(
+        reg = bootstrapTmleFit$Psi - self$pointTMLE$Psi,
+        sec_ord = bootstrapTmleFit$Psi - R2 - self$pointTMLE$Psi,
+        sec_ord_paper = PnDstar - P0Dstar + R2
+      ))
+    },
+    run_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05, kind = NULL) {
+      # all bootstrap
+      if (is.null(self$bootstrap_estimates)) {
+        library(foreach)
+        all_bootstrap_estimates <- foreach(
+          it2 = 1:REPEAT_BOOTSTRAP,
+          .combine = "rbind",
+          .inorder = FALSE,
+          .packages = c("R6", "hal9001", "fixedHAL"),
+          .errorhandling = "remove",
+          .export = c("self")
+        ) %do% {
+          self$bootstrap_once(
+            self = self, data = self$data, population_tmle = self$pointTMLE
+          )
         }
-        bootstrapTmleFit$scaleBack_afterTMLE() # cont Y
-        return(bootstrapTmleFit$Psi)
+        # # remove errors
+        # if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) {
+        #   message(paste(
+        #     "Error happens.",
+        #     sum(sapply(all_bootstrap_estimates, class) == "numeric"),
+        #     "bootstraps are correct"
+        #   ))
+        # }
+        # all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
+        self$bootstrap_estimates <- all_bootstrap_estimates
+        dim(self$bootstrap_estimates)
+      } else {
+        message("invoke cached bootstrap results")
       }
-      library(foreach)
-      all_bootstrap_estimates <- foreach(
-        it2 = 1:REPEAT_BOOTSTRAP,
-        .combine = c,
-        .inorder = FALSE,
-        .packages = c("R6", "hal9001", "fixedHAL"),
-        .errorhandling = "pass",
-        .export = c("self")
-      ) %do% {
-        bootstrap_once(data = self$data)
-      }
-      ALPHA <- 0.05
-      # remove errors
-      if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) message(paste("Error happens.", sum(sapply(all_bootstrap_estimates, class) == "numeric"), "bootstraps are correct"))
-      all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
-      self$bootstrap_estimates <- all_bootstrap_estimates
-
       Z_quantile <- quantile(
-        all_bootstrap_estimates - self$pointTMLE$Psi,
+        self$bootstrap_estimates[, kind],
         probs = c(ALPHA / 2, 1 - ALPHA / 2)
       )
       normal_CI <- self$pointTMLE$CI
@@ -313,222 +311,20 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
       )
       self$CI_all <- list(normal_CI, boot1_CI)
     },
-    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2) {
-      # exact second order expansion of the bootstrap; use continuous HAL bootstrap fit
-      SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
-      bootstrap_once <- function(data, population_tmle) {
-        # indices is the random indexes for the bootstrap sample
-        indices <- sample(1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
-        d <- list(
-          Y = data$Y[indices],
-          A = data$A[indices],
-          W = data.frame(data$W[indices, ])
-        )
-
-        bootstrapTmleFit <- blipVarianceTMLE_gentmle_contY$new(data = d)
-        # bootstrapTmleFit$scaleY() # not rigorous; use population scale_Y
-        bootstrapTmleFit$scale_Y <- self$pointTMLE$scale_Y
-        bootstrapTmleFit$Y_rescale <- bootstrapTmleFit$scale_Y$scale01(newX = bootstrapTmleFit$data$Y)
-        # fit new Q, g
-        # Q fit
-        Q_HAL_boot <- fit_fixed_HAL(
-          Y = d$Y,
-          X = data.frame(d$A, d$W),
-          hal9001_object = self$pointTMLE$Q_fit,
-          family = stats::gaussian()
-        )
-        Q_AW_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(d$A, d$W))
-        Q_1W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(1, d$W))
-        Q_0W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(0, d$W))
-        # g fit
-        g_HAL_boot <- fit_fixed_HAL(
-          Y = d$A,
-          X = d$W,
-          hal9001_object = self$pointTMLE$g_fit,
-          family = stats::binomial()
-        )
-        g_1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
-
-        # plug into tmle
-        bootstrapTmleFit$g_1W <- g_1W_boot
-        bootstrapTmleFit$Q_AW_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_AW_boot) # scale to (0,1) because continuous
-        bootstrapTmleFit$Q_1W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_1W_boot)
-        bootstrapTmleFit$Q_0W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_0W_boot)
-        bootstrapTmleFit$Q_fit <- Q_HAL_boot
-        bootstrapTmleFit$g_fit <- g_HAL_boot
-        if (self$targeting) {
-          bootstrapTmleFit$target()
-        } else {
-          bootstrapTmleFit$inference_without_target()
-        }
-        bootstrapTmleFit$scaleBack_afterTMLE() # cont Y
-        # predict Q#, g# on population data
-        g_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$g_fit, new_data = data.frame(data$W))
-        Q_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(1, data$W))
-        Q_pound_0 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(0, data$W))
-        Q_pound_1 <- self$pointTMLE$scale_Q$scale01(newX = Q_pound_1)
-        Q_pound_0 <- self$pointTMLE$scale_Q$scale01(newX = Q_pound_0)
-        B_pound <- Q_pound_1 - Q_pound_0
-        # get R2 term
-        term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi) ^ 2
-        # population_tmle$gentmle_object$tmledata$Q1k
-        term2 <- mean(
-          (population_tmle$Q_1W_rescale - population_tmle$Q_0W_rescale - B_pound) ^ 2
-        )
-        cross_prod <- (population_tmle$g_1W - g_pound_1) / g_pound_1 *
-          (population_tmle$Q_1W_rescale - Q_pound_1) -
-          (1 - population_tmle$g_1W - (1 - g_pound_1)) / (1 - g_pound_1) *
-          (population_tmle$Q_0W_rescale - Q_pound_0)
-        term3 <- mean(2 * (B_pound - bootstrapTmleFit$Psi) * cross_prod)
-        # compute R2
-        R2 <- term1 - term2 + term3
-        return(bootstrapTmleFit$Psi - R2)
-      }
-      library(foreach)
-      all_bootstrap_estimates <- foreach(
-        it2 = 1:(REPEAT_BOOTSTRAP),
-        .combine = c,
-        .inorder = FALSE,
-        .packages = c("R6", "hal9001", "fixedHAL"),
-        .errorhandling = "pass",
-        .export = c("self")
-      ) %do% {
-        bootstrap_once(data = self$data, population_tmle = self$pointTMLE)
-      }
-      ALPHA <- 0.05
-      # remove errors
-      if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) message(paste("Error happens.", sum(sapply(all_bootstrap_estimates, class) == "numeric"), "bootstraps are correct"))
-      all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
-      self$bootstrap_estimates <- all_bootstrap_estimates
-
-      Z_quantile <- quantile(
-        all_bootstrap_estimates - self$pointTMLE$Psi,
-        probs = c(ALPHA / 2, 1 - ALPHA / 2)
+    bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05) {
+      self$run_bootstrap(
+        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "reg"
       )
-      normal_CI <- self$pointTMLE$CI
-      boot1_CI <- c(
-        self$pointTMLE$Psi - Z_quantile[2], self$pointTMLE$Psi - Z_quantile[1]
-      )
-      self$CI_all <- list(normal_CI, boot1_CI)
     },
-    exact_bootstrap_paper = function(REPEAT_BOOTSTRAP = 2e2) {
-      # exact second order expansion of the bootstrap; use continuous HAL bootstrap fit
-      SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
-      bootstrap_once <- function(data, population_tmle) {
-        # indices is the random indexes for the bootstrap sample
-        indices <- sample(1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE) # user specify sample size
-        d <- list(
-          Y = data$Y[indices],
-          A = data$A[indices],
-          W = data.frame(data$W[indices, ])
-        )
-
-        bootstrapTmleFit <- blipVarianceTMLE_gentmle_contY$new(data = d)
-        # bootstrapTmleFit$scaleY() # not rigorous; use population scale_Y
-        bootstrapTmleFit$scale_Y <- self$pointTMLE$scale_Y
-        bootstrapTmleFit$Y_rescale <- bootstrapTmleFit$scale_Y$scale01(newX = bootstrapTmleFit$data$Y)
-        # fit new Q, g
-        # Q fit
-        Q_HAL_boot <- fit_fixed_HAL(
-          Y = d$Y,
-          X = data.frame(d$A, d$W),
-          hal9001_object = self$pointTMLE$Q_fit,
-          family = stats::gaussian()
-        )
-        Q_AW_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(d$A, d$W))
-        Q_1W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(1, d$W))
-        Q_0W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(0, d$W))
-        # g fit
-        g_HAL_boot <- fit_fixed_HAL(
-          Y = d$A,
-          X = d$W,
-          hal9001_object = self$pointTMLE$g_fit,
-          family = stats::binomial()
-        )
-        g_1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
-
-        # plug into tmle
-        bootstrapTmleFit$g_1W <- g_1W_boot
-        bootstrapTmleFit$Q_AW_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_AW_boot) # scale to (0,1) because continuous
-        bootstrapTmleFit$Q_1W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_1W_boot)
-        bootstrapTmleFit$Q_0W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_0W_boot)
-        bootstrapTmleFit$Q_fit <- Q_HAL_boot
-        bootstrapTmleFit$g_fit <- g_HAL_boot
-        if (self$targeting) {
-          bootstrapTmleFit$target()
-        } else {
-          bootstrapTmleFit$inference_without_target()
-        }
-        bootstrapTmleFit$scaleBack_afterTMLE() # cont Y
-        # PnD*
-        # the nuisance parameters need to be for continuous Y \in R
-        PnDstar <- mean(self$pointTMLE$compute_EIC(
-          A = d$A,
-          gk = g_1W_boot,
-          Y = d$Y,
-          Qk = Q_AW_boot,
-          Q1k = Q_1W_boot,
-          Q0k = Q_0W_boot,
-          psi = var(Q_1W_boot - Q_0W_boot)
-        ))
-        # predict Q#, g# on population data
-        g_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$g_fit, new_data = data.frame(data$W))
-        Q_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(1, data$W))
-        Q_pound_0 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(0, data$W))
-        # Q_pound_1 <- self$pointTMLE$scale_Q$scale01(newX = Q_pound_1)
-        # Q_pound_0 <- self$pointTMLE$scale_Q$scale01(newX = Q_pound_0)
-        Q_pound_A <- data$A * Q_pound_1 + (1 - data$A) * Q_pound_0
-        B_pound <- Q_pound_1 - Q_pound_0
-        # P0D*
-        P0Dstar <- mean(self$pointTMLE$compute_EIC(
-          A = data$A,
-          gk = g_pound_1,
-          Y = data$Y,
-          Qk = Q_pound_A,
-          Q1k = Q_pound_1,
-          Q0k = Q_pound_0,
-          psi = var(Q_pound_1 - Q_pound_0)
-        ))
-        # get R2 term
-        term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi) ^ 2
-        term2 <- mean(
-          (population_tmle$Q_1W - population_tmle$Q_0W - B_pound) ^ 2
-        )
-        cross_prod <- (population_tmle$g_1W - g_pound_1) / g_pound_1 *
-          (population_tmle$Q_1W - Q_pound_1) -
-          (1 - population_tmle$g_1W - (1 - g_pound_1)) / (1 - g_pound_1) *
-          (population_tmle$Q_0W - Q_pound_0)
-        term3 <- mean(2 * (B_pound - bootstrapTmleFit$Psi) * cross_prod)
-        # compute R2
-        R2 <- term1 - term2 + term3
-        return(PnDstar - P0Dstar + R2)
-      }
-      library(foreach)
-      all_bootstrap_estimates <- foreach(
-        it2 = 1:REPEAT_BOOTSTRAP,
-        .combine = c,
-        .inorder = FALSE,
-        .packages = c("R6", "hal9001", "fixedHAL"),
-        .errorhandling = "pass",
-        .export = c("self")
-      ) %do% {
-        bootstrap_once(data = self$data, population_tmle = self$pointTMLE)
-      }
-      ALPHA <- 0.05
-      # remove errors
-      if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) message(paste("Error happens.", sum(sapply(all_bootstrap_estimates, class) == "numeric"), "bootstraps are correct"))
-      all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
-      self$bootstrap_estimates <- all_bootstrap_estimates
-
-      Z_quantile <- quantile(
-        all_bootstrap_estimates,
-        probs = c(ALPHA / 2, 1 - ALPHA / 2)
+    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05) {
+      self$run_bootstrap(
+        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "sec_ord"
       )
-      normal_CI <- self$pointTMLE$CI
-      boot1_CI <- c(
-        self$pointTMLE$Psi - Z_quantile[2], self$pointTMLE$Psi - Z_quantile[1]
+    },
+    exact_bootstrap_paper = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05) {
+      self$run_bootstrap(
+        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "sec_ord_paper"
       )
-      self$CI_all <- list(normal_CI, boot1_CI)
     }
   )
 )

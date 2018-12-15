@@ -53,7 +53,7 @@ generalBootstrap <- R6Class("generalBootstrap",
       if (is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
       bootCenter <- mean(bootCI)
 
-      mse <- mean((self$bootstrap_estimates - self$Psi)^2)
+      mse <- mean( (self$bootstrap_estimates[, "reg"] - self$Psi) ^ 2)
       sigma_star <- sqrt(mse)
       sigma <- diff(bootCI) / 1.96 / 2 * sqrt(n) # the spread of original boot is 2*1.96*sd/sqrt(n)
 

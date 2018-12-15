@@ -27,18 +27,17 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
 
       # create two boot objects
       self$bootOut <- parameter$new(...)
-      self$bootOutExact <- self$bootOut$clone(deep = TRUE) # deep copy point tmle, less repeat
-      # self$bootOutConvex <- self$bootOut$clone(deep = TRUE) # deep copy point tmle, less repeat
     },
     bootstrap = function(...) {
       # input:
       # REPEAT_BOOTSTRAP
       self$bootOut$bootstrap(...)
-      # self$bootOutExact$exact_bootstrap(...)
-      self$bootOutExact$exact_bootstrap_paper(...)
-      # self$bootOutConvex$convex_bootstrap(...)
-
       self$Psi <- self$bootOut$Psi # populate Psi_n
+
+      # deep copy bootstrap, less repeat
+      self$bootOutExact <- self$bootOut$clone(deep = TRUE)
+      self$bootOutExact$exact_bootstrap_paper(...)
+      # self$bootOutConvex <- self$bootOut$clone(deep = TRUE)
     },
     all_CI = function() {
       regularCI <- self$bootOut$all_boot_CI()
@@ -90,11 +89,7 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
     compute_width = function() {
       # compute a list of all widths
       # loop over list, take diff of the CI bounds
-      get_width <- function(list) vapply(
-        list,
-        diff,
-        FUN.VALUE = numeric(1)
-        )
+      get_width <- function(list) vapply(list, diff, FUN.VALUE = numeric(1))
       self$width_all <- as.list(get_width(self$CI_all))
       names(self$width_all) <- names(self$CI_all)
     },

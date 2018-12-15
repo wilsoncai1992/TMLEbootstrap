@@ -38,12 +38,13 @@ INFLATE_LAMBDA <- 1
 
 data_sim <- simulate_data(n_sim = n_sim, a1 = a1, a2 = a2, b1 = b1)
 boot_output <- ateBootstrap$new(data = data_sim)
-boot_output_exact <- boot_output$clone(deep = TRUE)
-boot_output_exact_paper <- boot_output$clone(deep = TRUE)
-
 boot_output$bootstrap(2e1)
+
+boot_output_exact <- boot_output$clone(deep = TRUE)
 boot_output_exact$exact_bootstrap(2e1)
+boot_output_exact_paper <- boot_output$clone(deep = TRUE)
 boot_output_exact_paper$exact_bootstrap_paper(2e1)
+
 # combine exact boot with existing results
 regular_ci <- boot_output$all_boot_CI()
 exact_ci <- boot_output_exact$all_boot_CI()
