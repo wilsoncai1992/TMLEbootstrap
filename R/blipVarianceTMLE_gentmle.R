@@ -290,10 +290,13 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
       # get g1_W
       self$g_1W <- hal9001:::predict.hal9001(self$g_fit, new_data = data.frame(self$data$W))
       # scale Q to (0,1)
-      self$scale_Q <- scaleX$new(X = c(self$Q_1W, self$Q_0W))
-      self$Q_AW_rescale <- self$scale_Q$scale01(newX = self$Q_AW)
-      self$Q_1W_rescale <- self$scale_Q$scale01(newX = self$Q_1W)
-      self$Q_0W_rescale <- self$scale_Q$scale01(newX = self$Q_0W)
+      self$Q_AW_rescale <- self$scale_Y$scale01(newX = self$Q_AW)
+      self$Q_1W_rescale <- self$scale_Y$scale01(newX = self$Q_1W)
+      self$Q_0W_rescale <- self$scale_Y$scale01(newX = self$Q_0W)
+      # self$scale_Q <- scaleX$new(X = c(self$Q_1W, self$Q_0W))
+      # self$Q_AW_rescale <- self$scale_Q$scale01(newX = self$Q_AW)
+      # self$Q_1W_rescale <- self$scale_Q$scale01(newX = self$Q_1W)
+      # self$Q_0W_rescale <- self$scale_Q$scale01(newX = self$Q_0W)
     },
     initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL) {
       # message('continuous Y')

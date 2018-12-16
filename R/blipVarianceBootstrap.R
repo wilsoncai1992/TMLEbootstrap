@@ -213,9 +213,9 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
 
       # plug into tmle
       bootstrapTmleFit$g_1W <- g_1W_boot
-      bootstrapTmleFit$Q_AW_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_AW_boot) # scale to (0,1) because continuous
-      bootstrapTmleFit$Q_1W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_1W_boot)
-      bootstrapTmleFit$Q_0W_rescale <- self$pointTMLE$scale_Q$scale01(newX = Q_0W_boot)
+      bootstrapTmleFit$Q_AW_rescale <- self$pointTMLE$scale_Y$scale01(newX = Q_AW_boot) # scale to (0,1) because continuous
+      bootstrapTmleFit$Q_1W_rescale <- self$pointTMLE$scale_Y$scale01(newX = Q_1W_boot)
+      bootstrapTmleFit$Q_0W_rescale <- self$pointTMLE$scale_Y$scale01(newX = Q_0W_boot)
       bootstrapTmleFit$Q_fit <- Q_HAL_boot
       bootstrapTmleFit$g_fit <- g_HAL_boot
       if (self$targeting) {
@@ -239,8 +239,8 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
       g_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$g_fit, new_data = data.frame(data$W))
       Q_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(1, data$W))
       Q_pound_0 <- predict.fixed_HAL(bootstrapTmleFit$Q_fit, new_data = data.frame(0, data$W))
-      # Q_pound_1 <- self$pointTMLE$scale_Q$scale01(newX = Q_pound_1)
-      # Q_pound_0 <- self$pointTMLE$scale_Q$scale01(newX = Q_pound_0)
+      # Q_pound_1 <- self$pointTMLE$scale_Y$scale01(newX = Q_pound_1)
+      # Q_pound_0 <- self$pointTMLE$scale_Y$scale01(newX = Q_pound_0)
       Q_pound_A <- data$A * Q_pound_1 + (1 - data$A) * Q_pound_0
       B_pound <- Q_pound_1 - Q_pound_0
       # P0D*
