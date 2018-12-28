@@ -44,7 +44,6 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
       taylorCI <- self$bootOutExact$all_boot_CI()
       # convexRegCI <- self$bootOutConvex$all_boot_CI()
 
-
       self$CI_all <- list(
         wald = regularCI$wald,
         reg = regularCI$boot,
@@ -76,10 +75,14 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
         secOrd_scale_pen_half_ctr = taylorCI$scale_penalized_half_ctr,
 
         # use mse as sd of the CI
-        reg_bias_scale = regularCI$bias_scale,
-        reg_bias_scale_ctr = regularCI$bias_scale_ctr,
-        secOrd_bias_scale = taylorCI$bias_scale,
-        secOrd_bias_scale_ctr = taylorCI$bias_scale_ctr
+        reg_sigma_mse = regularCI$sigma_mse,
+        reg_sigma_mse_ctr = regularCI$sigma_mse_ctr,
+        secOrd_sigma_mse = taylorCI$sigma_mse,
+        secOrd_sigma_mse_ctr = taylorCI$sigma_mse_ctr,
+
+        reg_spread = regularCI$spread,
+        secOrd_spread = taylorCI$spread,
+
         # convex bootstrap
         # convReg_ctr = convexRegCI$ctr,
         # convReg_pen_ctr = convexRegCI$penalized_ctr,

@@ -49,13 +49,14 @@ generalBootstrap <- R6Class("generalBootstrap",
       # new_CI <- bootCI + max(0, 2*(- mean(bootCI) + self$Psi))
       return(new_CI)
     },
-    bias_scale = function(bootCI = NULL, n = 1e2) {
+    sigma_mse = function(bootCI = NULL, n = 1e2) {
       if (is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
       bootCenter <- mean(bootCI)
 
-      mse <- mean( (self$bootstrap_estimates[, "reg"] - self$Psi) ^ 2)
+      mse <- mean( self$bootstrap_estimates[, "reg"] ^ 2)
       sigma_star <- sqrt(mse)
-      sigma <- diff(bootCI) / 1.96 / 2 * sqrt(n) # the spread of original boot is 2*1.96*sd/sqrt(n)
+      # sigma <- diff(bootCI) / 1.96 / 2 * sqrt(n) # the spread of original boot is 2*1.96*sd/sqrt(n)
+      sigma <- diff(bootCI) / 1.96 / 2
 
       r <- 1
       if (sigma_star == 0) r <- 1 # catch when bootstrap Psi# are all identical
@@ -63,6 +64,20 @@ generalBootstrap <- R6Class("generalBootstrap",
       # if(sigma_star > sigma) r <- sigma_star/sigma # only use sigma# to widen the CI
       # keep center the same, increase the width of the bootCI
       return((bootCI - bootCenter) * r + bootCenter)
+    },
+    spread = function(bootCI = NULL, n = 1e2) {
+      if (is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
+      waldCI <- self$CI_all[[1]]
+      psi_n <- mean(waldCI)
+      # sigma_n <- diff(waldCI) / 2 / 1.96 * sqrt(n)
+      sigma_n <- diff(waldCI) / 2 / 1.96
+      bootCenter <- mean(bootCI)
+
+      Z <- self$bootstrap_estimates[, "reg"]
+      Z_std <- bootstraps / sd(bootstraps)
+      q_z <- quantile(Z_std, probs = c(.025, .975))
+      ci_out <- c(psi_n - q_z[2] * sigma_n, psi_n - q_z[1] * sigma_n)
+      return(ci_out)
     },
     all_boot_CI = function() {
       # return a list of all kinds of modifications
@@ -82,8 +97,10 @@ generalBootstrap <- R6Class("generalBootstrap",
       scale_penalized_half_center <- self$center_CI(bootCI = scale_penalized_half)
 
       # bias scale
-      bias_scale <- self$bias_scale()
-      bias_scale_ctr <- self$center_CI(bootCI = bias_scale)
+      sigma_mse <- self$sigma_mse()
+      sigma_mse_ctr <- self$center_CI(bootCI = sigma_mse)
+
+      spread <- self$spread()
       return(list(
         wald = self$CI_all[[1]],
 
@@ -101,9 +118,11 @@ generalBootstrap <- R6Class("generalBootstrap",
         scale_penalized_ctr = scale_penalized_center, # reg + pen + scale + center at Psi
         scale_penalized_half_ctr = scale_penalized_half_center, # reg + 0.5pen + scale + center at Psi
 
-        bias_scale = bias_scale, # make the width 1.96*sigma_star; sigma_star == sqrt(mse(Psi# - Psi_n))
-        bias_scale_ctr = bias_scale_ctr, # bias_scale + center
-        shift2 = shift2 # compensate the bias twice; bias == |mean(Psi#) - Psi_n|
+        sigma_mse = sigma_mse, # make the width 2*1.96*sigma_star; sigma_star == sqrt(mse(Psi# - Psi_n))
+        sigma_mse_ctr = sigma_mse_ctr, # sigma_mse + center
+        shift2 = shift2, # compensate the bias twice; bias == |mean(Psi#) - Psi_n|
+
+        spread = spread
       ))
     }
   )
