@@ -74,6 +74,14 @@ bootOut_HALMLE <- blipVarianceBootstrap_contY$new(data = df, targeting = FALSE)
 bootOut_HALMLE$bootstrap(2e1)
 halmleCI <- bootOut_HALMLE$all_boot_CI()
 
+CVOut <- comprehensiveBootstrap$new(
+  parameter = blipVarianceBootstrap_contY,
+  data = df
+)
+CVOut$bootstrap(REPEAT_BOOTSTRAP = 2e1)
+CVOut$all_CI()
+
+
 ################################################################################
 test_that("blipVarianceBoot results should not be NA", {
   expect_true(all(!sapply(out, is.na)))
@@ -85,4 +93,8 @@ test_that("HAL-MLE bootstrap results should not be NA", {
 
 test_that("HALselect some beta", {
   expect_true(!is.null(bootOut_HALMLE$pointTMLE$compute_min_phi_ratio()))
+})
+
+test_that("comprehensiveBootstrap intervals working", {
+  expect_true(all(!sapply(CVOut$CI_all, is.na)))
 })

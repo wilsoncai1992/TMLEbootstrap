@@ -81,7 +81,7 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
         secOrd_sigma_mse_ctr = taylorCI$sigma_mse_ctr,
 
         reg_spread = regularCI$spread,
-        secOrd_spread = taylorCI$spread,
+        secOrd_spread = taylorCI$spread
 
         # convex bootstrap
         # convReg_ctr = convexRegCI$ctr,

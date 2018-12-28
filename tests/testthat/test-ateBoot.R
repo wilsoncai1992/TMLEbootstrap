@@ -69,6 +69,12 @@ out <- list(
 boot_output_HALMLE <- ateBootstrap$new(data = data_sim, targeting = FALSE)
 boot_output_HALMLE$bootstrap(2e1)
 halmleCI <- boot_output_HALMLE$all_boot_CI()
+
+# comprehensive bootstrap
+CVOut <- comprehensiveBootstrap$new(parameter = ateBootstrap, data = data_sim)
+CVOut$bootstrap(REPEAT_BOOTSTRAP = 2e1)
+CVOut$all_CI()
+
 ################################################################################
 test_that("ateBootstrap results should not be NA", {
   expect_true(all(!sapply(out, is.na)))
@@ -80,4 +86,8 @@ test_that("HAL-MLE bootstrap results should not be NA", {
 
 test_that("HALselect some beta", {
   expect_true(!is.null(boot_output_HALMLE$pointTMLE$compute_min_phi_ratio()))
+})
+
+test_that("comprehensiveBootstrap intervals working", {
+  expect_true(all(!sapply(CVOut$CI_all, is.na)))
 })

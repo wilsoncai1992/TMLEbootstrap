@@ -57,6 +57,18 @@ out <- list(
 bootOut_HALMLE <- avgDensityBootstrap$new(x = data_out$x, bin_width = bin_width, targeting = FALSE)
 bootOut_HALMLE$bootstrap(2e1)
 halmleCI <- bootOut_HALMLE$all_boot_CI()
+
+
+CVOut <- comprehensiveBootstrap$new(
+  parameter = avgDensityBootstrap,
+  x = data_out$x,
+  bin_width = bin_width,
+  lambda_grid = NULL,
+  epsilon_step = 1e-1
+)
+CVOut$bootstrap(REPEAT_BOOTSTRAP = 2e1)
+CVOut$all_CI()
+
 ################################################################################
 test_that("avgDensityBootstrap results should not be NA", {
   expect_true(all(!sapply(out, is.na)))
@@ -68,4 +80,8 @@ test_that("HAL-MLE bootstrap results should not be NA", {
 
 test_that("HALselect some beta", {
   expect_true(!is.null(bootOut_HALMLE$pointTMLE$compute_min_phi_ratio()))
+})
+
+test_that("comprehensiveBootstrap intervals working", {
+  expect_true(all(!sapply(CVOut$CI_all, is.na)))
 })
