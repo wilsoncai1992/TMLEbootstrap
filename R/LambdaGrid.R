@@ -324,7 +324,12 @@ grabPlateau <- R6Class("grabPlateau",
       } else {
         idx <- which.min(secDiff)
       }
-      if (length(idx) == 0 | idx == 0) idx <- 1 # fix when there is no plateau
+      # fix when there is no plateau
+      if (length(idx) == 0) {
+        idx <- 1 
+      } else if (idx == 0) {
+        idx <- 1
+      }
       return(data.frame(y = self$y[idx], x = self$x[idx]))
     }
   )
