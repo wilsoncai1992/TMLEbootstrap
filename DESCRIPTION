@@ -1,6 +1,6 @@
 Package: fixedHAL
 Title: TEMP
-Version: 2.6
+Version: 2.7
 Authors@R: c(
   person("Weixin", "Cai", email = "wcai@berkeley.edu",
          role = c("aut", "cre", "cph"),
@@ -27,7 +27,7 @@ Suggests:
   nnls,
   Matrix
 Remotes:
-  github::jeremyrcoyle/origami,
+  github::tlverse/origami,
   github::tlverse/hal9001,
   github::jeremyrcoyle/gentmle2
 VignetteBuilder: knitr

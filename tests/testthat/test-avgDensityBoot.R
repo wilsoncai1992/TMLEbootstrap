@@ -27,29 +27,48 @@ bin_width <- 8e-1
 
 data_out <- simulate_data(n_sim = n_sim, n_mode = n_mode)
 bootstrapFit <- avgDensityBootstrap$new(x = data_out$x, bin_width = bin_width)
-bootstrapFitExact <- bootstrapFit$clone(deep = TRUE) # deep copy point tmle, less repeat
+bootstrapFit$bootstrap(REPEAT_BOOTSTRAP = 2e1)
 
-bootstrapFit$bootstrap(REPEAT_BOOTSTRAP = 2e2)
-bootstrapFitExact$exact_bootstrap(REPEAT_BOOTSTRAP = 2e2)
+bootstrapFitExact <- bootstrapFit$clone(deep = TRUE)
+bootstrapFitExact$exact_bootstrap(REPEAT_BOOTSTRAP = 2e1)
+bootstrapFitExact_paper <- bootstrapFit$clone(deep = TRUE)
+bootstrapFitExact_paper$exact_bootstrap_paper(REPEAT_BOOTSTRAP = 2e1)
+
 regularCI <- bootstrapFit$all_boot_CI()
-taylorCI <- bootstrapFitExact$all_boot_CI()
-
+exact_CI <- bootstrapFitExact$all_boot_CI()
+exact_CI_paper <- bootstrapFitExact_paper$all_boot_CI()
 out <- list(
   wald = regularCI$wald,
   reg = regularCI$boot,
   reg_pen = regularCI$penalized,
   reg_scale = regularCI$scale,
   reg_scale_pen = regularCI$scale_penalized,
-  taylor = taylorCI$boot,
-  taylor_pen = taylorCI$penalized,
-  taylor_scale = taylorCI$scale,
-  taylor_scale_pen = taylorCI$scale_penalized
+  taylor = exact_CI$boot,
+  taylor_pen = exact_CI$penalized,
+  taylor_scale = exact_CI$scale,
+  taylor_scale_pen = exact_CI$scale_penalized,
+  taylor2 = exact_CI_paper$boot,
+  taylor2_pen = exact_CI_paper$penalized,
+  taylor2_scale = exact_CI_paper$scale,
+  taylor2_scale_pen = exact_CI_paper$scale_penalized
 )
 
 # without targeting
 bootOut_HALMLE <- avgDensityBootstrap$new(x = data_out$x, bin_width = bin_width, targeting = FALSE)
 bootOut_HALMLE$bootstrap(2e1)
 halmleCI <- bootOut_HALMLE$all_boot_CI()
+
+
+CVOut <- comprehensiveBootstrap$new(
+  parameter = avgDensityBootstrap,
+  x = data_out$x,
+  bin_width = bin_width,
+  lambda_grid = NULL,
+  epsilon_step = 1e-1
+)
+CVOut$bootstrap(REPEAT_BOOTSTRAP = 2e1)
+CVOut$all_CI()
+
 ################################################################################
 test_that("avgDensityBootstrap results should not be NA", {
   expect_true(all(!sapply(out, is.na)))
@@ -61,4 +80,8 @@ test_that("HAL-MLE bootstrap results should not be NA", {
 
 test_that("HALselect some beta", {
   expect_true(!is.null(bootOut_HALMLE$pointTMLE$compute_min_phi_ratio()))
+})
+
+test_that("comprehensiveBootstrap intervals working", {
+  expect_true(all(!sapply(CVOut$CI_all, is.na)))
 })

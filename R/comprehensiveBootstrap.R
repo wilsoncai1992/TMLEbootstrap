@@ -16,29 +16,33 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
       if (as.character(parameter$inherit) == "generalBootstrap") {
         classError <- FALSE
       } else {
-        if (as.character(parameter$get_inherit()$inherit) == "generalBootstrap") classError <- FALSE
+        if (as.character(parameter$get_inherit()$inherit) == "generalBootstrap") {
+          classError <- FALSE
+        }
       }
-      if (classError) stop("please input generalBootstrap class!") # if itself or its parent are not generalBootstrap class, throw error
+      if (classError) {
+        # if itself or its parent are not generalBootstrap class, throw error
+        stop("please input generalBootstrap class!")
+      }
 
       # create two boot objects
       self$bootOut <- parameter$new(...)
-      self$bootOutExact <- self$bootOut$clone(deep = TRUE) # deep copy point tmle, less repeat
-      # self$bootOutConvex <- self$bootOut$clone(deep = TRUE) # deep copy point tmle, less repeat
     },
     bootstrap = function(...) {
       # input:
       # REPEAT_BOOTSTRAP
       self$bootOut$bootstrap(...)
-      self$bootOutExact$exact_bootstrap(...)
-      # self$bootOutConvex$convex_bootstrap(...)
-
       self$Psi <- self$bootOut$Psi # populate Psi_n
+
+      # deep copy bootstrap, less repeat
+      self$bootOutExact <- self$bootOut$clone(deep = TRUE)
+      self$bootOutExact$exact_bootstrap_paper(...)
+      # self$bootOutConvex <- self$bootOut$clone(deep = TRUE)
     },
     all_CI = function() {
       regularCI <- self$bootOut$all_boot_CI()
       taylorCI <- self$bootOutExact$all_boot_CI()
       # convexRegCI <- self$bootOutConvex$all_boot_CI()
-
 
       self$CI_all <- list(
         wald = regularCI$wald,
@@ -71,25 +75,24 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
         secOrd_scale_pen_half_ctr = taylorCI$scale_penalized_half_ctr,
 
         # use mse as sd of the CI
-        reg_bias_scale = regularCI$bias_scale,
-        reg_bias_scale_ctr = regularCI$bias_scale_ctr,
-        secOrd_bias_scale = taylorCI$bias_scale,
-        secOrd_bias_scale_ctr = taylorCI$bias_scale_ctr
+        reg_sigma_mse = regularCI$sigma_mse,
+        reg_sigma_mse_ctr = regularCI$sigma_mse_ctr,
+        secOrd_sigma_mse = taylorCI$sigma_mse,
+        secOrd_sigma_mse_ctr = taylorCI$sigma_mse_ctr,
+
+        reg_spread = regularCI$spread,
+        secOrd_spread = taylorCI$spread
+
         # convex bootstrap
         # convReg_ctr = convexRegCI$ctr,
         # convReg_pen_ctr = convexRegCI$penalized_ctr,
         # convReg_scale_ctr = convexRegCI$scale_ctr
       )
-      # return(self$CI_all)
     },
     compute_width = function() {
       # compute a list of all widths
       # loop over list, take diff of the CI bounds
-      get_width <- function(list) vapply(
-        list,
-        diff,
-        FUN.VALUE = numeric(1)
-        )
+      get_width <- function(list) vapply(list, diff, FUN.VALUE = numeric(1))
       self$width_all <- as.list(get_width(self$CI_all))
       names(self$width_all) <- names(self$CI_all)
     },
