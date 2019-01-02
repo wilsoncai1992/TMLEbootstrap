@@ -55,15 +55,20 @@ generalBootstrap <- R6Class("generalBootstrap",
       mse <- mean( self$bootstrap_estimates[, "reg"] ^ 2)
       n <- nrow(self$bootstrap_estimates)
       sigma_star <- sqrt(mse)
-      # sigma <- diff(bootCI) / 1.96 / 2 * sqrt(n) # the spread of original boot is 2*1.96*sd/sqrt(n)
-      sigma <- diff(bootCI) / 1.96 / 2
 
-      r <- 1
-      if (sigma_star == 0) r <- 1 # catch when bootstrap Psi# are all identical
-      if (sigma_star != 0) r <- sigma_star / sigma # always use sigma#
-      # if(sigma_star > sigma) r <- sigma_star/sigma # only use sigma# to widen the CI
-      # keep center the same, increase the width of the bootCI
-      return((bootCI - bootCenter) * r + bootCenter)
+      # sigma <- diff(bootCI) / 1.96 / 2
+      # r <- 1
+      # if (sigma_star == 0) r <- 1 # catch when bootstrap Psi# are all identical
+      # if (sigma_star != 0) r <- sigma_star / sigma # always use sigma#
+      # # if(sigma_star > sigma) r <- sigma_star/sigma # only use sigma# to widen the CI
+      # # keep center the same, increase the width of the bootCI
+      # return((bootCI - bootCenter) * r + bootCenter)
+
+      Z_std <- scale(self$bootstrap_estimates[, "reg"])
+      q_z <- quantile(Z_std, probs = c(.025, .975))
+      psi_n <- mean(self$CI_all[[1]])
+      ci_out <- c(psi_n - q_z[2] * sigma_star, psi_n - q_z[1] * sigma_star)
+      return(ci_out)
     },
     spread = function(bootCI = NULL) {
       if (is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
