@@ -164,58 +164,32 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
       self$inflate_lambda <- inflate_lambda
     },
     add_lambda = function(lambda_grid = NULL, to_parallel = FALSE, ...) {
-      if (to_parallel) {
-        library(foreach)
-        library(Rmpi)
-        library(doMPI)
-        cl = startMPIcluster()
-        registerDoMPI(cl)
-        clusterSize(cl) # just to check
-        new_ls <- foreach(lambda = lambda_grid,
-                          .combine = c,
-                          .packages = c("R6", "fixedHAL", "hal9001"),
-                          .inorder = TRUE,
-                          .errorhandling = "pass",
-                          .export = c("self"),
-                          .verbose = T) %dopar% {
-          boot_here <- comprehensiveBootstrap$new(
-            parameter = avgDensityBootstrap,
-            x = self$data$x,
-            bin_width = self$bin_width,
-            lambda_grid = lambda,
-            epsilon_step = self$epsilon_step
-          )
-          # boot_here$bootstrap(
-          #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
-          #   inflate_lambda = self$inflate_lambda
-          # )
-          # boot_here$all_CI()
-          # boot_here$compute_width()
-          boot_here$compute_wald_width()
-          return(boot_here)
-        }
-        closeCluster(cl)
-      } else {
-      new_ls <- list()
-        for (lambda in lambda_grid) {
-          boot_here <- comprehensiveBootstrap$new(
-            parameter = avgDensityBootstrap,
-            x = self$data$x,
-            bin_width = self$bin_width,
-            lambda_grid = lambda,
-            epsilon_step = self$epsilon_step,
-            ...
-          )
-          # boot_here$bootstrap(
-          #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
-          #   inflate_lambda = self$inflate_lambda
-          # )
-          # boot_here$all_CI()
-          # boot_here$compute_width()
-          boot_here$compute_wald_width()
-          new_ls <- c(new_ls, boot_here)
-          message(paste(lambda, "is added"))
-        }
+      library(foreach)
+      `%mydo%` <- ifelse(to_parallel, `%dopar%`, `%do%`)
+      new_ls <- foreach(
+        lambda = lambda_grid,
+        .combine = c,
+        .packages = c("R6", "fixedHAL", "hal9001"),
+        .inorder = TRUE,
+        .errorhandling = "pass",
+        .export = c("self"),
+        .verbose = T
+      ) %mydo% {
+        boot_here <- comprehensiveBootstrap$new(
+          parameter = avgDensityBootstrap,
+          x = self$data$x,
+          bin_width = self$bin_width,
+          lambda_grid = lambda,
+          epsilon_step = self$epsilon_step
+        )
+        # boot_here$bootstrap(
+        #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
+        #   inflate_lambda = self$inflate_lambda
+        # )
+        # boot_here$all_CI()
+        # boot_here$compute_width()
+        boot_here$compute_wald_width()
+        return(boot_here)
       }
       # named list. the name is the lambda used for fitting
       names(new_ls) <- formatC(lambda_grid, format = "e", digits = 5)
@@ -236,23 +210,34 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
       self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
       self$inflate_lambda <- inflate_lambda
     },
-    add_lambda = function(lambda_grid = NULL, ...) {
-      new_ls <- list()
-      for (lambda1 in lambda_grid) {
+    add_lambda = function(lambda_grid = NULL, to_parallel = FALSE, ...) {
+      library(foreach)
+      `%mydo%` <- ifelse(to_parallel, `%dopar%`, `%do%`)
+      new_ls <- foreach(
+        lambda1 = lambda_grid,
+        .combine = c,
+        .packages = c("R6", "fixedHAL", "hal9001"),
+        .inorder = TRUE,
+        .errorhandling = "pass",
+        .export = c("self"),
+        .verbose = T
+      ) %mydo% {
         boot_here <- comprehensiveBootstrap$new(
           parameter = ateBootstrap,
           data = self$data,
           lambda1 = lambda1,
           ...
         )
-        # boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
+        # boot_here$bootstrap(
+        #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
+        #   inflate_lambda = self$inflate_lambda
+        # )
         # boot_here$all_CI()
         # boot_here$compute_width()
-        # this hacks away from computing bootstrap for all lambdas
         boot_here$compute_wald_width()
-        new_ls <- c(new_ls, boot_here)
-        message(paste(lambda1, "is added"))
+        return(boot_here)
       }
+      # named list. the name is the lambda used for fitting
       names(new_ls) <- formatC(lambda_grid, format = "e", digits = 5)
       self$dict_boot <- c(self$dict_boot, new_ls)
     }
@@ -271,23 +256,34 @@ blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
       self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
       self$inflate_lambda <- inflate_lambda
     },
-    add_lambda = function(lambda_grid = NULL, ...) {
-      new_ls <- list()
-      for (lambda1 in lambda_grid) {
+    add_lambda = function(lambda_grid = NULL, to_parallel = FALSE, ...) {
+      library(foreach)
+      `%mydo%` <- ifelse(to_parallel, `%dopar%`, `%do%`)
+      new_ls <- foreach(
+        lambda1 = lambda_grid,
+        .combine = c,
+        .packages = c("R6", "fixedHAL", "hal9001"),
+        .inorder = TRUE,
+        .errorhandling = "pass",
+        .export = c("self"),
+        .verbose = T
+      ) %mydo% {
         boot_here <- comprehensiveBootstrap$new(
           parameter = blipVarianceBootstrap_contY,
           data = self$data,
           lambda1 = lambda1,
           ...
         )
-        # boot_here$bootstrap(REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP)
+        # boot_here$bootstrap(
+        #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
+        #   inflate_lambda = self$inflate_lambda
+        # )
         # boot_here$all_CI()
         # boot_here$compute_width()
-        # this hacks away from computing bootstrap for all lambdas
         boot_here$compute_wald_width()
-        new_ls <- c(new_ls, boot_here)
-        message(paste(lambda1, "is added"))
+        return(boot_here)
       }
+      # named list. the name is the lambda used for fitting
       names(new_ls) <- formatC(lambda_grid, format = "e", digits = 5)
       self$dict_boot <- c(self$dict_boot, new_ls)
     }
@@ -326,7 +322,7 @@ grabPlateau <- R6Class("grabPlateau",
       }
       # fix when there is no plateau
       if (length(idx) == 0) {
-        idx <- 1 
+        idx <- 1
       } else if (idx == 0) {
         idx <- 1
       }
