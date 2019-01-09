@@ -61,12 +61,21 @@ LambdaGrid <- R6Class("LambdaGrid",
       lambdas <- self$get_lambda()
       CI_list <- self$get_value()
       width_all <- lapply(CI_list, function(x) x$width_all)
+      # l1 <- sapply(
+      #   CI_list,
+      #   function(x) sum(abs(x$bootOut$pointTMLE$hal_best$hal_fit$coefs))
+      # )
 
       df_ls <- list()
       count <- 1
       for (i in 1:length(width_all)) {
         for (j in 1:length(width_all[[i]])) {
-          df_ls[[count]] <- data.frame(lambda = lambdas[i], width = width_all[[i]][[j]], kindCI = names(width_all[[i]][j]))
+          df_ls[[count]] <- data.frame(
+            lambda = lambdas[i],
+            width = width_all[[i]][[j]],
+            kindCI = names(width_all[[i]][j])
+            # l1 = l1[i]
+          )
           count <- count + 1
         }
       }
@@ -78,7 +87,7 @@ LambdaGrid <- R6Class("LambdaGrid",
       # plot CIwidth v.s. log(lambda)
       if (is.null(type_CI)) type_CI <- unique(self$df_lambda_width$kindCI)
       library(ggplot2)
-      p <- ggplot(
+      p1 <- ggplot(
           self$df_lambda_width[self$df_lambda_width$kindCI %in% type_CI, ],
           aes(x = lambda, y = width, group = kindCI, color = kindCI)
         ) +
@@ -87,7 +96,16 @@ LambdaGrid <- R6Class("LambdaGrid",
         ylab("width of interval") +
         scale_x_log10() +
         theme_bw()
-      return(p)
+      p2 <- ggplot(
+          self$df_lambda_width[self$df_lambda_width$kindCI %in% type_CI, ],
+          aes(x = l1, y = width, group = kindCI, color = kindCI)
+        ) +
+        geom_point() +
+        geom_line() +
+        ylab("width of interval") +
+        theme_bw()
+      # return(p1)
+      return(list(p1 = p1, p2 = p2))
     },
     select_lambda_pleateau_wald = function(df_lambda_width) {
       # grab pleateau (when wald plateaus)
