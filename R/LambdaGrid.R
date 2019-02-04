@@ -2,6 +2,7 @@
 LambdaGrid <- R6Class("LambdaGrid",
   # lambda plateau method
   public = list(
+    data = NULL,
     REPEAT_BOOTSTRAP = NULL,
     inflate_lambda = NULL,
 
@@ -12,7 +13,10 @@ LambdaGrid <- R6Class("LambdaGrid",
     lambdaPlateau = NULL,
     lambdaCV = NULL,
     lambdaOracle = NULL,
-    initialize = function() {
+    initialize = function(data, REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1) {
+      self$data <- data
+      self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
+      self$inflate_lambda <- inflate_lambda
     },
     get_lambda = function() {
       as.numeric(names(self$dict_boot))
@@ -169,17 +173,13 @@ LambdaGrid <- R6Class("LambdaGrid",
 avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
   inherit = LambdaGrid,
   public = list(
-    data = NULL,
     bin_width = NULL,
     epsilon_step = NULL,
-    initialize = function(
-      data, bin_width, epsilon_step, REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1
-    ) {
-      self$data <- data
+    initialize = function(bin_width, epsilon_step, ...) {
+      super$initialize(...)
       self$bin_width <- bin_width
       self$epsilon_step <- epsilon_step
-      self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
-      self$inflate_lambda <- inflate_lambda
+      return(self)
     },
     add_lambda = function(lambda_grid = NULL, to_parallel = FALSE, ...) {
       library(foreach)
@@ -221,12 +221,9 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
   inherit = LambdaGrid,
   public = list(
     data = NULL,
-    initialize = function(
-      data, REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1
-    ) {
-      self$data <- data
-      self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
-      self$inflate_lambda <- inflate_lambda
+    initialize = function(...) {
+      super$initialize(...)
+      return(self)
     },
     add_lambda = function(lambda_grid = NULL, to_parallel = FALSE, ...) {
       library(foreach)
@@ -267,12 +264,9 @@ blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
   inherit = LambdaGrid,
   public = list(
     data = NULL,
-    initialize = function(
-      data, REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1
-    ) {
-      self$data <- data
-      self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
-      self$inflate_lambda <- inflate_lambda
+    initialize = function(...) {
+      super$initialize(...)
+      return(self)
     },
     add_lambda = function(lambda_grid = NULL, to_parallel = FALSE, ...) {
       library(foreach)
