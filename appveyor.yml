@@ -24,9 +24,9 @@ environment:
 
 build_script:
   - travis-tool.sh install_deps
-  - travis-tool.sh install_github jeremyrcoyle/origami
+  - travis-tool.sh install_github tlverse/origami
   - travis-tool.sh install_github jeremyrcoyle/gentmle2
-  - travis-tool.sh install_github wilsoncai1992/hal9001
+  - travis-tool.sh install_github tlverse/hal9001
 
 test_script:
   - travis-tool.sh run_tests

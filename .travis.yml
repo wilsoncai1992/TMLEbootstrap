@@ -23,10 +23,10 @@ r_packages:
   - covr
 
 r_github_packages:
-  - jimhester/covr
-  - jeremyrcoyle/origami
+  - r-lib/covr
+  - tlverse/origami
   - jeremyrcoyle/gentmle2
-  - wilsoncai1992/hal9001
+  - tlverse/hal9001
 
 ## coverage
 after_success:
