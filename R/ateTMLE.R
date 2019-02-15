@@ -50,7 +50,7 @@ ateTMLE <- R6Class("ateTMLE",
       self$g1_W <- stats::predict(object = self$g_fit, new_data = data.frame(self$data$W))
     },
     initial_fit_pen_likeli = function(
-      lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL, n_folds = 3
+      lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL, n_folds = 3, ...
     ) {
       # lambda1 for Q fit
       # lambda2 for g fit
@@ -69,7 +69,8 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
-          yolo = FALSE
+          yolo = FALSE,
+          ...
         )
         # WILSON hack the lambda_min_ratio
         if (!is.null(lambda_min_ratio)) {
@@ -87,7 +88,8 @@ ateTMLE <- R6Class("ateTMLE",
             lambda = lambda_grid_new,
             return_lasso = TRUE,
             return_x_basis = FALSE,
-            yolo = FALSE
+            yolo = FALSE,
+            ...
           )
         }
       } else if (lambda1 >= 0) {
@@ -101,7 +103,8 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE, # useless
           return_lasso = TRUE,
           return_x_basis = FALSE,
-          yolo = FALSE
+          yolo = FALSE,
+          ...
         )
       }
       # g fit
@@ -116,7 +119,8 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
-          yolo = FALSE
+          yolo = FALSE,
+          ...
         )
       } else {
         # use manual lambda1
@@ -129,11 +133,14 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE, # useless
           return_lasso = TRUE,
           return_x_basis = FALSE,
-          yolo = FALSE
+          yolo = FALSE,
+          ...
         )
       }
     },
-    initial_fit_constrained_form = function(M1 = NULL, M2 = NULL, n_folds = 3) {
+    initial_fit_constrained_form = function(
+      M1 = NULL, M2 = NULL, n_folds = 3, ...
+    ) {
       # M1 for Q fit
       # M2 for g fit
       # self$M1 <- M1
@@ -151,7 +158,8 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
-          yolo = FALSE
+          yolo = FALSE,
+          ...
         )
       } else if (M1 >= 0) { # use manual M1
         self$Q_fit <- hal9001::fit_hal_constraint_form(
@@ -163,6 +171,7 @@ ateTMLE <- R6Class("ateTMLE",
           return_lasso = TRUE,
           return_x_basis = FALSE,
           M = M1,
+          ...
         )
       }
       # g fit
@@ -176,7 +185,8 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
-          yolo = FALSE
+          yolo = FALSE,
+          ...
         )
       } else { # use manual M1
         self$g_fit <- hal9001::fit_hal_constraint_form(
@@ -188,6 +198,7 @@ ateTMLE <- R6Class("ateTMLE",
           return_lasso = TRUE,
           return_x_basis = FALSE,
           M = M2,
+          ...
         )
       }
     },
