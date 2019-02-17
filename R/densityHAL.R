@@ -12,7 +12,7 @@ densityHAL <- R6Class("densityHAL",
       self$longiData <- longiData
       self$x <- x
     },
-    fit = function(lambda = 2e-5) {
+    fit = function(lambda = 2e-5, ...) {
       # use `longiData` to transform `x`; fit a single lambda HAL on the data
       df_compressed <- self$longiData$generate_df_compress(x = self$x)
       self$hal_fit <- hal9001::fit_hal(
@@ -25,7 +25,9 @@ densityHAL <- R6Class("densityHAL",
         use_min = TRUE, # useless
         return_lasso = TRUE,
         return_x_basis = FALSE,
-        yolo = FALSE
+        cv_select = FALSE,
+        yolo = FALSE,
+        ...
       )
     },
     predict = function(new_x = NULL) {
@@ -76,26 +78,31 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       # create `origami` fold; subsample `x`
       self$folds <- origami::make_folds(n = length(self$x), V = n_fold)
     },
-    cv = function(lambda = 2e-5, verbose = FALSE) {
+    cv = function(lambda = 2e-5, verbose = FALSE, ...) {
       # fix one lambda; evaluate the validation loss on folds; take the mean loss
-      cv_once <- function(fold, data, longiData, lambda, verbose = FALSE) {
+      cv_once <- function(fold, data, longiData, lambda, verbose = FALSE, ...) {
         if (verbose) message(paste("fitting lambda =", lambda))
         # define training and validation sets based on input object of class "folds"
         train_data <- origami::training(data)
         valid_data <- origami::validation(data)
 
         HALfit <- densityHAL$new(x = train_data, longiData = longiData)
-        HALfit$fit(lambda = lambda)
+        HALfit$fit(lambda = lambda, ...)
         return(list(loss = HALfit$eval_crossentropy_loss(new_x = valid_data)))
       }
       cv_results <- origami::cross_validate(
-        cv_fun = cv_once, folds = self$folds,
-        data = self$x, longiData = self$longiData, lambda = lambda,
-        verbose = verbose
+        cv_fun = cv_once,
+        folds = self$folds,
+
+        data = self$x,
+        longiData = self$longiData,
+        lambda = lambda,
+        verbose = verbose,
+        ...
       )
       return(mean(cv_results$loss))
     },
-    cv_lambda_grid = function(lambda_grid = NULL, lambda_min_ratio = NULL) {
+    cv_lambda_grid = function(lambda_grid = NULL, lambda_min_ratio = NULL, ...) {
       # repeat `cv` with a grid of lambda; store the error for each lambda; pick the lambda minimizer of validation loss
       # c(1e-6,2e-5)
       # OPTIONAL: glmnet to get lambda_grid
@@ -115,6 +122,7 @@ cv_densityHAL <- R6Class("cv_densityHAL",
           use_min = TRUE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
+          cv_select = TRUE,
           yolo = FALSE
         )
         lambda_grid <- hal_for_lambda$hal_lasso$lambda
@@ -142,7 +150,7 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       list_df <- list()
       b <- 1
       for (i in lambda_grid) {
-        loss <- self$cv(lambda = i)
+        loss <- self$cv(lambda = i, ...)
         list_df[[b]] <- c(i, loss)
         b <- b + 1
       }

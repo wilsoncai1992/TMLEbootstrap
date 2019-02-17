@@ -74,7 +74,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       self$hal_best <- hal_out
     },
     fit_density_pen_likeli = function(
-      bin_width = .1, lambda_grid = NULL, lambda_min_ratio = NULL, n_fold = 3
+      bin_width = .1, lambda_grid = NULL, lambda_min_ratio = NULL, n_fold = 3, ...
     ) {
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
 
@@ -82,20 +82,22 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       # tune HAL for density
       cvHAL_fit <- cv_densityHAL$new(x = self$x, longiData = self$longDataOut)
       cvHAL_fit$assign_fold(n_fold = n_fold)
-      cvHAL_fit$cv_lambda_grid(lambda_grid = lambda_grid, lambda_min_ratio = lambda_min_ratio)
+      cvHAL_fit$cv_lambda_grid(
+        lambda_grid = lambda_grid, lambda_min_ratio = lambda_min_ratio, ...
+      )
       hal_out <- cvHAL_fit$compute_model_full_data(cvHAL_fit$lambda.min)
       self$HAL_tuned <- hal_out$hal_fit
       return(hal_out)
     },
     fit_density_constrained_form = function(
-      bin_width = .1, lambda_grid = NULL, M = NULL
+      bin_width = .1, lambda_grid = NULL, M = NULL, ...
     ) {
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
 
       hal_list <- list()
       for (lambda in lambda_grid) {
         HALfit <- densityHAL$new(x = self$x, longiData = self$longDataOut)
-        HALfit$fit(lambda = lambda)
+        HALfit$fit(lambda = lambda, ...)
         hal_list[[as.character(lambda)]] <- HALfit
       }
       l1_norms <- sapply(hal_list, FUN = function(x) sum(abs(x$hal_fit$coefs[,1])))
