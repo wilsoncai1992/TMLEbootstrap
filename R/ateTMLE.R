@@ -229,6 +229,7 @@ ateTMLE <- R6Class("ateTMLE",
       self$Psi <- self$tmle_object$estimates$ATE$psi
       self$se_Psi <- sqrt(self$tmle_object$estimates$ATE$var.psi)
       self$CI <- self$tmle_object$estimates$ATE$CI
+      self$EIC <- self$tmle_object$estimates$IC$IC.ATE
     },
     compute_EIC = function(A, gk, Y, Qk, Q1k, Q0k, psi) {
       HA <- A / gk - (1 - A) / (1 - gk)
