@@ -69,6 +69,7 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
+          cv_select = TRUE,
           yolo = FALSE,
           ...
         )
@@ -103,6 +104,7 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE, # useless
           return_lasso = TRUE,
           return_x_basis = FALSE,
+          cv_select = FALSE,
           yolo = FALSE,
           ...
         )
@@ -119,6 +121,7 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
+          cv_select = TRUE,
           yolo = FALSE,
           ...
         )
@@ -133,6 +136,7 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE, # useless
           return_lasso = TRUE,
           return_x_basis = FALSE,
+          cv_select = FALSE,
           yolo = FALSE,
           ...
         )
@@ -158,6 +162,7 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
+          cv_select = TRUE,
           yolo = FALSE,
           ...
         )
@@ -170,6 +175,7 @@ ateTMLE <- R6Class("ateTMLE",
           yolo = FALSE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
+          cv_select = FALSE,
           M = M1,
           ...
         )
@@ -185,6 +191,7 @@ ateTMLE <- R6Class("ateTMLE",
           use_min = TRUE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
+          cv_select = TRUE,
           yolo = FALSE,
           ...
         )
@@ -197,6 +204,7 @@ ateTMLE <- R6Class("ateTMLE",
           yolo = FALSE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
+          cv_select = FALSE,
           M = M2,
           ...
         )
