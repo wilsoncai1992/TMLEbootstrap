@@ -250,7 +250,7 @@ ateTMLE <- R6Class("ateTMLE",
         # if the Q is a hal9001 fit, do the prediction routine
         Q_1W <- stats::predict(object = Q_fit, new_data = data.frame(1, data$W))
         Q_0W <- stats::predict(object = Q_fit, new_data = data.frame(0, data$W))
-      } else if (class(Q_fit) == 'function'){
+      } else if (class(Q_fit) == 'function') {
         # if the Q is the true fit (in function format). evaluate the true Q function
         # Q_1W <- Q_fit(w = data$W$W, a = 1)
         # Q_0W <- Q_fit(w = data$W$W, a = 0)
@@ -319,14 +319,13 @@ ateTMLE <- R6Class("ateTMLE",
         # there is no coef left
         nonzeroBeta_phiRatio <- numeric()
       }
-
       # return NULL if:
       # all beta are zero
       # Qbasis has zero length
       if (length(nonzeroBeta_phiRatio) != 0) {
         return(min(nonzeroBeta_phiRatio))
       } else {
-        return(NULL)
+        return(0)
       }
     }
   )
