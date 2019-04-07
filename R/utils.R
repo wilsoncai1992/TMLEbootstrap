@@ -29,7 +29,7 @@ empiricalDensity <- R6Class("empiricalDensity",
   )
 )
 
-require(R6)
+library(R6)
 #' @export
 longiData <- R6Class("longiData",
   # helper for avgDens TMLE. convert univariate series to longitudinal format
@@ -76,62 +76,27 @@ longiData <- R6Class("longiData",
   )
 )
 
+library(R6)
 #' @export
-longiData_resample <- R6Class("longiData_resample",
-  # perform bootstrap on longitudinal format; respecting weights
+scaleX <- R6Class("scaleX",
+  # perform standardization based on (x - min)/(max - min)
+  # helper for blipVarianceTMLEContinuousY
   public = list(
-    df_compressed = NULL,
-    n_row = NULL,
-    n_sample = NULL,
-    initialize = function(df_compressed) {
-      self$df_compressed <- df_compressed
-      self$n_row <- nrow(self$df_compressed)
-      self$n_sample <- sum(self$df_compressed$Freq)
+    X = NULL,
+    minX = NULL,
+    maxX = NULL,
+    rangeX = NULL,
+    initialize = function(X) {
+      self$X <- X
+      self$minX <- min(X)
+      self$maxX <- max(X)
+      self$rangeX <- self$maxX - self$minX
     },
-    create_folds = function(n_fold = 3) {
-      artificial_ind <- rep(1:self$n_row, self$df_compressed$Freq)
-      sample_per_fold <- ceiling(self$n_sample / n_fold)
-      fold_assign <- sample(
-        head(rep(1:n_fold, each = sample_per_fold), n = self$n_sample)
-      )
-
-      df_compressed_folds <- list()
-      for (i in 1:n_fold) {
-        table_here <- as.data.frame(table(artificial_ind[fold_assign == i]))
-        table_here$Var1 <- as.numeric(as.character(table_here$Var1))
-        temp_df <- self$df_compressed[table_here$Var1, ]
-        temp_df$Freq <- table_here$Freq
-        df_compressed_folds[[i]] <- longiData_resample$new(df_compressed = temp_df)
-      }
-      return(df_compressed_folds)
+    scale01 = function(newX = NULL) {
+      return((newX - self$minX) / self$rangeX)
     },
-    bootstrap_with_replacement = function(n = self$n_sample) {
-      samp_idx <- sample(
-        seq_len(self$n_row), n,
-        prob = self$df_compressed$Freq, replace = TRUE
-      )
-      samp_idx_tbl <- as.data.frame(table(samp_idx))
-      samp_idx_tbl$samp_idx <- as.numeric(as.character(samp_idx_tbl$samp_idx))
-      new_df_compressed <- self$df_compressed[samp_idx_tbl$samp_idx, ]
-      new_df_compressed$Freq <- samp_idx_tbl$Freq
-      return(new_df_compressed)
+    scaleOriginal = function(newX = NULL) {
+      return(newX * self$rangeX + self$minX)
     }
   )
 )
-
-#' @export
-sum_longiData_resample <- function(list) {
-  # combine a list of longiData
-  # input: list of longiData_resample
-  # output: a new longiData_resample
-  library(dplyr)
-  list_df <- lapply(list, function(x) x$df_compressed)
-  df_long <- do.call(rbind, list_df)
-  out <- data.frame(
-    df_long %>%
-      group_by(box, Y) %>%
-      summarise(Freq = sum(Freq)) %>%
-      ungroup()
-  )
-  return(longiData_resample$new(df_compressed = out))
-}
