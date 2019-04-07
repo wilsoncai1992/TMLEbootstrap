@@ -39,12 +39,13 @@ LambdaGrid <- R6Class("LambdaGrid",
             CI_low = CI_all[[i]][[j]][1],
             CI_upp = CI_all[[i]][[j]][2],
             kindCI = names(CI_all[[i]][j])
-            )
+          )
           count <- count + 1
         }
       }
       df2 <- do.call(rbind, df_ls)
-      df2 <- df2[grep("ctr", df2$kindCI, invert = TRUE), ] # not plot centered version
+      # not plot centered version
+      df2 <- df2[grep("ctr", df2$kindCI, invert = TRUE), ]
       df2$logLambda <- log10(df2$lambda)
       df2$center <- (df2$CI_low + df2$CI_upp) / 2
 
@@ -54,9 +55,13 @@ LambdaGrid <- R6Class("LambdaGrid",
         y = center,
         group = interaction(logLambda, kindCI),
         color = kindCI
-        )) +
+      )) +
         geom_point(position = position_dodge(0.5)) +
-        geom_errorbar(aes(ymin = CI_low, ymax = CI_upp), width = .5, position = position_dodge(0.5)) +
+        geom_errorbar(
+          aes(ymin = CI_low, ymax = CI_upp),
+          width = .5,
+          position = position_dodge(0.5)
+        ) +
         ylab("")
       if (!is.null(Psi)) p <- p + geom_hline(yintercept = Psi, linetype = 2)
       return(p)
@@ -65,10 +70,6 @@ LambdaGrid <- R6Class("LambdaGrid",
       lambdas <- self$get_lambda()
       CI_list <- self$get_value()
       width_all <- lapply(CI_list, function(x) x$width_all)
-      # l1 <- sapply(
-      #   CI_list,
-      #   function(x) sum(abs(x$bootOut$pointTMLE$hal_best$hal_fit$coefs))
-      # )
 
       df_ls <- list()
       count <- 1
@@ -78,13 +79,13 @@ LambdaGrid <- R6Class("LambdaGrid",
             lambda = lambdas[i],
             width = width_all[[i]][[j]],
             kindCI = names(width_all[[i]][j])
-            # l1 = l1[i]
           )
           count <- count + 1
         }
       }
       df2 <- do.call(rbind, df_ls)
-      self$df_lambda_width <- df2[grep("ctr", df2$kindCI, invert = TRUE), ] # not use centered version
+      # not use centered version
+      self$df_lambda_width <- df2[grep("ctr", df2$kindCI, invert = TRUE), ]
       return(self$df_lambda_width)
     },
     plot_width = function(type_CI = NULL) {
@@ -92,18 +93,18 @@ LambdaGrid <- R6Class("LambdaGrid",
       if (is.null(type_CI)) type_CI <- unique(self$df_lambda_width$kindCI)
       library(ggplot2)
       p1 <- ggplot(
-          self$df_lambda_width[self$df_lambda_width$kindCI %in% type_CI, ],
-          aes(x = lambda, y = width, group = kindCI, color = kindCI)
-        ) +
+        self$df_lambda_width[self$df_lambda_width$kindCI %in% type_CI, ],
+        aes(x = lambda, y = width, group = kindCI, color = kindCI)
+      ) +
         geom_point() +
         geom_line() +
         ylab("width of interval") +
         scale_x_log10() +
         theme_bw()
       p2 <- ggplot(
-          self$df_lambda_width[self$df_lambda_width$kindCI %in% type_CI, ],
-          aes(x = l1, y = width, group = kindCI, color = kindCI)
-        ) +
+        self$df_lambda_width[self$df_lambda_width$kindCI %in% type_CI, ],
+        aes(x = l1, y = width, group = kindCI, color = kindCI)
+      ) +
         geom_point() +
         geom_line() +
         ylab("width of interval") +
@@ -115,7 +116,7 @@ LambdaGrid <- R6Class("LambdaGrid",
       # grab pleateau (when wald plateaus)
       if (!is.null(self$lambdaCV)) {
         # don't check for plateau for lambda >= lambda_CV
-        df_lambda_width <- df_lambda_width[df_lambda_width$lambda <= self$lambdaCV,]
+        df_lambda_width <- df_lambda_width[df_lambda_width$lambda <= self$lambdaCV, ]
       }
       df_ls <- list()
       count <- 1
@@ -134,7 +135,7 @@ LambdaGrid <- R6Class("LambdaGrid",
       allPlateaus <- do.call(rbind, df_ls)
       return(10^allPlateaus$x)
     },
-    get_Psi_df = function(){
+    get_Psi_df = function() {
       lambdas <- self$get_lambda()
       CI_list <- self$get_value()
       Psi_all <- sapply(CI_list, function(x) x$Psi)
@@ -146,23 +147,24 @@ LambdaGrid <- R6Class("LambdaGrid",
       grad_Psi <- diff(df_Psi$Psi)
       grad_se <- diff(df_Psi$se_Psi)
 
-      monotonicfy_the_grad = function(grad){
+      monotonicfy_the_grad <- function(grad) {
         sign_first_IsPositive <- tail(grad, 1) > 0
         if (sign_first_IsPositive) {
-          grad[grad<0] <- 0
-        }else{
-          grad[grad>0] <- 0
+          grad[grad < 0] <- 0
+        } else {
+          grad[grad > 0] <- 0
         }
         return(grad)
       }
-      grad_Psi = monotonicfy_the_grad(grad_Psi)
-      grad_se = monotonicfy_the_grad(grad_se)
+      grad_Psi <- monotonicfy_the_grad(grad_Psi)
+      grad_se <- monotonicfy_the_grad(grad_se)
 
       alpha <- 1.96
       objective1 <- abs(grad_Psi - alpha * grad_se)
       objective2 <- abs(grad_Psi + alpha * grad_se)
-      # -1 and +1 is to make the indexing start from 0, so that mod operator will minus the length when needed
-      lambda_index <- (which.min(c(objective1, objective2))-1) %% length(objective1) + 1
+      # -1 and +1 is to make the indexing start from 0,
+      # so that mod operator will minus the length when needed
+      lambda_index <- (which.min(c(objective1, objective2)) - 1) %% length(objective1) + 1
       lambda_balanceMSE <- df_Psi$lambda[lambda_index]
       return(lambda_balanceMSE)
     }
@@ -187,7 +189,6 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
       new_ls <- foreach(
         lambda = lambda_grid,
         .combine = c,
-        .packages = c("R6", "fixedHAL", "hal9001"),
         .inorder = TRUE,
         .errorhandling = "pass",
         .export = c("self"),
@@ -200,12 +201,6 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
           lambda_grid = lambda,
           epsilon_step = self$epsilon_step
         )
-        # boot_here$bootstrap(
-        #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
-        #   inflate_lambda = self$inflate_lambda
-        # )
-        # boot_here$all_CI()
-        # boot_here$compute_width()
         boot_here$compute_wald_width()
         return(boot_here)
       }
@@ -231,7 +226,6 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
       new_ls <- foreach(
         lambda1 = lambda_grid,
         .combine = c,
-        .packages = c("R6", "fixedHAL", "hal9001"),
         .inorder = TRUE,
         .errorhandling = "pass",
         .export = c("self"),
@@ -243,12 +237,6 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
           lambda1 = lambda1,
           ...
         )
-        # boot_here$bootstrap(
-        #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
-        #   inflate_lambda = self$inflate_lambda
-        # )
-        # boot_here$all_CI()
-        # boot_here$compute_width()
         boot_here$compute_wald_width()
         return(boot_here)
       }
@@ -274,7 +262,6 @@ blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
       new_ls <- foreach(
         lambda1 = lambda_grid,
         .combine = c,
-        .packages = c("R6", "fixedHAL", "hal9001"),
         .inorder = TRUE,
         .errorhandling = "pass",
         .export = c("self"),
@@ -286,12 +273,6 @@ blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
           lambda1 = lambda1,
           ...
         )
-        # boot_here$bootstrap(
-        #   REPEAT_BOOTSTRAP = self$REPEAT_BOOTSTRAP,
-        #   inflate_lambda = self$inflate_lambda
-        # )
-        # boot_here$all_CI()
-        # boot_here$compute_width()
         boot_here$compute_wald_width()
         return(boot_here)
       }
@@ -312,25 +293,17 @@ grabPlateau <- R6Class("grabPlateau",
       self$x <- x
       self$y <- y
     },
-    # plateau_1 = function() {
-    #   # immediate after largest cliff
-    #   firstDiff <- diff(self$y) / diff(self$x)
-    #   # plot(firstDiff)
-    #   idx <- which.min(firstDiff) - 1
-    #   if (idx == 0) idx <- 1 # fix when there is no plateau
-    #   return(data.frame(y = self$y[idx], x = self$x[idx]))
-    # },
     find_plateau = function(find_plateau_start = TRUE) {
       # argmin(sec diff)
       dx <- diff(self$x)
       dx_shift <- c(dx[2:length(dx)], NA)
       denom <- dx * dx_shift
       denom <- denom[!is.na(denom)]
-      secDiff <- diff(diff(self$y)) / (denom)
+      sec_diff <- diff(diff(self$y)) / (denom)
       if (find_plateau_start) {
-        idx <- which.max(secDiff)
+        idx <- which.max(sec_diff)
       } else {
-        idx <- which.min(secDiff)
+        idx <- which.min(sec_diff)
       }
       # fix when there is no plateau
       if (length(idx) == 0) {

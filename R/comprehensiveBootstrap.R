@@ -4,8 +4,6 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
   public = list(
     bootOut = NULL, # regular boot
     bootOutExact = NULL, # secOrd boot
-    # bootOutConvex = NULL, # convex bootstrap
-
     Psi = NULL,
     CI_all = NULL, # list of all CI
     width_all = NULL, # the CI width in CI_all
@@ -37,12 +35,10 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
       # deep copy bootstrap, less repeat
       self$bootOutExact <- self$bootOut$clone(deep = TRUE)
       self$bootOutExact$exact_bootstrap_paper(...)
-      # self$bootOutConvex <- self$bootOut$clone(deep = TRUE)
     },
     all_CI = function() {
       regularCI <- self$bootOut$all_boot_CI()
       taylorCI <- self$bootOutExact$all_boot_CI()
-      # convexRegCI <- self$bootOutConvex$all_boot_CI()
 
       self$CI_all <- list(
         wald = regularCI$wald,
@@ -82,11 +78,6 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
 
         reg_spread = regularCI$spread,
         secOrd_spread = taylorCI$spread
-
-        # convex bootstrap
-        # convReg_ctr = convexRegCI$ctr,
-        # convReg_pen_ctr = convexRegCI$penalized_ctr,
-        # convReg_scale_ctr = convexRegCI$scale_ctr
       )
     },
     compute_width = function() {

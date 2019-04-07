@@ -29,8 +29,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
       if (!is.null(verbose)) self$verbose <- verbose
     },
     initial_fit = function(
-      lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL
-    ) {
+                               lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {
       use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
       use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
 
@@ -49,16 +48,29 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
       }
 
       # get Q_1W, Q_0W
-      self$Q_AW <- hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(self$data$A, self$data$W))
-      self$Q_1W <- hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(1, self$data$W))
-      self$Q_0W <- hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(0, self$data$W))
+      self$Q_AW <- hal9001:::predict.hal9001(
+        self$Q_fit,
+        new_data = data.frame(self$data$A, self$data$W)
+      )
+      self$Q_1W <- hal9001:::predict.hal9001(
+        self$Q_fit,
+        new_data = data.frame(1, self$data$W)
+      )
+      self$Q_0W <- hal9001:::predict.hal9001(
+        self$Q_fit,
+        new_data = data.frame(0, self$data$W)
+      )
       # get g1_W
-      self$g_1W <- hal9001:::predict.hal9001(self$g_fit, new_data = data.frame(self$data$W))
+      self$g_1W <- hal9001:::predict.hal9001(
+        self$g_fit,
+        new_data = data.frame(self$data$W)
+      )
     },
     initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL) {
       # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
       # Q fit
-      if (is.null(lambda1)) { # use CV
+      if (is.null(lambda1)) {
+        # use CV
         self$Q_fit <- hal9001::fit_hal(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
@@ -82,7 +94,8 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
         )
       }
       # g fit
-      if (is.null(lambda2)) { # use CV
+      if (is.null(lambda2)) {
+        # use CV
         self$g_fit <- hal9001::fit_hal(
           X = self$data$W,
           Y = self$data$A,
@@ -109,8 +122,6 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
     initial_fit_constrained_form = function(M1 = NULL, M2 = NULL) {
       # M1 for Q fit
       # M2 for g fit
-      # self$M1 <- M1
-      # self$M2 <- M2
 
       # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
       # Q fit
@@ -126,7 +137,8 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           return_x_basis = FALSE,
           yolo = FALSE
         )
-      } else if (M1 >= 0) { # use manual M1
+      } else if (M1 >= 0) {
+        # use manual M1
         self$Q_fit <- hal9001::fit_hal_constraint_form(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
@@ -139,7 +151,8 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
         )
       }
       # g fit
-      if (is.null(M2)) { # use CV
+      if (is.null(M2)) {
+        # use CV
         self$g_fit <- hal9001::fit_hal(
           X = data.frame(self$data$W),
           Y = self$data$A,
@@ -151,7 +164,8 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
           return_x_basis = FALSE,
           yolo = FALSE
         )
-      } else { # use manual M1
+      } else {
+        # use manual M1
         self$g_fit <- hal9001::fit_hal_constraint_form(
           X = data.frame(self$data$W),
           Y = self$data$A,
@@ -189,7 +203,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
     compute_EIC = function(Y, A, Q1k, Q0k, Qk, gk, psi) {
       # helper function to compute EIC values. shared among blipVarianceTMLE class
       HA <- 2 * (Q1k - Q0k - mean(Q1k - Q0k)) * (A / gk - (1 - A) / (1 - gk))
-      IC <- HA * (Y - Qk) + (Q1k - Q0k - mean(Q1k - Q0k)) ^ 2 - psi
+      IC <- HA * (Y - Qk) + (Q1k - Q0k - mean(Q1k - Q0k))^2 - psi
       return(IC)
     },
     inference_without_target = function() {
@@ -217,22 +231,25 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
       if (length(Qbasis_list) > 0) {
         x_basis <- hal9001:::make_design_matrix(as.matrix(X), Qbasis_list)
         unique_columns <- as.numeric(names(Qcopy_map))
-        # design matrix. each column correspond to Q_fit$coefs. don't have intercept column
+        # design matrix. each column correspond to Q_fit$coefs.
+        # don't have intercept column
         x_basis <- x_basis[, unique_columns]
         phi_ratio <- Matrix::colMeans(x_basis)
 
-        beta_nonIntercept <- self$Q_fit$coefs[-1]
-        beta_nonzero <- beta_nonIntercept != 0
-        nonzeroBeta_phiRatio <- phi_ratio[beta_nonzero]
+        beta_non_intercept <- self$Q_fit$coefs[-1]
+        beta_non_zero <- beta_non_intercept != 0
+        nonzero_beta_phi_ratio <- phi_ratio[beta_non_zero]
       } else {
         # there is no coef left
-        nonzeroBeta_phiRatio <- numeric()
+        nonzero_beta_phi_ratio <- numeric()
       }
 
-      # return NULL if:
-      # all beta are zero
-      # Qbasis has zero length
-      if (length(nonzeroBeta_phiRatio) != 0) return(min(nonzeroBeta_phiRatio)) else return(NULL)
+      # return NULL if: # all beta are zero OR # Qbasis has zero length
+      if (length(nonzero_beta_phi_ratio) != 0) {
+        return(min(nonzero_beta_phi_ratio))
+      } else {
+        return(NULL)
+      }
     }
   )
 )
@@ -260,9 +277,9 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
     },
     scaleBack_afterTMLE = function() {
       # variance is rescaled
-      self$Psi <- self$Psi * self$scale_Y$rangeX ^ 2
+      self$Psi <- self$Psi * self$scale_Y$rangeX^2
       # EIC is scaled by the same amount
-      self$se_Psi <- self$se_Psi * self$scale_Y$rangeX ^ 2
+      self$se_Psi <- self$se_Psi * self$scale_Y$rangeX^2
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
     },
     initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {
@@ -284,11 +301,23 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
       }
 
       # get Q_1W, Q_0W
-      self$Q_AW <- hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(self$data$A, self$data$W))
-      self$Q_1W <- hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(1, self$data$W))
-      self$Q_0W <- hal9001:::predict.hal9001(self$Q_fit, new_data = data.frame(0, self$data$W))
+      self$Q_AW <- hal9001:::predict.hal9001(
+        self$Q_fit,
+        new_data = data.frame(self$data$A, self$data$W)
+      )
+      self$Q_1W <- hal9001:::predict.hal9001(
+        self$Q_fit,
+        new_data = data.frame(1, self$data$W)
+      )
+      self$Q_0W <- hal9001:::predict.hal9001(
+        self$Q_fit,
+        new_data = data.frame(0, self$data$W)
+      )
       # get g1_W
-      self$g_1W <- hal9001:::predict.hal9001(self$g_fit, new_data = data.frame(self$data$W))
+      self$g_1W <- hal9001:::predict.hal9001(
+        self$g_fit,
+        new_data = data.frame(self$data$W)
+      )
       # scale Q to (0,1)
       self$Q_AW_rescale <- self$scale_Y$scale01(newX = self$Q_AW)
       self$Q_1W_rescale <- self$scale_Y$scale01(newX = self$Q_1W)
@@ -299,9 +328,9 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
       # self$Q_0W_rescale <- self$scale_Q$scale01(newX = self$Q_0W)
     },
     initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL) {
-      # message('continuous Y')
       # Q fit
-      if (is.null(lambda1)) { # use CV
+      if (is.null(lambda1)) {
+        # use CV
         self$Q_fit <- hal9001::fit_hal(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
@@ -325,7 +354,8 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
         )
       }
       # g fit
-      if (is.null(lambda2)) { # use CV
+      if (is.null(lambda2)) {
+        # use CV
         self$g_fit <- hal9001::fit_hal(
           X = self$data$W,
           Y = self$data$A,
@@ -363,7 +393,8 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           return_x_basis = FALSE,
           yolo = FALSE
         )
-      } else if (M1 >= 0) { # use manual M1
+      } else if (M1 >= 0) {
+        # use manual M1
         self$Q_fit <- hal9001::fit_hal_constraint_form(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
@@ -376,7 +407,8 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
         )
       }
       # g fit
-      if (is.null(M2)) { # use CV
+      if (is.null(M2)) {
+        # use CV
         self$g_fit <- hal9001::fit_hal(
           X = data.frame(self$data$W),
           Y = self$data$A,
@@ -388,7 +420,8 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           return_x_basis = FALSE,
           yolo = FALSE
         )
-      } else { # use manual M1
+      } else {
+        # use manual M1
         self$g_fit <- hal9001::fit_hal_constraint_form(
           X = data.frame(self$data$W),
           Y = self$data$A,
@@ -402,7 +435,6 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
       }
     },
     target = function() {
-      # message('continuous Y')
       initdata <- data.frame(
         A = self$data$A,
         Y = self$Y_rescale,
@@ -415,12 +447,10 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
         initdata = initdata,
         params = list(gentmle2::param_sigmaATE),
         approach = "full",
-        # max_iter = 1e5,
         submodel = gentmle2::submodel_logit
       )
       self$Psi <- self$gentmle_object$tmleests
       self$se_Psi <- sd(self$gentmle_object$Dstar) / sqrt(length(self$data$A))
-      # self$se_Psi <- self$gentmle_object$ED2/sqrt(length(self$data$A)) # this is from jeremy
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
     },
     inference_without_target = function() {

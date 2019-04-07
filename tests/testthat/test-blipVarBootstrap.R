@@ -6,13 +6,13 @@ context("blipVarianceBoot results should not be NA")
 simulate_data <- function(n_sim, n_mode = 1, a1 = 2) {
   dmixture <- function(x, modes, sigma) {
     all_d <- c()
-    for(mode_here in modes) all_d <- c(all_d, dnorm(x, mean = mode_here, sd = sigma))
+    for (mode_here in modes) all_d <- c(all_d, dnorm(x, mean = mode_here, sd = sigma))
     return(mean(all_d))
   }
   modes <- seq(from = -2, to = 2, length.out = n_mode)
   sigma <- 10 / n_mode / 8
   fW <- Vectorize(function(x) a1 * dmixture(x = x, modes = modes, sigma = sigma))
-  f2W <- Vectorize(function(x) (a1 * dmixture(x = x, modes = modes, sigma = sigma)) ^ 2)
+  f2W <- Vectorize(function(x) (a1 * dmixture(x = x, modes = modes, sigma = sigma))^2)
 
   A <- rbinom(n = n_sim, size = 1, prob = .5)
   W <- runif(n = n_sim, min = -4, max = 4)
@@ -27,7 +27,7 @@ simulate_data <- function(n_sim, n_mode = 1, a1 = 2) {
 
   E_blip <- mean(fW(seq(-4, 4, by = 1e-3)))
   E2_blip <- mean(f2W(seq(-4, 4, by = 1e-3)))
-  true_var_blip <- E2_blip - E_blip ^ 2
+  true_var_blip <- E2_blip - E_blip^2
   return(list(df = df, psi_true = true_var_blip, fW = fW))
 }
 

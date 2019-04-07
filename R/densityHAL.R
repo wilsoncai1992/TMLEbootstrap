@@ -33,7 +33,6 @@ densityHAL <- R6Class("densityHAL",
     predict = function(new_x = NULL) {
       # predict density p_hat on `new_x`
       if (length(new_x) > 1e4) return(self$predict_long(new_x = new_x))
-      # return(expit(predict(self$hal_fit, new_data = new_x)))
       return(predict(self$hal_fit, new_data = new_x))
     },
     predict_long = function(new_x = NULL) {
@@ -103,12 +102,13 @@ cv_densityHAL <- R6Class("cv_densityHAL",
       return(mean(cv_results$loss))
     },
     cv_lambda_grid = function(lambda_grid = NULL, lambda_min_ratio = NULL, ...) {
-      # repeat `cv` with a grid of lambda; store the error for each lambda; pick the lambda minimizer of validation loss
+      # repeat `cv` with a grid of lambda; store the error for each lambda;
+      # pick the lambda minimizer of validation loss
       # c(1e-6,2e-5)
       # OPTIONAL: glmnet to get lambda_grid
       get_lambda_grid_from_cv <- is.null(lambda_grid)
       if ((!get_lambda_grid_from_cv) & (!is.null(lambda_min_ratio))) {
-        stop('do not set `lambda_min_ratio` if you do not CV!')
+        stop("do not set `lambda_min_ratio` if you do not CV!")
       }
       if (get_lambda_grid_from_cv) {
         df_compressed <- self$longiData$generate_df_compress(x = self$x)
@@ -128,17 +128,15 @@ cv_densityHAL <- R6Class("cv_densityHAL",
         lambda_grid <- hal_for_lambda$hal_lasso$lambda
         if (!is.null(lambda_min_ratio)) {
           # manually increase the range of lambda grid
-          create_lambda_grid_by_ratio <- function(
-            lambda_grid, lambda_min_ratio
-          ){
+          create_lambda_grid_by_ratio <- function(lambda_grid, lambda_min_ratio) {
             lambda_max <- max(cv_lambda_grid)
             lambda_min <- lambda_max * lambda_min_ratio
             log_lambda_range <- log(c(lambda_min, lambda_max))
             lambda_grid_new <- exp(seq(
-                                  log_lambda_range[2],
-                                  log_lambda_range[1],
-                                  length.out = 1e2
-                                ))
+              log_lambda_range[2],
+              log_lambda_range[1],
+              length.out = 1e2
+            ))
             return(lambda_grid_new)
           }
           lambda_grid <- create_lambda_grid_by_ratio(

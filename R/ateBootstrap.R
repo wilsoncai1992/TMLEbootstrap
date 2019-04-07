@@ -9,14 +9,12 @@ ateBootstrap <- R6Class("ateBootstrap",
 
     bootstrap_estimates = NULL,
     targeting = NULL,
-    initialize = function(
-      data,
-      lambda1 = NULL,
-      lambda2 = NULL,
-      M1 = NULL,
-      M2 = NULL,
-      targeting = TRUE
-    ) {
+    initialize = function(data,
+                              lambda1 = NULL,
+                              lambda2 = NULL,
+                              M1 = NULL,
+                              M2 = NULL,
+                              targeting = TRUE) {
       # data is in list
       # lambda1 is a grid of lambda for Q
       # lambda2 is a grid of lambda for g
@@ -29,7 +27,9 @@ ateBootstrap <- R6Class("ateBootstrap",
       if (self$targeting) {
         tmleOut$target()
       } else {
-        tmleOut$inference_without_target(data = self$data, tmleOut$Q_fit, tmleOut$g_fit, to_return = FALSE)
+        tmleOut$inference_without_target(
+          data = self$data, tmleOut$Q_fit, tmleOut$g_fit, to_return = FALSE
+        )
       }
 
       self$pointTMLE <- tmleOut
@@ -38,7 +38,10 @@ ateBootstrap <- R6Class("ateBootstrap",
     bootstrap_once = function(self, data) {
       SAMPLE_PER_BOOTSTRAP <- length(self$data$Y)
       # indices is the random indexes for the bootstrap sample
-      indices <- sample(1:SAMPLE_PER_BOOTSTRAP, size = SAMPLE_PER_BOOTSTRAP, replace = TRUE)
+      indices <- sample(
+        1:SAMPLE_PER_BOOTSTRAP,
+        size = SAMPLE_PER_BOOTSTRAP, replace = TRUE
+      )
       Y <- data$Y[indices]
       A <- data$A[indices]
       W <- data$W[indices, ]
@@ -101,7 +104,6 @@ ateBootstrap <- R6Class("ateBootstrap",
         psi = mean(Q_pound_1 - Q_pound_0)
       ))
       # get R2 term
-      # evaluate R_2
       part1 <- (g_pound_1 - self$pointTMLE$g1_W) / g_pound_1 *
         (Q_pound_1 - self$pointTMLE$Q_1W)
       part0 <- (g_pound_0 - (1 - self$pointTMLE$g1_W)) / g_pound_0 *
@@ -121,21 +123,11 @@ ateBootstrap <- R6Class("ateBootstrap",
           it2 = 1:REPEAT_BOOTSTRAP,
           .combine = "rbind",
           .inorder = FALSE,
-          .packages = c("R6", "hal9001", "fixedHAL"),
           .errorhandling = "remove",
           .export = c("self")
         ) %do% {
           self$bootstrap_once(self = self, data = self$data)
         }
-        # # remove errors
-        # if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) {
-        #   message(paste(
-        #     "Error happens.",
-        #     sum(sapply(all_bootstrap_estimates, class) == "numeric"),
-        #     "bootstraps are correct"
-        #   ))
-        # }
-        # all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
         self$bootstrap_estimates <- all_bootstrap_estimates
         dim(self$bootstrap_estimates)
       } else {

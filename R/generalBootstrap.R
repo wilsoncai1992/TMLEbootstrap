@@ -3,20 +3,21 @@ generalBootstrap <- R6Class("generalBootstrap",
   # bootstrap modifications
   public = list(
     Psi = NULL,
-    CI_all = NULL, # list of length = 2; the first element is wald CI, the second is bootstrap CI
+    # list of length = 2; the first element is wald CI, the second is bootstrap CI
+    CI_all = NULL,
     initialize = function() {
     },
     center_CI = function(bootCI = NULL) {
-      if (is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
+      # if user don't provide bootCI, use existing bootCI;
+      if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
       # centered bootstrap (shift 1 time)
       new_CI <- bootCI - mean(bootCI) + self$Psi
-      # only shift positively
-      # new_CI <- bootCI + max(0, - mean(bootCI) + self$Psi)
       return(new_CI)
     },
     scale_adjust_CI = function(bootCI = NULL) {
       waldCI <- self$CI_all[[1]]
-      if (is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
+      # if user don't provide bootCI, use existing bootCI;
+      if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
       bootCenter <- mean(bootCI)
       r <- 1
       if (diff(bootCI) == 0) r <- 1 # catch when bootstrap Psi# are all identical
@@ -27,7 +28,9 @@ generalBootstrap <- R6Class("generalBootstrap",
     penalized_CI = function(bootCI = NULL) {
       # bias penalized bootstrap
       # if user input scale_adjust CI, this will output scale + penalized bootCI
-      if (is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
+
+      # if user don't provide bootCI, use existing bootCI;
+      if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
       delta <- mean(bootCI) - self$Psi
       bootCI[2] <- bootCI[2] + abs(delta)
       bootCI[1] <- bootCI[1] - abs(delta)
@@ -36,7 +39,9 @@ generalBootstrap <- R6Class("generalBootstrap",
     penalized_CI_half = function(bootCI = NULL) {
       # bias penalized bootstrap
       # if user input scale_adjust CI, this will output scale + penalized bootCI
-      if (is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
+
+      # if user don't provide bootCI, use existing bootCI;
+      if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
       delta <- mean(bootCI) - self$Psi
       bootCI[2] <- bootCI[2] + abs(delta) / 2
       bootCI[1] <- bootCI[1] - abs(delta) / 2
@@ -45,24 +50,15 @@ generalBootstrap <- R6Class("generalBootstrap",
     shift2 = function(bootCI = NULL) {
       # bias-corrected bootstrap (shift 2 times)
       new_CI <- bootCI + 2 * (-mean(bootCI) + self$Psi)
-      # only shift positively
-      # new_CI <- bootCI + max(0, 2*(- mean(bootCI) + self$Psi))
       return(new_CI)
     },
     sigma_mse = function(bootCI = NULL) {
-      if (is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
+      # if user don't provide bootCI, use existing bootCI;
+      if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
       bootCenter <- mean(bootCI)
-      mse <- mean( self$bootstrap_estimates[, "reg"] ^ 2)
+      mse <- mean(self$bootstrap_estimates[, "reg"]^2)
       n <- nrow(self$bootstrap_estimates)
       sigma_star <- sqrt(mse)
-
-      # sigma <- diff(bootCI) / 1.96 / 2
-      # r <- 1
-      # if (sigma_star == 0) r <- 1 # catch when bootstrap Psi# are all identical
-      # if (sigma_star != 0) r <- sigma_star / sigma # always use sigma#
-      # # if(sigma_star > sigma) r <- sigma_star/sigma # only use sigma# to widen the CI
-      # # keep center the same, increase the width of the bootCI
-      # return((bootCI - bootCenter) * r + bootCenter)
 
       Z_std <- scale(self$bootstrap_estimates[, "reg"])
       q_z <- quantile(Z_std, probs = c(.025, .975))
@@ -71,11 +67,11 @@ generalBootstrap <- R6Class("generalBootstrap",
       return(ci_out)
     },
     spread = function(bootCI = NULL) {
-      if (is.null(bootCI)) bootCI <- self$CI_all[[2]] # if user don't provide bootCI, use existing bootCI;
+      # if user don't provide bootCI, use existing bootCI;
+      if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
       waldCI <- self$CI_all[[1]]
       psi_n <- mean(waldCI)
       n <- nrow(self$bootstrap_estimates)
-      # sigma_n <- diff(waldCI) / 2 / 1.96 * sqrt(n)
       sigma_n <- diff(waldCI) / 2 / 1.96
       bootCenter <- mean(bootCI)
 

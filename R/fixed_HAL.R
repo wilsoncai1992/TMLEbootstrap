@@ -4,13 +4,12 @@
 # OPTIONAL: if the old object is squashed, only use the non-zero basis
 #' @export
 fit_fixed_HAL <- function(
-  Y,
-  X,
-  weights = NULL,
-  hal9001_object,
-  family = stats::gaussian(),
-  inflate_lambda = 1
-) {
+                          Y,
+                          X,
+                          weights = NULL,
+                          hal9001_object,
+                          family = stats::gaussian(),
+                          inflate_lambda = 1) {
   if (is.null(weights)) weights <- rep(1, length(Y))
   basis_list <- hal9001_object$basis_list
   copy_map <- hal9001_object$copy_map
@@ -94,11 +93,17 @@ predict.fixed_HAL <- function(object, ..., new_data) {
     pred_x_basis <- hal9001:::apply_copy_map(pred_x_basis, object$copy_map)
     # make up the ncol for glm solution
     if (object$IS_GLM) {
-      pred_x_basis <- cbind(matrix(1, ncol = 1, nrow = nrow(pred_x_basis)), pred_x_basis)
-      pred_x_basis <- cbind(matrix(0, ncol = 1, nrow = nrow(pred_x_basis)), pred_x_basis)
+      pred_x_basis <- cbind(
+        matrix(1, ncol = 1, nrow = nrow(pred_x_basis)), pred_x_basis
+      )
+      pred_x_basis <- cbind(
+        matrix(0, ncol = 1, nrow = nrow(pred_x_basis)), pred_x_basis
+      )
     }
   }
-  if (length(object$basis_list) == 0) pred_x_basis <- matrix(1, ncol = 2, nrow = nrow(new_data))
+  if (length(object$basis_list) == 0) {
+    pred_x_basis <- matrix(1, ncol = 2, nrow = nrow(new_data))
+  }
 
   # generate predictions
   beta_hat <- stats::coef(object$lasso_fit)
@@ -127,16 +132,14 @@ predict.fixed_HAL <- function(object, ..., new_data) {
 # most general form of wrapper.
 # depend on an hal9001 object. which is the fit on the whole data.
 #' @export
-basic_fixed_HAL <- function(
-  Y,
-  X,
-  hal9001_object = NULL,
-  newX = NULL,
-  family = stats::gaussian(),
-  obsWeights = rep(1, length(Y)),
-  inflate_lambda = 1,
-  ...
-) {
+basic_fixed_HAL <- function(Y,
+                            X,
+                            hal9001_object = NULL,
+                            newX = NULL,
+                            family = stats::gaussian(),
+                            obsWeights = rep(1, length(Y)),
+                            inflate_lambda = 1,
+                            ...) {
   if (is.null(hal9001_object)) stop("missing hal9001_object!")
   # fit HAL
   fitted_out <- fit_fixed_HAL(
@@ -162,12 +165,14 @@ basic_fixed_HAL <- function(
 }
 
 # generator of SL wrappers
-# outputs a SL wrapper, that no longer depend on the hal9001 object. the output arguments conform with `SL` library convention
+# outputs a SL wrapper, that no longer depend on the hal9001 object.
+# the output arguments conform with `SL` library convention
 #' @export
 generate_SL.fixed_HAL <- function(hal9001_object = NULL, inflate_lambda = 1) {
   function(...) basic_fixed_HAL(
-    ..., hal9001_object = hal9001_object, inflate_lambda = inflate_lambda
-  )
+      ...,
+      hal9001_object = hal9001_object, inflate_lambda = inflate_lambda
+    )
 }
 
 # SL prediction function for the SL wrapper created

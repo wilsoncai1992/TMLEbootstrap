@@ -1,4 +1,3 @@
-# library(R6)
 #' @export
 empiricalDensity <- R6Class("empiricalDensity",
   # helper for avgDens TMLE; hold univariate density and normalization
@@ -51,7 +50,7 @@ longiData <- R6Class("longiData",
       all_df <- list()
       b <- 1
       for (i in self$grids) {
-        Y <- ( (i - .5 * self$bin_width <= x) & (x < i + .5 * self$bin_width)) + 0L
+        Y <- ((i - .5 * self$bin_width <= x) & (x < i + .5 * self$bin_width)) + 0L
         all_df[[b]] <- data.frame(id = 1:length(x), Y = Y, box = i)
         b <- b + 1
       }
@@ -108,7 +107,8 @@ longiData_resample <- R6Class("longiData_resample",
     },
     bootstrap_with_replacement = function(n = self$n_sample) {
       samp_idx <- sample(
-        seq_len(self$n_row), n, prob = self$df_compressed$Freq, replace = TRUE
+        seq_len(self$n_row), n,
+        prob = self$df_compressed$Freq, replace = TRUE
       )
       samp_idx_tbl <- as.data.frame(table(samp_idx))
       samp_idx_tbl$samp_idx <- as.numeric(as.character(samp_idx_tbl$samp_idx))
@@ -129,9 +129,9 @@ sum_longiData_resample <- function(list) {
   df_long <- do.call(rbind, list_df)
   out <- data.frame(
     df_long %>%
-    group_by(box, Y) %>%
-    summarise(Freq = sum(Freq)) %>%
-    ungroup()
+      group_by(box, Y) %>%
+      summarise(Freq = sum(Freq)) %>%
+      ungroup()
   )
   return(longiData_resample$new(df_compressed = out))
 }

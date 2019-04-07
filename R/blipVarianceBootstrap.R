@@ -29,7 +29,8 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       SAMPLE_PER_BOOTSTRAP <- length(self$data$A)
       # indices is the random indexes for the bootstrap sample
       indices <- sample(
-        1:length(self$data$A), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE
+        1:length(self$data$A),
+        size = SAMPLE_PER_BOOTSTRAP, replace = TRUE
       ) # user specify sample size
       d <- list(
         Y = data$Y[indices],
@@ -78,7 +79,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       # get R2 term
       term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi)^2
       # population_tmle$gentmle_object$tmledata$Q1k
-      term2 <- mean((population_tmle$Q_1W - population_tmle$Q_0W - B_pound) ^ 2)
+      term2 <- mean((population_tmle$Q_1W - population_tmle$Q_0W - B_pound)^2)
       cross_prod <- (population_tmle$g_1W - g_pound_1) / g_pound_1 * (population_tmle$Q_1W - Q_pound_1) -
         (1 - population_tmle$g_1W - (1 - g_pound_1)) / (1 - g_pound_1) * (population_tmle$Q_0W - Q_pound_0)
       term3 <- mean(2 * (B_pound - bootstrapTmleFit$Psi) * cross_prod)
@@ -97,7 +98,6 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
           it2 = 1:REPEAT_BOOTSTRAP,
           .combine = "rbind",
           .inorder = FALSE,
-          .packages = c("R6", "hal9001", "fixedHAL"),
           .errorhandling = "remove",
           .export = c("self")
         ) %do% {
@@ -105,15 +105,6 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
             self = self, data = self$data, population_tmle = self$pointTMLE
           )
         }
-        # # remove errors
-        # if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) {
-        #   message(paste(
-        #     "Error happens.",
-        #     sum(sapply(all_bootstrap_estimates, class) == "numeric"),
-        #     "bootstraps are correct"
-        #   ))
-        # }
-        # all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
         self$bootstrap_estimates <- all_bootstrap_estimates
         dim(self$bootstrap_estimates)
       } else {
@@ -150,17 +141,17 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
   public = list(
     Q_0W_rescale = NULL,
     initialize = function(
-      data,
-      lambda1 = NULL,
-      lambda2 = NULL,
-      M1 = NULL,
-      M2 = NULL,
-      verbose = NULL,
-      targeting = TRUE
-    ) {
+                              data,
+                              lambda1 = NULL,
+                              lambda2 = NULL,
+                              M1 = NULL,
+                              M2 = NULL,
+                              verbose = NULL,
+                              targeting = TRUE) {
       # subclass of `blipVarianceBootstrap` for continuous Y;
       # pointTMLE replaced by `blipVarianceTMLE_gentmle_contY` class
-      # bootstrap method replaced by continuous hal fit; feed into `blipVarianceTMLE_gentmle_contY` class
+      # bootstrap method replaced by continuous hal fit;
+      # feed into `blipVarianceTMLE_gentmle_contY` class
       self$data <- data
       self$targeting <- targeting
       if (class(data$W) != "data.frame") message("W not data.frame")
@@ -213,9 +204,16 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
 
       # plug into tmle
       bootstrapTmleFit$g_1W <- g_1W_boot
-      bootstrapTmleFit$Q_AW_rescale <- self$pointTMLE$scale_Y$scale01(newX = Q_AW_boot) # scale to (0,1) because continuous
-      bootstrapTmleFit$Q_1W_rescale <- self$pointTMLE$scale_Y$scale01(newX = Q_1W_boot)
-      bootstrapTmleFit$Q_0W_rescale <- self$pointTMLE$scale_Y$scale01(newX = Q_0W_boot)
+      # scale to (0,1) because continuous
+      bootstrapTmleFit$Q_AW_rescale <- self$pointTMLE$scale_Y$scale01(
+        newX = Q_AW_boot
+      )
+      bootstrapTmleFit$Q_1W_rescale <- self$pointTMLE$scale_Y$scale01(
+        newX = Q_1W_boot
+      )
+      bootstrapTmleFit$Q_0W_rescale <- self$pointTMLE$scale_Y$scale01(
+        newX = Q_0W_boot
+      )
       bootstrapTmleFit$Q_fit <- Q_HAL_boot
       bootstrapTmleFit$g_fit <- g_HAL_boot
       if (self$targeting) {
@@ -254,14 +252,14 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
         psi = var(Q_pound_1 - Q_pound_0)
       ))
       # get R2 term
-      term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi) ^ 2
+      term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi)^2
       term2 <- mean(
-        (population_tmle$Q_1W - population_tmle$Q_0W - B_pound) ^ 2
+        (population_tmle$Q_1W - population_tmle$Q_0W - B_pound)^2
       )
       cross_prod <- (population_tmle$g_1W - g_pound_1) / g_pound_1 *
         (population_tmle$Q_1W - Q_pound_1) -
         (1 - population_tmle$g_1W - (1 - g_pound_1)) / (1 - g_pound_1) *
-        (population_tmle$Q_0W - Q_pound_0)
+          (population_tmle$Q_0W - Q_pound_0)
       term3 <- mean(2 * (B_pound - bootstrapTmleFit$Psi) * cross_prod)
       # compute R2
       R2 <- term1 - term2 + term3
@@ -279,7 +277,6 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
           it2 = 1:REPEAT_BOOTSTRAP,
           .combine = "rbind",
           .inorder = FALSE,
-          .packages = c("R6", "hal9001", "fixedHAL"),
           .errorhandling = "remove",
           .export = c("self")
         ) %do% {
@@ -287,15 +284,6 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
             self = self, data = self$data, population_tmle = self$pointTMLE
           )
         }
-        # # remove errors
-        # if (!all(sapply(all_bootstrap_estimates, class) == "numeric")) {
-        #   message(paste(
-        #     "Error happens.",
-        #     sum(sapply(all_bootstrap_estimates, class) == "numeric"),
-        #     "bootstraps are correct"
-        #   ))
-        # }
-        # all_bootstrap_estimates <- as.numeric(all_bootstrap_estimates[sapply(all_bootstrap_estimates, class) == "numeric"])
         self$bootstrap_estimates <- all_bootstrap_estimates
         dim(self$bootstrap_estimates)
       } else {

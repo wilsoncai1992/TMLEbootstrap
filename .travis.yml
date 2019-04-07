@@ -7,7 +7,6 @@ warnings_are_errors: false
 branches:
   only:
   - master
-  - mle
 
 env:
   global:

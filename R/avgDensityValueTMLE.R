@@ -47,9 +47,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       if (!is.null(verbose)) self$verbose <- verbose
     },
-    fit_density = function(
-      bin_width = .1, lambda_grid = NULL, M = NULL, n_fold = 3, ...
-    ) {
+    fit_density = function(bin_width = .1, lambda_grid = NULL, M = NULL, n_fold = 3, ...) {
       use_penalized_mode <- !is.null(lambda_grid)
       use_constrained_mode <- !is.null(M)
 
@@ -73,9 +71,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       self$p_hat <- density_intial$normalize()
       self$hal_best <- hal_out
     },
-    fit_density_pen_likeli = function(
-      bin_width = .1, lambda_grid = NULL, lambda_min_ratio = NULL, n_fold = 3, ...
-    ) {
+    fit_density_pen_likeli = function(bin_width = .1, lambda_grid = NULL, lambda_min_ratio = NULL, n_fold = 3, ...) {
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
 
       verbose <- FALSE
@@ -89,9 +85,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       self$HAL_tuned <- hal_out$hal_fit
       return(hal_out)
     },
-    fit_density_constrained_form = function(
-      bin_width = .1, lambda_grid = NULL, M = NULL, ...
-    ) {
+    fit_density_constrained_form = function(bin_width = .1, lambda_grid = NULL, M = NULL, ...) {
       self$longDataOut <- longiData$new(x = self$x, bin_width = bin_width)
 
       hal_list <- list()
@@ -100,8 +94,8 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         HALfit$fit(lambda = lambda, ...)
         hal_list[[as.character(lambda)]] <- HALfit
       }
-      l1_norms <- sapply(hal_list, FUN = function(x) sum(abs(x$hal_fit$coefs[,1])))
-      coefss <- lapply(hal_list, FUN = function(x) x$hal_fit$coefs[,1])
+      l1_norms <- sapply(hal_list, FUN = function(x) sum(abs(x$hal_fit$coefs[, 1])))
+      coefss <- lapply(hal_list, FUN = function(x) x$hal_fit$coefs[, 1])
       coefss <- do.call(cbind, coefss)
       l1_norm <- l1_norms
       l1_norm[l1_norm > M] <- NaN
@@ -121,7 +115,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       )
       dummy_df <- dummy_df[order(dummy_df$x), ]
       dx <- c(0, diff(dummy_df$x))
-      Psi <- sum(dummy_df$p_density ^ 2 * dx)
+      Psi <- sum(dummy_df$p_density^2 * dx)
       if (to_return) return(Psi) else self$Psi <- Psi
     },
     compute_EIC = function(p_hat, Psi, to_return = FALSE) {
@@ -148,7 +142,6 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
           df_debug <- data.frame(n_iter, mean(self$EIC), self$Psi)
           colnames(df_debug) <- NULL
           print(df_debug)
-          # if (n_iter %% 1 == 0) self$p_hat$display(main = n_iter) # WILSON: DEBUG
         }
         absmeanEIC_prev <- abs(mean(self$EIC))
         self$compute_Psi(self$p_hat, to_return = FALSE)
@@ -204,7 +197,8 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       if (length(Qbasis_list) > 0) {
         x_basis <- hal9001:::make_design_matrix(as.matrix(X), Qbasis_list)
         unique_columns <- as.numeric(names(Qcopy_map))
-        # design matrix. each column correspond to Q_fit$coefs. don't have intercept column
+        # design matrix. each column correspond to Q_fit$coefs.
+        # don't have intercept column
         x_basis <- x_basis[, unique_columns]
         phi_ratio <- Matrix::colSums(x_basis * freq_weight) / sum(freq_weight)
 
@@ -216,9 +210,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         nonzeroBeta_phiRatio <- numeric()
       }
 
-      # return NULL if:
-      # all beta are zero
-      # Qbasis has zero length
+      # return NULL if: "all beta are zero" OR "Qbasis has zero length"
       if (length(nonzeroBeta_phiRatio) != 0) {
         return(min(nonzeroBeta_phiRatio))
       } else {

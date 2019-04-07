@@ -1,5 +1,5 @@
 library(testthat)
-library(fixedHAL)
+library(TMLEbootstrap)
 
 Sys.setenv(R_TESTS = "")
-test_check("fixedHAL")
+test_check("TMLEbootstrap")

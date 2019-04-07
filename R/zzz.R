@@ -1,10 +1,10 @@
 .onAttach <- function(...) {
   packageStartupMessage(paste(
-    "fixedHAL: TEMP",
-    "\n TEMP"
+    "TMLEbootstrap: ",
+    "\n bootstrap confidence intervals for Targeted Maximum Likelihood Estimators"
   ))
   packageStartupMessage(
     "Version: ",
-    utils::packageDescription("fixedHAL")$Version
+    utils::packageDescription("TMLEbootstrap")$Version
   )
 }

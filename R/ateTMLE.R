@@ -24,9 +24,7 @@ ateTMLE <- R6Class("ateTMLE",
       self$data <- data
       if (class(data$W) != "data.frame") message("W not data.frame")
     },
-    initial_fit = function(
-      lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL, ...
-    ) {
+    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL, ...) {
       use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
       use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
       if (use_penalized_mode & use_constrained_mode) {
@@ -50,8 +48,7 @@ ateTMLE <- R6Class("ateTMLE",
       self$g1_W <- stats::predict(object = self$g_fit, new_data = data.frame(self$data$W))
     },
     initial_fit_pen_likeli = function(
-      lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL, n_folds = 3, ...
-    ) {
+                                          lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL, n_folds = 3, ...) {
       # lambda1 for Q fit
       # lambda2 for g fit
       self$lambda1 <- lambda1
@@ -75,8 +72,8 @@ ateTMLE <- R6Class("ateTMLE",
         )
         # WILSON hack the lambda_min_ratio
         if (!is.null(lambda_min_ratio)) {
-          lambda_max = max(self$Q_fit$hal_lasso$lambda)
-          lambda_min = lambda_max * lambda_min_ratio
+          lambda_max <- max(self$Q_fit$hal_lasso$lambda)
+          lambda_min <- lambda_max * lambda_min_ratio
           log_lambda_range <- log(c(lambda_min, lambda_max))
           lambda_grid_new <- exp(seq(log_lambda_range[2], log_lambda_range[1], length.out = 1e2))
           self$Q_fit <- hal9001::fit_hal(
@@ -142,13 +139,9 @@ ateTMLE <- R6Class("ateTMLE",
         )
       }
     },
-    initial_fit_constrained_form = function(
-      M1 = NULL, M2 = NULL, n_folds = 3, ...
-    ) {
+    initial_fit_constrained_form = function(M1 = NULL, M2 = NULL, n_folds = 3, ...) {
       # M1 for Q fit
       # M2 for g fit
-      # self$M1 <- M1
-      # self$M2 <- M2
 
       # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
       # Q fit
@@ -166,7 +159,8 @@ ateTMLE <- R6Class("ateTMLE",
           yolo = FALSE,
           ...
         )
-      } else if (M1 >= 0) { # use manual M1
+      } else if (M1 >= 0) {
+        # use manual M1
         self$Q_fit <- hal9001::fit_hal_constraint_form(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
@@ -181,7 +175,8 @@ ateTMLE <- R6Class("ateTMLE",
         )
       }
       # g fit
-      if (is.null(M2)) { # use CV
+      if (is.null(M2)) {
+        # use CV
         self$g_fit <- hal9001::fit_hal(
           X = data.frame(self$data$W),
           Y = self$data$A,
@@ -195,7 +190,8 @@ ateTMLE <- R6Class("ateTMLE",
           yolo = FALSE,
           ...
         )
-      } else { # use manual M1
+      } else {
+        # use manual M1
         self$g_fit <- hal9001::fit_hal_constraint_form(
           X = data.frame(self$data$W),
           Y = self$data$A,
@@ -246,29 +242,29 @@ ateTMLE <- R6Class("ateTMLE",
     },
     inference_without_target = function(data, Q_fit = NULL, g_fit = NULL, to_return = TRUE) {
       # input: data from `simulate_data`: named list with W, A, Y
-      if (class(Q_fit) == 'hal9001') {
+      if (class(Q_fit) == "hal9001") {
         # if the Q is a hal9001 fit, do the prediction routine
         Q_1W <- stats::predict(object = Q_fit, new_data = data.frame(1, data$W))
         Q_0W <- stats::predict(object = Q_fit, new_data = data.frame(0, data$W))
-      } else if (class(Q_fit) == 'function') {
+      } else if (class(Q_fit) == "function") {
         # if the Q is the true fit (in function format). evaluate the true Q function
         # Q_1W <- Q_fit(w = data$W$W, a = 1)
         # Q_0W <- Q_fit(w = data$W$W, a = 0)
-        Q_1W <- Q_fit(w = data$W, a = 1) #WILSON HACK
-        Q_0W <- Q_fit(w = data$W, a = 0) #WILSON HACK
+        Q_1W <- Q_fit(w = data$W, a = 1) # WILSON HACK
+        Q_0W <- Q_fit(w = data$W, a = 0) # WILSON HACK
       } else if (is.null(Q_fit)) {
         # if NULL, assume Q_1W has been manually input
         Q_1W <- self$Q_1W
         Q_0W <- self$Q_0W
       }
 
-      if (class(g_fit) == 'hal9001') {
+      if (class(g_fit) == "hal9001") {
         # if the g is a hal9001 fit, do the prediction routine
         g1_W <- stats::predict(object = g_fit, new_data = data.frame(data$W))
-      } else if (class(g_fit) == 'function') {
+      } else if (class(g_fit) == "function") {
         # if the g is the true fit (in function format). evaluate the true Q function
         # g1_W <- g_fit(w = data$W$W)
-        g1_W <- g_fit(w = data$W) #WILSON HACK
+        g1_W <- g_fit(w = data$W) # WILSON HACK
       } else if (is.null(g_fit)) {
         # if NULL, assume g1_W has been manually input
         g1_W <- self$g1_W
@@ -288,7 +284,7 @@ ateTMLE <- R6Class("ateTMLE",
       se_Psi <- sqrt(var(EIC) / length(EIC))
       CI <- Psi + c(-1.96, 1.96) * se_Psi
       EIC <- EIC
-      if (to_return){
+      if (to_return) {
         return(list(Psi = Psi, EIC = EIC))
       } else {
         self$Psi <- Psi
@@ -307,7 +303,8 @@ ateTMLE <- R6Class("ateTMLE",
       if (length(Qbasis_list) > 0) {
         x_basis <- hal9001:::make_design_matrix(as.matrix(X), Qbasis_list)
         unique_columns <- as.numeric(names(Qcopy_map))
-        # design matrix. each column correspond to Q_fit$coefs. don't have intercept column
+        # design matrix. each column correspond to Q_fit$coefs.
+        # don't have intercept column
         x_basis <- x_basis[, unique_columns]
         phi_ratio <- Matrix::colMeans(x_basis)
 
@@ -319,9 +316,7 @@ ateTMLE <- R6Class("ateTMLE",
         # there is no coef left
         nonzeroBeta_phiRatio <- numeric()
       }
-      # return NULL if:
-      # all beta are zero
-      # Qbasis has zero length
+      # return NULL if: "all beta are zero" OR "Qbasis has zero length"
       if (length(nonzeroBeta_phiRatio) != 0) {
         return(min(nonzeroBeta_phiRatio))
       } else {

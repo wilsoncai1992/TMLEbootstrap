@@ -59,7 +59,7 @@ notifications:
    to:
      - wcai@berkeley.edu
    subject: 'r-appveyor build {{status}}'
-   message: "https://ci.appveyor.com/project/wilsoncai1992/fixedHAL"
+   message: "https://ci.appveyor.com/project/wilsoncai1992/TMLEbootstrap"
    on_build_success: true
    on_build_failure: true
    on_build_status_changed: true
