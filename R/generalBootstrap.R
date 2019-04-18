@@ -71,11 +71,11 @@ generalBootstrap <- R6Class("generalBootstrap",
       # if user don't provide bootCI, use existing bootCI;
       if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
       bootCenter <- mean(bootCI)
-      mse <- mean(self$bootstrap_estimates[, "reg"]^2)
-      n <- nrow(self$bootstrap_estimates)
+      mse <- mean(self$psi_bootstrap[, "reg"]^2)
+      n <- nrow(self$psi_bootstrap)
       sigma_star <- sqrt(mse)
 
-      Z_std <- scale(self$bootstrap_estimates[, "reg"])
+      Z_std <- scale(self$psi_bootstrap[, "reg"])
       q_z <- quantile(Z_std, probs = c(.025, .975))
       psi_n <- mean(self$CI_all[[1]])
       ci_out <- c(psi_n - q_z[2] * sigma_star, psi_n - q_z[1] * sigma_star)
@@ -86,11 +86,11 @@ generalBootstrap <- R6Class("generalBootstrap",
       if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
       waldCI <- self$CI_all[[1]]
       psi_n <- mean(waldCI)
-      n <- nrow(self$bootstrap_estimates)
+      n <- nrow(self$psi_bootstrap)
       sigma_n <- diff(waldCI) / 2 / 1.96
       bootCenter <- mean(bootCI)
 
-      Z <- self$bootstrap_estimates[, "reg"]
+      Z <- self$psi_bootstrap[, "reg"]
       Z_std <- Z / sd(Z)
       q_z <- quantile(Z_std, probs = c(.025, .975))
       ci_out <- c(psi_n - q_z[2] * sigma_n, psi_n - q_z[1] * sigma_n)

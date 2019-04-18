@@ -78,7 +78,7 @@ CVOut <- comprehensiveBootstrap$new(
   parameter = blipVarianceBootstrapContinuousY,
   data = df
 )
-CVOut$bootstrap(n_bootstrap = 2e1)
+CVOut$bootstrap(2e1)
 CVOut$all_CI()
 
 

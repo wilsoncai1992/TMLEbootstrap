@@ -8,7 +8,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
     data = NULL,
     pointTMLE = NULL,
 
-    bootstrap_estimates = NULL,
+    psi_bootstrap = NULL,
     targeting = NULL,
     initialize = function(data, verbose = NULL, targeting = TRUE, ...) {
       # bootstraping blip variance TMLE (binary Y)
@@ -92,9 +92,9 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
     },
     run_bootstrap = function(n_bootstrap = 2e2, alpha = 0.05, kind = NULL) {
       # all bootstrap
-      if (is.null(self$bootstrap_estimates)) {
+      if (is.null(self$psi_bootstrap)) {
         library(foreach)
-        all_bootstrap_estimates <- foreach(
+        all_psi_bootstrap <- foreach(
           it2 = 1:n_bootstrap,
           .combine = "rbind",
           .inorder = FALSE,
@@ -105,13 +105,13 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
             self = self, data = self$data, population_tmle = self$pointTMLE
           )
         }
-        self$bootstrap_estimates <- all_bootstrap_estimates
-        dim(self$bootstrap_estimates)
+        self$psi_bootstrap <- all_psi_bootstrap
+        dim(self$psi_bootstrap)
       } else {
         message("invoke cached bootstrap results")
       }
       Z_quantile <- quantile(
-        self$bootstrap_estimates[, kind],
+        self$psi_bootstrap[, kind],
         probs = c(alpha / 2, 1 - alpha / 2)
       )
       normal_CI <- self$pointTMLE$CI
@@ -260,9 +260,9 @@ blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
     },
     run_bootstrap = function(n_bootstrap = 2e2, alpha = 0.05, kind = NULL) {
       # all bootstrap
-      if (is.null(self$bootstrap_estimates)) {
+      if (is.null(self$psi_bootstrap)) {
         library(foreach)
-        all_bootstrap_estimates <- foreach(
+        all_psi_bootstrap <- foreach(
           it2 = 1:n_bootstrap,
           .combine = "rbind",
           .inorder = FALSE,
@@ -273,13 +273,13 @@ blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
             self = self, data = self$data, population_tmle = self$pointTMLE
           )
         }
-        self$bootstrap_estimates <- all_bootstrap_estimates
-        dim(self$bootstrap_estimates)
+        self$psi_bootstrap <- all_psi_bootstrap
+        dim(self$psi_bootstrap)
       } else {
         message("invoke cached bootstrap results")
       }
       Z_quantile <- quantile(
-        self$bootstrap_estimates[, kind], probs = c(alpha / 2, 1 - alpha / 2)
+        self$psi_bootstrap[, kind], probs = c(alpha / 2, 1 - alpha / 2)
       )
       normal_CI <- self$pointTMLE$CI
       boot1_CI <- c(

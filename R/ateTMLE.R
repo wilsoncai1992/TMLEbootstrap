@@ -3,6 +3,7 @@ library(tmle)
 library(hal9001)
 #' @export
 #' @importFrom Matrix colMeans
+#' @importFrom assertthat assert_that
 ateTMLE <- R6Class("ateTMLE",
   public = list(
     data = NULL,
@@ -22,8 +23,8 @@ ateTMLE <- R6Class("ateTMLE",
     lambda1 = NULL,
     lambda2 = NULL,
     initialize = function(data) {
+      assert_that(class(data$W) == "data.frame")
       self$data <- data
-      if (class(data$W) != "data.frame") message("W not data.frame")
     },
     initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL, ...) {
       use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))

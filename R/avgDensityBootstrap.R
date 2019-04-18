@@ -6,7 +6,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
     pointTMLE = NULL,
 
     epsilon_step = 1e-2,
-    bootstrap_estimates = NULL,
+    psi_bootstrap = NULL,
     targeting = NULL,
     initialize = function(x,
                               epsilon_step = NULL,
@@ -116,8 +116,8 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         cl <- makeSOCKcluster(nw)
         registerDoSNOW(cl)
       }
-      if (is.null(self$bootstrap_estimates)) {
-        all_bootstrap_estimates <- foreach(
+      if (is.null(self$psi_bootstrap)) {
+        all_psi_bootstrap <- foreach(
           it2 = 1:n_bootstrap,
           .combine = "rbind",
           .inorder = FALSE,
@@ -133,14 +133,14 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
             inflate_lambda = inflate_lambda
           )
         }
-        self$bootstrap_estimates <- all_bootstrap_estimates
-        dim(self$bootstrap_estimates)
+        self$psi_bootstrap <- all_psi_bootstrap
+        dim(self$psi_bootstrap)
       } else {
         message("invoke cached bootstrap results")
       }
       if (to_parallel) stopCluster(cl)
       Z_quantile <- quantile(
-        self$bootstrap_estimates[, kind],
+        self$psi_bootstrap[, kind],
         probs = c(alpha / 2, 1 - alpha / 2)
       )
       normal_CI <- self$pointTMLE$CI
