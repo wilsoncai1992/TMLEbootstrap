@@ -34,7 +34,7 @@ ateTMLE <- R6Class("ateTMLE",
         self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2, ...)
       }
       if (use_constrained_mode) {
-        self$initial_fit_constrained_form(M1 = M1, M2 = M2, ...)
+        stop("not implemented")
       }
       if (!use_penalized_mode & !use_constrained_mode) {
         # when user have NULL for everything: default to CV
@@ -139,73 +139,6 @@ ateTMLE <- R6Class("ateTMLE",
         )
       }
     },
-    initial_fit_constrained_form = function(M1 = NULL, M2 = NULL, n_folds = 3, ...) {
-      # M1 for Q fit
-      # M2 for g fit
-
-      # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
-      # Q fit
-      if (is.null(M1)) {
-        self$Q_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$A, self$data$W),
-          Y = self$data$Y,
-          family = "gaussian",
-          fit_type = "glmnet",
-          n_folds = n_folds,
-          use_min = TRUE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          cv_select = TRUE,
-          yolo = FALSE,
-          ...
-        )
-      } else if (M1 >= 0) {
-        # use manual M1
-        self$Q_fit <- hal9001::fit_hal_constraint_form(
-          X = data.frame(self$data$A, self$data$W),
-          Y = self$data$Y,
-          family = "gaussian",
-          fit_type = "glmnet",
-          yolo = FALSE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          cv_select = FALSE,
-          M = M1,
-          ...
-        )
-      }
-      # g fit
-      if (is.null(M2)) {
-        # use CV
-        self$g_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$W),
-          Y = self$data$A,
-          family = "binomial",
-          fit_type = "glmnet",
-          n_folds = n_folds,
-          use_min = TRUE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          cv_select = TRUE,
-          yolo = FALSE,
-          ...
-        )
-      } else {
-        # use manual M1
-        self$g_fit <- hal9001::fit_hal_constraint_form(
-          X = data.frame(self$data$W),
-          Y = self$data$A,
-          family = "binomial",
-          fit_type = "glmnet",
-          yolo = FALSE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          cv_select = FALSE,
-          M = M2,
-          ...
-        )
-      }
-    },
     plot_Q1W = function(foo = NULL) {
       # plot the Q(1,W) function (optional: against a foo function)
       plot(self$Q_1W ~ self$data$W[, 1], col = "blue")
@@ -301,12 +234,12 @@ ateTMLE <- R6Class("ateTMLE",
       Qcopy_map <- self$Q_fit$copy_map
       X <- data.frame(self$data$A, self$data$W)
       if (length(Qbasis_list) > 0) {
-        x_basis <- hal9001:::make_design_matrix(as.matrix(X), Qbasis_list)
+        x_basis <- hal9001::make_design_matrix(as.matrix(X), Qbasis_list)
         unique_columns <- as.numeric(names(Qcopy_map))
         # design matrix. each column correspond to Q_fit$coefs.
         # don't have intercept column
         x_basis <- x_basis[, unique_columns]
-        phi_ratio <- Matrix::colMeans(x_basis)
+        phi_ratio <- colMeans(x_basis)
 
         length(self$Q_fit$coefs)
         beta_nonIntercept <- self$Q_fit$coefs[-1]

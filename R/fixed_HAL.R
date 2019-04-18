@@ -15,7 +15,7 @@ fit_fixed_HAL <- function(
   copy_map <- hal9001_object$copy_map
   if (!is.matrix(X)) X <- as.matrix(X)
   if (length(basis_list) > 0) {
-    x_basis <- hal9001:::make_design_matrix(X, basis_list)
+    x_basis <- hal9001::make_design_matrix(X, basis_list)
     # deduplication
     unique_columns <- as.numeric(names(copy_map))
     x_basis <- x_basis[, unique_columns]
@@ -89,8 +89,8 @@ predict.fixed_HAL <- function(object, ..., new_data) {
   if (!is.matrix(new_data)) new_data <- as.matrix(new_data)
   # generate design matrix
   if (length(object$basis_list) > 0) {
-    pred_x_basis <- hal9001:::make_design_matrix(new_data, object$basis_list)
-    pred_x_basis <- hal9001:::apply_copy_map(pred_x_basis, object$copy_map)
+    pred_x_basis <- hal9001::make_design_matrix(new_data, object$basis_list)
+    pred_x_basis <- hal9001::apply_copy_map(pred_x_basis, object$copy_map)
     # make up the ncol for glm solution
     if (object$IS_GLM) {
       pred_x_basis <- cbind(
@@ -113,7 +113,7 @@ predict.fixed_HAL <- function(object, ..., new_data) {
   if (length(beta_hat) > dim(pred_x_basis)[2]) {
     # glmnet situation
     preds <- as.vector(
-      Matrix::tcrossprod(x = pred_x_basis, y = beta_hat[-1]) + beta_hat[1]
+      tcrossprod(x = pred_x_basis, y = beta_hat[-1]) + beta_hat[1]
     )
   } else {
     # glm situation

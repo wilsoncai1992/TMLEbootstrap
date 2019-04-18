@@ -28,8 +28,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
       if (class(data$W) != "data.frame") message("W not data.frame")
       if (!is.null(verbose)) self$verbose <- verbose
     },
-    initial_fit = function(
-                               lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {
+    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {
       use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
       use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
 
@@ -40,7 +39,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
         self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2)
       }
       if (use_constrained_mode) {
-        self$initial_fit_constrained_form(M1 = M1, M2 = M2)
+        stop("not implemented")
       }
       if (!use_penalized_mode & !use_constrained_mode) {
         # when user have NULL for everything: default to CV
@@ -119,65 +118,6 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
         )
       }
     },
-    initial_fit_constrained_form = function(M1 = NULL, M2 = NULL) {
-      # M1 for Q fit
-      # M2 for g fit
-
-      # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
-      # Q fit
-      if (is.null(M1)) {
-        self$Q_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$A, self$data$W),
-          Y = self$data$Y,
-          family = "binomial",
-          fit_type = "glmnet",
-          n_folds = 3,
-          use_min = TRUE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      } else if (M1 >= 0) {
-        # use manual M1
-        self$Q_fit <- hal9001::fit_hal_constraint_form(
-          X = data.frame(self$data$A, self$data$W),
-          Y = self$data$Y,
-          family = "binomial",
-          fit_type = "glmnet",
-          yolo = FALSE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          M = M1,
-        )
-      }
-      # g fit
-      if (is.null(M2)) {
-        # use CV
-        self$g_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$W),
-          Y = self$data$A,
-          family = "binomial",
-          fit_type = "glmnet",
-          n_folds = 3,
-          use_min = TRUE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      } else {
-        # use manual M1
-        self$g_fit <- hal9001::fit_hal_constraint_form(
-          X = data.frame(self$data$W),
-          Y = self$data$A,
-          family = "binomial",
-          fit_type = "glmnet",
-          yolo = FALSE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          M = M2,
-        )
-      }
-    },
     target = function() {
       # use the logistic submodel to target blip variance; output Psi, EIC, CI
       initdata <- data.frame(
@@ -229,12 +169,12 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
       Qcopy_map <- self$Q_fit$copy_map
       X <- data.frame(self$data$A, self$data$W)
       if (length(Qbasis_list) > 0) {
-        x_basis <- hal9001:::make_design_matrix(as.matrix(X), Qbasis_list)
+        x_basis <- hal9001::make_design_matrix(as.matrix(X), Qbasis_list)
         unique_columns <- as.numeric(names(Qcopy_map))
         # design matrix. each column correspond to Q_fit$coefs.
         # don't have intercept column
         x_basis <- x_basis[, unique_columns]
-        phi_ratio <- Matrix::colMeans(x_basis)
+        phi_ratio <- colMeans(x_basis)
 
         beta_non_intercept <- self$Q_fit$coefs[-1]
         beta_non_zero <- beta_non_intercept != 0
@@ -293,7 +233,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
         self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2)
       }
       if (use_constrained_mode) {
-        self$initial_fit_constrained_form(M1 = M1, M2 = M2)
+        stop("not implemented")
       }
       if (!use_penalized_mode & !use_constrained_mode) {
         # when user have NULL for everything: default to CV
@@ -376,61 +316,6 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
           return_lasso = TRUE,
           return_x_basis = FALSE,
           yolo = FALSE
-        )
-      }
-    },
-    initial_fit_constrained_form = function(M1 = NULL, M2 = NULL) {
-      # Q fit
-      if (is.null(M1)) {
-        self$Q_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$A, self$data$W),
-          Y = self$data$Y,
-          family = "gaussian",
-          fit_type = "glmnet",
-          n_folds = 3,
-          use_min = TRUE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      } else if (M1 >= 0) {
-        # use manual M1
-        self$Q_fit <- hal9001::fit_hal_constraint_form(
-          X = data.frame(self$data$A, self$data$W),
-          Y = self$data$Y,
-          family = "gaussian",
-          fit_type = "glmnet",
-          yolo = FALSE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          M = M1,
-        )
-      }
-      # g fit
-      if (is.null(M2)) {
-        # use CV
-        self$g_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$W),
-          Y = self$data$A,
-          family = "binomial",
-          fit_type = "glmnet",
-          n_folds = 3,
-          use_min = TRUE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      } else {
-        # use manual M1
-        self$g_fit <- hal9001::fit_hal_constraint_form(
-          X = data.frame(self$data$W),
-          Y = self$data$A,
-          family = "binomial",
-          fit_type = "glmnet",
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE,
-          M = M2,
         )
       }
     },

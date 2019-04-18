@@ -29,7 +29,6 @@ empiricalDensity <- R6Class("empiricalDensity",
   )
 )
 
-library(R6)
 #' @export
 longiData <- R6Class("longiData",
   # helper for avgDens TMLE. convert univariate series to longitudinal format
@@ -76,7 +75,6 @@ longiData <- R6Class("longiData",
   )
 )
 
-library(R6)
 #' @export
 scaleX <- R6Class("scaleX",
   # perform standardization based on (x - min)/(max - min)

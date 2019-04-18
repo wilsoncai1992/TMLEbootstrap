@@ -1,7 +1,6 @@
 .onAttach <- function(...) {
   packageStartupMessage(paste(
-    "TMLEbootstrap: bootstrap confidence intervals for Targeted Maximum Likelihood Estimators",
-    "\n"
+    "TMLEbootstrap: Bootstrap Confidence Intervals For Targeted Maximum Likelihood Estimators"
   ))
   packageStartupMessage(
     "Version: ",

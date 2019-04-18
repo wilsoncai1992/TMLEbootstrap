@@ -1,34 +1,36 @@
 Package: TMLEbootstrap
-Title: bootstrap confidence intervals for Targeted Maximum Likelihood Estimators
-Version: 2.8.0
+Title: Bootstrap Confidence Intervals for Targeted Maximum Likelihood Estimators
+Version: 2.8.1
 Authors@R: c(
-  person("Weixin", "Cai", email = "wcai@berkeley.edu",
+    person("Weixin", "Cai", email = "wcai@berkeley.edu",
          role = c("aut", "cre", "cph"),
-         comment = c(ORCID = "0000-0003-2680-3066")))
+         comment = c(ORCID = "0000-0003-2680-3066"))
+    )
 Description: HAL-TMLE nonparametric bootstrap.
 Depends:
-  R (>= 3.0.0)
+    R (>= 3.2.0),
+    hal9001 (>= 0.2.1),
+    R6
+Imports:
+    glmnet,
+    tmle,
+    origami (>= 0.8.2),
+    gentmle2
+Suggests:
+    truncnorm,
+    nnls,
+    testthat,
+    knitr,
+    rmarkdown,
+    covr
+Remotes:
+  github::tlverse/origami,
+  github::tlverse/hal9001,
+  github::jeremyrcoyle/gentmle2
 License: GPL-2
 URL: https://github.com/wilsoncai1992/TMLEbootstrap
 BugReports: https://github.com/wilsoncai1992/TMLEbootstrap/issues
 Encoding: UTF-8
 LazyData: true
-Imports:
-  R6,
-  hal9001 (>= 0.2.1),
-  tmle,
-  SuperLearner,
-  origami (>= 0.8.2),
-  gentmle2
-Suggests:
-  knitr,
-  testthat,
-  truncnorm,
-  nnls,
-  Matrix
-Remotes:
-  github::tlverse/origami,
-  github::tlverse/hal9001,
-  github::jeremyrcoyle/gentmle2
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
