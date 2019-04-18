@@ -14,8 +14,6 @@ simulate_data <- function(n_sim, a1, a2, b1) {
     prob = thresholding(.3 + 0.1 * W * sin(a2 * W), 0.3, 0.7) +
       rnorm(n_sim, mean = 0, sd = 0.05)
   )
-
-  # Y <- 0.05*W^2 + b1*sin(W*a1) + A + rnorm(n_sim, 0, 1)
   Y <- b1 * sin(W * a1) + A + rnorm(n_sim, 0, 1)
 
   X_matrix_0 <- data.frame(A, W)
