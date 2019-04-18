@@ -37,8 +37,13 @@ onestep TMLE of average density parameter
 \section{Methods}{
 
 \describe{
-  \item{\code{new(x, epsilon_step = NULL, verbose = NULL)}}{specify data; define targeting step size}
-  \item{\code{fit_density(bin_width = .1, lambda_grid)}}{use `cv_densityHAL` to fit density. bin_width for pre-binning of continuous x; lambda_grid for grid search of lambda in HAL}
+  \item{\code{new(x, epsilon_step = NULL, verbose = NULL)}}{
+     specify data; define targeting step size
+  }
+  \item{\code{fit_density(bin_width = .1, lambda_grid)}}{
+     use `cv_densityHAL` to fit density. bin_width for pre-binning of
+     continuous x; lambda_grid for grid search of lambda in HAL
+  }
 }
 }
 

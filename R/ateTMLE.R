@@ -2,6 +2,7 @@ library(R6)
 library(tmle)
 library(hal9001)
 #' @export
+#' @importFrom Matrix colMeans
 ateTMLE <- R6Class("ateTMLE",
   public = list(
     data = NULL,
@@ -234,12 +235,13 @@ ateTMLE <- R6Class("ateTMLE",
       Qcopy_map <- self$Q_fit$copy_map
       X <- data.frame(self$data$A, self$data$W)
       if (length(Qbasis_list) > 0) {
+        browser()
         x_basis <- hal9001::make_design_matrix(as.matrix(X), Qbasis_list)
         unique_columns <- as.numeric(names(Qcopy_map))
         # design matrix. each column correspond to Q_fit$coefs.
         # don't have intercept column
         x_basis <- x_basis[, unique_columns]
-        phi_ratio <- colMeans(x_basis)
+        phi_ratio <- Matrix::colMeans(x_basis)
 
         length(self$Q_fit$coefs)
         beta_nonIntercept <- self$Q_fit$coefs[-1]

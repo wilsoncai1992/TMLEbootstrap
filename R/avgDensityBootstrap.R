@@ -148,33 +148,6 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         self$pointTMLE$Psi - Z_quantile[2], self$pointTMLE$Psi - Z_quantile[1]
       )
       self$CI_all <- list(normal_CI, boot1_CI)
-    },
-    bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05, inflate_lambda = 1, to_parallel = FALSE) {
-      self$run_bootstrap(
-        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP,
-        ALPHA = ALPHA,
-        kind = "reg",
-        inflate_lambda = inflate_lambda,
-        to_parallel = to_parallel
-      )
-    },
-    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05, inflate_lambda = 1, to_parallel = FALSE) {
-      self$run_bootstrap(
-        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP,
-        ALPHA = ALPHA,
-        kind = "sec_ord",
-        inflate_lambda = inflate_lambda,
-        to_parallel = to_parallel
-      )
-    },
-    exact_bootstrap_paper = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05, inflate_lambda = 1, to_parallel = FALSE) {
-      self$run_bootstrap(
-        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP,
-        ALPHA = ALPHA,
-        kind = "sec_ord_paper",
-        inflate_lambda = inflate_lambda,
-        to_parallel = to_parallel
-      )
     }
   )
 )

@@ -28,6 +28,7 @@ library(hal9001)
 #'   }
 #' }
 #' @importFrom R6 R6Class
+#' @importFrom Matrix colSums
 #' @export
 avgDensityTMLE <- R6Class("avgDensityTMLE",
   public = list(
@@ -176,7 +177,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
         # design matrix. each column correspond to Q_fit$coefs.
         # don't have intercept column
         x_basis <- x_basis[, unique_columns]
-        phi_ratio <- colSums(x_basis * freq_weight) / sum(freq_weight)
+        phi_ratio <- Matrix::colSums(x_basis * freq_weight) / sum(freq_weight)
 
         beta_nonIntercept <- self$HAL_tuned$coefs[-1]
         beta_nonzero <- beta_nonIntercept != 0

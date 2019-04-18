@@ -2,7 +2,7 @@
 # setup
 ################################################################################
 # set.seed(628957)
-context("blipVarianceBoot results should not be NA")
+context("blip Variance bootstrap results should not be NA")
 simulate_data <- function(n_sim, n_mode = 1, a1 = 2) {
   dmixture <- function(x, modes, sigma) {
     all_d <- c()
@@ -41,7 +41,7 @@ a1 <- 2
 data <- simulate_data(n_sim = n_sim, n_mode = n_mode, a1 = a1)
 # data$psi_true
 df <- data$df
-bootstrapFit <- blipVarianceBootstrap_contY$new(data = df)
+bootstrapFit <- blipVarianceBootstrapContinuousY$new(data = df)
 bootstrapFit$bootstrap(REPEAT_BOOTSTRAP = 2e1)
 
 bootstrapFitExact <- bootstrapFit$clone(deep = TRUE)
@@ -70,12 +70,12 @@ out <- list(
 )
 
 # without targeting
-bootOut_HALMLE <- blipVarianceBootstrap_contY$new(data = df, targeting = FALSE)
+bootOut_HALMLE <- blipVarianceBootstrapContinuousY$new(data = df, targeting = FALSE)
 bootOut_HALMLE$bootstrap(2e1)
 halmleCI <- bootOut_HALMLE$all_boot_CI()
 
 CVOut <- comprehensiveBootstrap$new(
-  parameter = blipVarianceBootstrap_contY,
+  parameter = blipVarianceBootstrapContinuousY,
   data = df
 )
 CVOut$bootstrap(REPEAT_BOOTSTRAP = 2e1)

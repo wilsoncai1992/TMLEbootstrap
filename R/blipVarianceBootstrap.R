@@ -16,7 +16,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       self$targeting <- targeting
       if (class(data$W) != "data.frame") message("W not data.frame")
       if (!is.null(verbose)) self$verbose <- verbose
-      self$pointTMLE <- blipVarianceTMLE_gentmle$new(data = data)
+      self$pointTMLE <- blipVarianceTMLE$new(data = data)
       self$pointTMLE$initial_fit(...)
       if (self$targeting) {
         self$pointTMLE$target()
@@ -38,7 +38,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         W = data.frame(data$W[indices, ])
       )
 
-      bootstrapTmleFit <- blipVarianceTMLE_gentmle$new(data = d)
+      bootstrapTmleFit <- blipVarianceTMLE$new(data = d)
       # fit new Q, g
       # Q fit
       Q_HAL_boot <- fit_fixed_HAL(
@@ -119,16 +119,6 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         self$pointTMLE$Psi - Z_quantile[2], self$pointTMLE$Psi - Z_quantile[1]
       )
       self$CI_all <- list(normal_CI, boot1_CI)
-    },
-    bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05) {
-      self$run_bootstrap(
-        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "reg"
-      )
-    },
-    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05) {
-      self$run_bootstrap(
-        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "sec_ord"
-      )
     }
   )
 )
@@ -136,7 +126,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
 
 
 #' @export
-blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
+blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
   inherit = blipVarianceBootstrap,
   public = list(
     Q_0W_rescale = NULL,
@@ -149,15 +139,15 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
                               verbose = NULL,
                               targeting = TRUE) {
       # subclass of `blipVarianceBootstrap` for continuous Y;
-      # pointTMLE replaced by `blipVarianceTMLE_gentmle_contY` class
+      # pointTMLE replaced by `blipVarianceTMLEContinuousY` class
       # bootstrap method replaced by continuous hal fit;
-      # feed into `blipVarianceTMLE_gentmle_contY` class
+      # feed into `blipVarianceTMLEContinuousY` class
       self$data <- data
       self$targeting <- targeting
       if (class(data$W) != "data.frame") message("W not data.frame")
       if (!is.null(verbose)) self$verbose <- verbose
-      self$pointTMLE <- blipVarianceTMLE_gentmle_contY$new(data = data)
-      self$pointTMLE$scaleY()
+      self$pointTMLE <- blipVarianceTMLEContinuousY$new(data = data)
+      self$pointTMLE$scale_outcome()
       self$pointTMLE$initial_fit(lambda1 = lambda1, lambda2 = lambda2, M1 = M1, M2 = M2)
       if (self$targeting) {
         self$pointTMLE$target()
@@ -178,8 +168,8 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
         W = data.frame(data$W[indices, ])
       )
 
-      bootstrapTmleFit <- blipVarianceTMLE_gentmle_contY$new(data = d)
-      # bootstrapTmleFit$scaleY() # not rigorous; use population scale_Y
+      bootstrapTmleFit <- blipVarianceTMLEContinuousY$new(data = d)
+      # use population scale_Y
       bootstrapTmleFit$scale_Y <- self$pointTMLE$scale_Y
       bootstrapTmleFit$Y_rescale <- bootstrapTmleFit$scale_Y$scale01(newX = bootstrapTmleFit$data$Y)
       # fit new Q, g
@@ -298,21 +288,6 @@ blipVarianceBootstrap_contY <- R6Class("blipVarianceBootstrap_contY",
         self$pointTMLE$Psi - Z_quantile[2], self$pointTMLE$Psi - Z_quantile[1]
       )
       self$CI_all <- list(normal_CI, boot1_CI)
-    },
-    bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05) {
-      self$run_bootstrap(
-        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "reg"
-      )
-    },
-    exact_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05) {
-      self$run_bootstrap(
-        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "sec_ord"
-      )
-    },
-    exact_bootstrap_paper = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05) {
-      self$run_bootstrap(
-        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "sec_ord_paper"
-      )
     }
   )
 )

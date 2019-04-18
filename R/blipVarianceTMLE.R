@@ -3,7 +3,8 @@ library(hal9001)
 library(gentmle2)
 
 #' @export
-blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
+#' @importFrom Matrix colMeans
+blipVarianceTMLE <- R6Class("blipVarianceTMLE",
   public = list(
     data = NULL,
     # initial fit
@@ -174,7 +175,7 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
         # design matrix. each column correspond to Q_fit$coefs.
         # don't have intercept column
         x_basis <- x_basis[, unique_columns]
-        phi_ratio <- colMeans(x_basis)
+        phi_ratio <- Matrix::colMeans(x_basis)
 
         beta_non_intercept <- self$Q_fit$coefs[-1]
         beta_non_zero <- beta_non_intercept != 0
@@ -195,8 +196,8 @@ blipVarianceTMLE_gentmle <- R6Class("blipVarianceTMLE_gentmle",
 )
 
 #' @export
-blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
-  inherit = blipVarianceTMLE_gentmle,
+blipVarianceTMLEContinuousY <- R6Class("blipVarianceTMLEContinuousY",
+  inherit = blipVarianceTMLE,
   public = list(
     # continuous Y
     scale_Y = NULL,
@@ -206,8 +207,8 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
     Q_AW_rescale = NULL,
     Q_1W_rescale = NULL,
     Q_0W_rescale = NULL,
-    scaleY = function() {
-      # sub-class of `blipVarianceTMLE_gentmle`;
+    scale_outcome = function() {
+      # sub-class of `blipVarianceTMLE`;
       # replace initial fit with continuous hal9001;
       # rescales Y into (0,1) before TMLE;
       # scales the Psi, EIC, CI back to the original scale after the TMLE
@@ -215,7 +216,7 @@ blipVarianceTMLE_gentmle_contY <- R6Class("blipVarianceTMLE_gentmle_contY",
       self$scale_Y <- scaleX$new(X = self$data$Y)
       self$Y_rescale <- self$scale_Y$scale01(newX = self$data$Y)
     },
-    scaleBack_afterTMLE = function() {
+    scale_back_after_tmle = function() {
       # variance is rescaled
       self$Psi <- self$Psi * self$scale_Y$rangeX^2
       # EIC is scaled by the same amount

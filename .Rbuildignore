@@ -15,6 +15,7 @@
 ^README\.html$
 ^README-.*\.png$
 ^README-refs\.bib$
+^cran-comments.md
 
 ^docs$
 ^paper$

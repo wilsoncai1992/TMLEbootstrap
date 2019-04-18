@@ -12,6 +12,7 @@ Depends:
     hal9001 (>= 0.2.1),
     R6
 Imports:
+    Matrix,
     glmnet,
     tmle,
     origami (>= 0.8.2),

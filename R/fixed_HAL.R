@@ -81,7 +81,15 @@ fit_fixed_HAL <- function(
   return(object)
 }
 
-# prediciton function for fixed_HAL object
+#' prediciton function for fixed_HAL object
+#'
+#' @param object class `fixed_HAL``
+#' @param ... extra arguments into hal9001
+#' @param new_data matrix with the same number of columns as in training
+#'
+#' @return a vector of predictions
+#' @importFrom Matrix tcrossprod
+#' @keywords internal
 predict.fixed_HAL <- function(object, ..., new_data) {
   if (class(object) != "fixed_HAL") stop("object class not right!")
 
@@ -113,7 +121,7 @@ predict.fixed_HAL <- function(object, ..., new_data) {
   if (length(beta_hat) > dim(pred_x_basis)[2]) {
     # glmnet situation
     preds <- as.vector(
-      tcrossprod(x = pred_x_basis, y = beta_hat[-1]) + beta_hat[1]
+      Matrix::tcrossprod(x = pred_x_basis, y = beta_hat[-1]) + beta_hat[1]
     )
   } else {
     # glm situation

@@ -7,6 +7,21 @@ generalBootstrap <- R6Class("generalBootstrap",
     CI_all = NULL,
     initialize = function() {
     },
+    bootstrap = function(REPEAT_BOOTSTRAP, ALPHA = 0.05, ...) {
+      self$run_bootstrap(
+        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "reg", ...
+      )
+    },
+    exact_bootstrap = function(REPEAT_BOOTSTRAP, ALPHA = 0.05, ...) {
+      self$run_bootstrap(
+        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "sec_ord", ...
+      )
+    },
+    exact_bootstrap_paper = function(REPEAT_BOOTSTRAP, ALPHA = 0.05, ...) {
+      self$run_bootstrap(
+        REPEAT_BOOTSTRAP = REPEAT_BOOTSTRAP, ALPHA = ALPHA, kind = "sec_ord_paper", ...
+      )
+    },
     center_CI = function(bootCI = NULL) {
       # if user don't provide bootCI, use existing bootCI;
       if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
