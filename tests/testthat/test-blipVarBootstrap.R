@@ -42,12 +42,12 @@ data <- simulate_data(n_sim = n_sim, n_mode = n_mode, a1 = a1)
 # data$psi_true
 df <- data$df
 bootstrapFit <- blipVarianceBootstrapContinuousY$new(data = df)
-bootstrapFit$bootstrap(REPEAT_BOOTSTRAP = 2e1)
+bootstrapFit$bootstrap(n_bootstrap = 2e1)
 
 bootstrapFitExact <- bootstrapFit$clone(deep = TRUE)
-bootstrapFitExact$exact_bootstrap(REPEAT_BOOTSTRAP = 2e1)
+bootstrapFitExact$exact_bootstrap(n_bootstrap = 2e1)
 bootstrapFitExact_paper <- bootstrapFit$clone(deep = TRUE)
-bootstrapFitExact_paper$exact_bootstrap_paper(REPEAT_BOOTSTRAP = 2e1)
+bootstrapFitExact_paper$exact_bootstrap_paper(n_bootstrap = 2e1)
 
 regular_ci <- bootstrapFit$all_boot_CI()
 exact_ci <- bootstrapFitExact$all_boot_CI()
@@ -78,7 +78,7 @@ CVOut <- comprehensiveBootstrap$new(
   parameter = blipVarianceBootstrapContinuousY,
   data = df
 )
-CVOut$bootstrap(REPEAT_BOOTSTRAP = 2e1)
+CVOut$bootstrap(n_bootstrap = 2e1)
 CVOut$all_CI()
 
 

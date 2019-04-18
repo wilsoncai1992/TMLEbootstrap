@@ -28,7 +28,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       onestepFit$compute_EIC(
         p_hat = onestepFit$p_hat, Psi = onestepFit$Psi, to_return = FALSE
       )
-      if (self$targeting) onestepFit$onestepTarget()
+      if (self$targeting) onestepFit$target_onestep()
       onestepFit$inference()
 
       self$pointTMLE <- onestepFit
@@ -67,7 +67,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       # target new fit
       bootstrapOnestepFit$compute_Psi(p_hat = bootstrapOnestepFit$p_hat, FALSE)
       bootstrapOnestepFit$compute_EIC(p_hat = bootstrapOnestepFit$p_hat, Psi = bootstrapOnestepFit$Psi, FALSE)
-      if (self$targeting) bootstrapOnestepFit$onestepTarget()
+      if (self$targeting) bootstrapOnestepFit$target_onestep()
 
       # get R2 term
       yhat_population <- predict.fixed_HAL(HAL_boot, new_data = population_x)
@@ -101,8 +101,8 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       ))
     },
     run_bootstrap = function(
-                                 REPEAT_BOOTSTRAP = 2e2,
-                                 ALPHA = 0.05,
+                                 n_bootstrap = 2e2,
+                                 alpha = 0.05,
                                  kind = NULL,
                                  inflate_lambda = 1,
                                  to_parallel = FALSE) {
@@ -118,7 +118,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       }
       if (is.null(self$bootstrap_estimates)) {
         all_bootstrap_estimates <- foreach(
-          it2 = 1:REPEAT_BOOTSTRAP,
+          it2 = 1:n_bootstrap,
           .combine = "rbind",
           .inorder = FALSE,
           .errorhandling = "remove",
@@ -141,7 +141,7 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       if (to_parallel) stopCluster(cl)
       Z_quantile <- quantile(
         self$bootstrap_estimates[, kind],
-        probs = c(ALPHA / 2, 1 - ALPHA / 2)
+        probs = c(alpha / 2, 1 - alpha / 2)
       )
       normal_CI <- self$pointTMLE$CI
       boot1_CI <- c(

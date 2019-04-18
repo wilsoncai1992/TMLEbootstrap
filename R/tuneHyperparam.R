@@ -1,9 +1,9 @@
 #' @export
-LambdaGrid <- R6Class("LambdaGrid",
+tuneHyperparam <- R6Class("tuneHyperparam",
   # lambda plateau method
   public = list(
     data = NULL,
-    REPEAT_BOOTSTRAP = NULL,
+    n_bootstrap = NULL,
     inflate_lambda = NULL,
 
     dict_boot = list(), # named list of comprehensiveBootstrap
@@ -13,9 +13,9 @@ LambdaGrid <- R6Class("LambdaGrid",
     lambdaPlateau = NULL,
     lambdaCV = NULL,
     lambdaOracle = NULL,
-    initialize = function(data, REPEAT_BOOTSTRAP = 2e2, inflate_lambda = 1) {
+    initialize = function(data, n_bootstrap = 2e2, inflate_lambda = 1) {
       self$data <- data
-      self$REPEAT_BOOTSTRAP <- REPEAT_BOOTSTRAP
+      self$n_bootstrap <- n_bootstrap
       self$inflate_lambda <- inflate_lambda
     },
     get_lambda = function() {
@@ -171,8 +171,8 @@ LambdaGrid <- R6Class("LambdaGrid",
 )
 
 #' @export
-avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
-  inherit = LambdaGrid,
+avgDensityTuneHyperparam <- R6Class("avgDensityTuneHyperparam",
+  inherit = tuneHyperparam,
   public = list(
     bin_width = NULL,
     epsilon_step = NULL,
@@ -211,8 +211,8 @@ avgDensity_LambdaGrid <- R6Class("avgDensity_LambdaGrid",
 )
 
 #' @export
-ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
-  inherit = LambdaGrid,
+ateTuneHyperparam <- R6Class("AteTuneHyperparam",
+  inherit = tuneHyperparam,
   public = list(
     data = NULL,
     initialize = function(...) {
@@ -247,8 +247,8 @@ ATE_LambdaGrid <- R6Class("ATE_LambdaGrid",
 )
 
 #' @export
-blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
-  inherit = LambdaGrid,
+blipVarContinuousYTuneHyperparam <- R6Class("blipVarContinuousYTuneHyperparam",
+  inherit = tuneHyperparam,
   public = list(
     data = NULL,
     initialize = function(...) {
@@ -267,7 +267,7 @@ blipVar_contY_LambdaGrid <- R6Class("blipVar_contY_LambdaGrid",
         .verbose = T
       ) %mydo% {
         boot_here <- comprehensiveBootstrap$new(
-          parameter = blipVarianceBootstrap_contY,
+          parameter = blipVarianceBootstrapContinuousY,
           data = self$data,
           lambda1 = lambda1,
           ...

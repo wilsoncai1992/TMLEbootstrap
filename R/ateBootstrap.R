@@ -115,12 +115,12 @@ ateBootstrap <- R6Class("ateBootstrap",
         sec_ord_paper = PnDstar - P0Dstar + R2
       ))
     },
-    run_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05, kind = NULL) {
+    run_bootstrap = function(n_bootstrap = 2e2, alpha = 0.05, kind = NULL) {
       # all bootstrap
       library(foreach)
       if (is.null(self$bootstrap_estimates)) {
         all_bootstrap_estimates <- foreach(
-          it2 = 1:REPEAT_BOOTSTRAP,
+          it2 = 1:n_bootstrap,
           .combine = "rbind",
           .inorder = FALSE,
           .errorhandling = "remove",
@@ -135,7 +135,7 @@ ateBootstrap <- R6Class("ateBootstrap",
       }
       Z_quantile <- quantile(
         self$bootstrap_estimates[, kind],
-        probs = c(ALPHA / 2, 1 - ALPHA / 2)
+        probs = c(alpha / 2, 1 - alpha / 2)
       )
       normal_CI <- self$pointTMLE$CI
       boot1_CI <- c(

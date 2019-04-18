@@ -28,7 +28,7 @@ comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
     },
     bootstrap = function(...) {
       # input:
-      # REPEAT_BOOTSTRAP
+      # n_bootstrap
       self$bootOut$bootstrap(...)
       self$Psi <- self$bootOut$Psi # populate Psi_n
 

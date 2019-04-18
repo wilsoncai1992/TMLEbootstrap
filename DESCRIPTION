@@ -9,14 +9,15 @@ Authors@R: c(
 Description: HAL-TMLE nonparametric bootstrap.
 Depends:
     R (>= 3.2.0),
-    hal9001 (>= 0.2.1),
+    hal9001 (>= 0.2.2),
     R6
 Imports:
     Matrix,
     glmnet,
     tmle,
     origami (>= 0.8.2),
-    gentmle2
+    gentmle2,
+    assertthat
 Suggests:
     truncnorm,
     nnls,
@@ -26,7 +27,6 @@ Suggests:
     covr
 Remotes:
   github::tlverse/origami,
-  github::tlverse/hal9001,
   github::jeremyrcoyle/gentmle2
 License: GPL-2
 URL: https://github.com/wilsoncai1992/TMLEbootstrap

@@ -106,7 +106,7 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       self$p_hat$p_density <- self$p_hat$p_density * exp(self$epsilon_step * self$EIC)
       self$p_hat$normalize()
     },
-    onestepTarget = function(verbose = FALSE) {
+    target_onestep = function(verbose = FALSE) {
       # recursive targeting of onestep
       n_iter <- 0
       absmeanEIC_prev <- abs(mean(self$EIC))

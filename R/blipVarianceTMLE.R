@@ -33,18 +33,16 @@ blipVarianceTMLE <- R6Class("blipVarianceTMLE",
       use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
       use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
 
-      if (use_penalized_mode & use_constrained_mode) {
-        stop("cannot do two modes!")
-      }
+      assertthat::assert_that(!(use_penalized_mode & use_constrained_mode))
       if (use_penalized_mode) {
-        self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2)
+        self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2, family_y = "binomial")
       }
       if (use_constrained_mode) {
         stop("not implemented")
       }
       if (!use_penalized_mode & !use_constrained_mode) {
         # when user have NULL for everything: default to CV
-        self$initial_fit_pen_likeli(NULL, NULL)
+        self$initial_fit_pen_likeli(NULL, NULL, family_y = "binomial")
       }
 
       # get Q_1W, Q_0W
@@ -66,58 +64,35 @@ blipVarianceTMLE <- R6Class("blipVarianceTMLE",
         new_data = data.frame(self$data$W)
       )
     },
-    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL) {
-      # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
+    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL, family_y) {
       # Q fit
-      if (is.null(lambda1)) {
-        # use CV
-        self$Q_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$A, self$data$W),
-          Y = self$data$Y,
-          n_folds = 3,
-          family = "binomial",
-          fit_type = "glmnet",
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      } else {
-        self$Q_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$A, self$data$W),
-          Y = self$data$Y,
-          family = "binomial",
-          fit_type = "glmnet",
-          lambda = lambda1,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      }
+      cv_select_Q <- is.null(lambda1)
+      self$Q_fit <- hal9001::fit_hal(
+        X = data.frame(self$data$A, self$data$W),
+        Y = self$data$Y,
+        fit_type = "glmnet",
+        family = family_y,
+        n_folds = 3,
+        lambda = lambda1,
+        cv_select = cv_select_Q,
+        return_lasso = TRUE,
+        return_x_basis = FALSE,
+        yolo = FALSE
+      )
       # g fit
-      if (is.null(lambda2)) {
-        # use CV
-        self$g_fit <- hal9001::fit_hal(
-          X = self$data$W,
-          Y = self$data$A,
-          n_folds = 3,
-          fit_type = "glmnet",
-          family = "binomial",
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      } else {
-        self$g_fit <- hal9001::fit_hal(
-          X = self$data$W,
-          Y = self$data$A,
-          fit_type = "glmnet",
-          family = "binomial",
-          lambda = lambda2,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      }
+      cv_select_g <- is.null(lambda2)
+      self$g_fit <- hal9001::fit_hal(
+        X = self$data$W,
+        Y = self$data$A,
+        fit_type = "glmnet",
+        family = "binomial",
+        n_folds = 3,
+        lambda = lambda2,
+        cv_select = cv_select_g,
+        return_lasso = TRUE,
+        return_x_basis = FALSE,
+        yolo = FALSE
+      )
     },
     target = function() {
       # use the logistic submodel to target blip variance; output Psi, EIC, CI
@@ -231,14 +206,14 @@ blipVarianceTMLEContinuousY <- R6Class("blipVarianceTMLEContinuousY",
         stop("cannot do two modes!")
       }
       if (use_penalized_mode) {
-        self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2)
+        self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2, family_y = "gaussian")
       }
       if (use_constrained_mode) {
         stop("not implemented")
       }
       if (!use_penalized_mode & !use_constrained_mode) {
         # when user have NULL for everything: default to CV
-        self$initial_fit_pen_likeli(NULL, NULL)
+        self$initial_fit_pen_likeli(NULL, NULL, family_y = "gaussian")
       }
 
       # get Q_1W, Q_0W
@@ -267,58 +242,6 @@ blipVarianceTMLEContinuousY <- R6Class("blipVarianceTMLEContinuousY",
       # self$Q_AW_rescale <- self$scale_Q$scale01(newX = self$Q_AW)
       # self$Q_1W_rescale <- self$scale_Q$scale01(newX = self$Q_1W)
       # self$Q_0W_rescale <- self$scale_Q$scale01(newX = self$Q_0W)
-    },
-    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL) {
-      # Q fit
-      if (is.null(lambda1)) {
-        # use CV
-        self$Q_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$A, self$data$W),
-          Y = self$data$Y,
-          n_folds = 3,
-          fit_type = "glmnet",
-          family = "gaussian",
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      } else {
-        self$Q_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$A, self$data$W),
-          Y = self$data$Y,
-          fit_type = "glmnet",
-          family = "gaussian",
-          lambda = lambda1,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      }
-      # g fit
-      if (is.null(lambda2)) {
-        # use CV
-        self$g_fit <- hal9001::fit_hal(
-          X = self$data$W,
-          Y = self$data$A,
-          n_folds = 3,
-          fit_type = "glmnet",
-          family = "binomial",
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      } else {
-        self$g_fit <- hal9001::fit_hal(
-          X = self$data$W,
-          Y = self$data$A,
-          fit_type = "glmnet",
-          family = "binomial",
-          lambda = lambda2,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          yolo = FALSE
-        )
-      }
     },
     target = function() {
       initdata <- data.frame(

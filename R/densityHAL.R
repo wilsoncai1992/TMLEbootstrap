@@ -128,17 +128,6 @@ cv_densityHAL <- R6Class("cv_densityHAL",
         lambda_grid <- hal_for_lambda$hal_lasso$lambda
         if (!is.null(lambda_min_ratio)) {
           # manually increase the range of lambda grid
-          create_lambda_grid_by_ratio <- function(lambda_grid, lambda_min_ratio) {
-            lambda_max <- max(cv_lambda_grid)
-            lambda_min <- lambda_max * lambda_min_ratio
-            log_lambda_range <- log(c(lambda_min, lambda_max))
-            lambda_grid_new <- exp(seq(
-              log_lambda_range[2],
-              log_lambda_range[1],
-              length.out = 1e2
-            ))
-            return(lambda_grid_new)
-          }
           lambda_grid <- create_lambda_grid_by_ratio(
             lambda_grid, lambda_min_ratio
           )
@@ -173,3 +162,17 @@ cross_entropy <- function(y, yhat) {
 }
 
 expit <- function(x) exp(x) / (1 + exp(x))
+
+
+#' @keywords internal
+create_lambda_grid_by_ratio <- function(lambda_grid, lambda_min_ratio) {
+  lambda_max <- max(cv_lambda_grid)
+  lambda_min <- lambda_max * lambda_min_ratio
+  log_lambda_range <- log(c(lambda_min, lambda_max))
+  lambda_grid_new <- exp(seq(
+    log_lambda_range[2],
+    log_lambda_range[1],
+    length.out = 1e2
+  ))
+  return(lambda_grid_new)
+}

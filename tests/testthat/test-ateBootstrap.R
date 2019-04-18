@@ -72,7 +72,7 @@ halmleCI <- boot_output_HALMLE$all_boot_CI()
 
 # comprehensive bootstrap
 CVOut <- comprehensiveBootstrap$new(parameter = ateBootstrap, data = data_sim)
-CVOut$bootstrap(REPEAT_BOOTSTRAP = 2e1)
+CVOut$bootstrap(n_bootstrap = 2e1)
 CVOut$all_CI()
 
 ################################################################################

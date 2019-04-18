@@ -90,12 +90,12 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         sec_ord = bootstrapTmleFit$Psi - R2 - self$pointTMLE$Psi
       ))
     },
-    run_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05, kind = NULL) {
+    run_bootstrap = function(n_bootstrap = 2e2, alpha = 0.05, kind = NULL) {
       # all bootstrap
       if (is.null(self$bootstrap_estimates)) {
         library(foreach)
         all_bootstrap_estimates <- foreach(
-          it2 = 1:REPEAT_BOOTSTRAP,
+          it2 = 1:n_bootstrap,
           .combine = "rbind",
           .inorder = FALSE,
           .errorhandling = "remove",
@@ -112,7 +112,7 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       }
       Z_quantile <- quantile(
         self$bootstrap_estimates[, kind],
-        probs = c(ALPHA / 2, 1 - ALPHA / 2)
+        probs = c(alpha / 2, 1 - alpha / 2)
       )
       normal_CI <- self$pointTMLE$CI
       boot1_CI <- c(
@@ -154,7 +154,7 @@ blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
       } else {
         self$pointTMLE$inference_without_target()
       }
-      self$pointTMLE$scaleBack_afterTMLE()
+      self$pointTMLE$scale_back_after_tmle()
 
       self$Psi <- self$pointTMLE$Psi
     },
@@ -167,7 +167,6 @@ blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
         A = data$A[indices],
         W = data.frame(data$W[indices, ])
       )
-
       bootstrapTmleFit <- blipVarianceTMLEContinuousY$new(data = d)
       # use population scale_Y
       bootstrapTmleFit$scale_Y <- self$pointTMLE$scale_Y
@@ -211,7 +210,7 @@ blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
       } else {
         bootstrapTmleFit$inference_without_target()
       }
-      bootstrapTmleFit$scaleBack_afterTMLE() # cont Y
+      bootstrapTmleFit$scale_back_after_tmle() # cont Y
       # PnD*
       # the nuisance parameters need to be for continuous Y \in R
       PnDstar <- mean(self$pointTMLE$compute_EIC(
@@ -259,12 +258,12 @@ blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
         sec_ord_paper = PnDstar - P0Dstar + R2
       ))
     },
-    run_bootstrap = function(REPEAT_BOOTSTRAP = 2e2, ALPHA = 0.05, kind = NULL) {
+    run_bootstrap = function(n_bootstrap = 2e2, alpha = 0.05, kind = NULL) {
       # all bootstrap
       if (is.null(self$bootstrap_estimates)) {
         library(foreach)
         all_bootstrap_estimates <- foreach(
-          it2 = 1:REPEAT_BOOTSTRAP,
+          it2 = 1:n_bootstrap,
           .combine = "rbind",
           .inorder = FALSE,
           .errorhandling = "remove",
@@ -280,8 +279,7 @@ blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
         message("invoke cached bootstrap results")
       }
       Z_quantile <- quantile(
-        self$bootstrap_estimates[, kind],
-        probs = c(ALPHA / 2, 1 - ALPHA / 2)
+        self$bootstrap_estimates[, kind], probs = c(alpha / 2, 1 - alpha / 2)
       )
       normal_CI <- self$pointTMLE$CI
       boot1_CI <- c(

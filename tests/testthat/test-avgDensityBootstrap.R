@@ -27,12 +27,12 @@ bin_width <- 8e-1
 
 data_out <- simulate_data(n_sim = n_sim, n_mode = n_mode)
 bootstrapFit <- avgDensityBootstrap$new(x = data_out$x, bin_width = bin_width)
-bootstrapFit$bootstrap(REPEAT_BOOTSTRAP = 2e1)
+bootstrapFit$bootstrap(n_bootstrap = 2e1)
 
 bootstrapFitExact <- bootstrapFit$clone(deep = TRUE)
-bootstrapFitExact$exact_bootstrap(REPEAT_BOOTSTRAP = 2e1)
+bootstrapFitExact$exact_bootstrap(n_bootstrap = 2e1)
 bootstrapFitExact_paper <- bootstrapFit$clone(deep = TRUE)
-bootstrapFitExact_paper$exact_bootstrap_paper(REPEAT_BOOTSTRAP = 2e1)
+bootstrapFitExact_paper$exact_bootstrap_paper(n_bootstrap = 2e1)
 
 regularCI <- bootstrapFit$all_boot_CI()
 exact_CI <- bootstrapFitExact$all_boot_CI()
@@ -66,7 +66,7 @@ CVOut <- comprehensiveBootstrap$new(
   lambda_grid = NULL,
   epsilon_step = 1e-1
 )
-CVOut$bootstrap(REPEAT_BOOTSTRAP = 2e1)
+CVOut$bootstrap(n_bootstrap = 2e1)
 CVOut$all_CI()
 
 ################################################################################

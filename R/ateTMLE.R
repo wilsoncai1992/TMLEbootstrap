@@ -48,97 +48,66 @@ ateTMLE <- R6Class("ateTMLE",
       # get g1_W
       self$g1_W <- stats::predict(object = self$g_fit, new_data = data.frame(self$data$W))
     },
-    initial_fit_pen_likeli = function(
-                                          lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL, n_folds = 3, ...) {
+    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL, n_folds = 3, ...) {
       # lambda1 for Q fit
       # lambda2 for g fit
       self$lambda1 <- lambda1
       self$lambda2 <- lambda2
-      # hal9001 to fit binary Q(Y|A,W), and g(A|W); save the fit object
+      cv_select_Q <- is.null(lambda1)
       # Q fit
-      if (is.null(lambda1)) {
-        # use CV
+      assertthat::assert_that(!(!cv_select_Q & !is.null(lambda_min_ratio)))
+      self$Q_fit <- hal9001::fit_hal(
+        X = data.frame(self$data$A, self$data$W),
+        Y = self$data$Y,
+        family = "gaussian",
+        fit_type = "glmnet",
+        lambda = lambda1,
+        n_folds = n_folds,
+        cv_select = cv_select_Q,
+        use_min = TRUE,
+        return_lasso = TRUE,
+        return_x_basis = FALSE,
+        yolo = FALSE,
+        ...
+      )
+      # WILSON hack the lambda_min_ratio
+      if (!is.null(lambda_min_ratio)) {
+        lambda_max <- max(self$Q_fit$hal_lasso$lambda)
+        lambda_min <- lambda_max * lambda_min_ratio
+        log_lambda_range <- log(c(lambda_min, lambda_max))
+        lambda_grid_new <- exp(seq(
+          log_lambda_range[2], log_lambda_range[1], length.out = 1e2
+        ))
         self$Q_fit <- hal9001::fit_hal(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
           family = "gaussian",
           fit_type = "glmnet",
-          n_folds = 3,
+          lambda = lambda_grid_new,
+          n_folds = n_folds,
+          cv_select = cv_select_Q,
           use_min = TRUE,
           return_lasso = TRUE,
           return_x_basis = FALSE,
-          cv_select = TRUE,
-          yolo = FALSE,
-          ...
-        )
-        # WILSON hack the lambda_min_ratio
-        if (!is.null(lambda_min_ratio)) {
-          lambda_max <- max(self$Q_fit$hal_lasso$lambda)
-          lambda_min <- lambda_max * lambda_min_ratio
-          log_lambda_range <- log(c(lambda_min, lambda_max))
-          lambda_grid_new <- exp(seq(log_lambda_range[2], log_lambda_range[1], length.out = 1e2))
-          self$Q_fit <- hal9001::fit_hal(
-            X = data.frame(self$data$A, self$data$W),
-            Y = self$data$Y,
-            family = "gaussian",
-            fit_type = "glmnet",
-            n_folds = n_folds,
-            use_min = TRUE,
-            lambda = lambda_grid_new,
-            return_lasso = TRUE,
-            return_x_basis = FALSE,
-            yolo = FALSE,
-            ...
-          )
-        }
-      } else if (lambda1 >= 0) {
-        # use manual lambda1
-        self$Q_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$A, self$data$W),
-          Y = self$data$Y,
-          family = "gaussian",
-          lambda = lambda1,
-          fit_type = "glmnet",
-          use_min = TRUE, # useless
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          cv_select = FALSE,
           yolo = FALSE,
           ...
         )
       }
       # g fit
-      if (is.null(lambda2)) {
-        # use CV
-        self$g_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$W),
-          Y = self$data$A,
-          family = "binomial",
-          fit_type = "glmnet",
-          n_folds = n_folds,
-          use_min = TRUE,
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          cv_select = TRUE,
-          yolo = FALSE,
-          ...
-        )
-      } else {
-        # use manual lambda1
-        self$g_fit <- hal9001::fit_hal(
-          X = data.frame(self$data$W),
-          Y = self$data$A,
-          family = "binomial",
-          lambda = lambda2,
-          fit_type = "glmnet",
-          use_min = TRUE, # useless
-          return_lasso = TRUE,
-          return_x_basis = FALSE,
-          cv_select = FALSE,
-          yolo = FALSE,
-          ...
-        )
-      }
+      cv_select_g <- is.null(lambda2)
+      self$g_fit <- hal9001::fit_hal(
+        X = data.frame(self$data$W),
+        Y = self$data$A,
+        fit_type = "glmnet",
+        family = "binomial",
+        n_folds = n_folds,
+        lambda = lambda2,
+        cv_select = cv_select_g,
+        return_lasso = TRUE,
+        return_x_basis = FALSE,
+        yolo = FALSE,
+        ...
+      )
     },
     plot_Q1W = function(foo = NULL) {
       # plot the Q(1,W) function (optional: against a foo function)
@@ -235,7 +204,6 @@ ateTMLE <- R6Class("ateTMLE",
       Qcopy_map <- self$Q_fit$copy_map
       X <- data.frame(self$data$A, self$data$W)
       if (length(Qbasis_list) > 0) {
-        browser()
         x_basis <- hal9001::make_design_matrix(as.matrix(X), Qbasis_list)
         unique_columns <- as.numeric(names(Qcopy_map))
         # design matrix. each column correspond to Q_fit$coefs.
