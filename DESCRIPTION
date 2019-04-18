@@ -9,7 +9,7 @@ Authors@R: c(
 Description: HAL-TMLE nonparametric bootstrap.
 Depends:
     R (>= 3.2.0),
-    hal9001 (>= 0.2.2),
+    hal9001 (>= 0.2.1),
     R6
 Imports:
     Matrix,
