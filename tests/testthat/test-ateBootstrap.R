@@ -35,7 +35,7 @@ a2 <- .1
 INFLATE_LAMBDA <- 1
 
 data_sim <- simulate_data(n_sim = n_sim, a1 = a1, a2 = a2, b1 = b1)
-boot_output <- ateBootstrap$new(data = data_sim)
+boot_output <- ateBootstrap$new(data = data_sim, family_y = "gaussian")
 boot_output$bootstrap(2e1)
 
 boot_output_exact <- boot_output$clone(deep = TRUE)
@@ -64,12 +64,12 @@ out <- list(
 )
 
 # without targeting
-boot_output_HALMLE <- ateBootstrap$new(data = data_sim, targeting = FALSE)
+boot_output_HALMLE <- ateBootstrap$new(data = data_sim, family_y = "gaussian", targeting = FALSE)
 boot_output_HALMLE$bootstrap(2e1)
 halmleCI <- boot_output_HALMLE$all_boot_CI()
 
 # comprehensive bootstrap
-CVOut <- comprehensiveBootstrap$new(parameter = ateBootstrap, data = data_sim)
+CVOut <- comprehensiveBootstrap$new(parameter = ateBootstrap, data = data_sim, family_y = "gaussian")
 CVOut$bootstrap(2e1)
 CVOut$all_CI()
 

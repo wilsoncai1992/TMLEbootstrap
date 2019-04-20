@@ -9,47 +9,46 @@ ateTMLE <- R6Class("ateTMLE",
     data = NULL,
     # initial fit
     Q_fit = NULL,
-    Q_1W = NULL,
-    Q_0W = NULL,
+    QAW = NULL,
+    Q1W = NULL,
+    Q0W = NULL,
     g_fit = NULL,
-    g1_W = NULL,
+    g1W = NULL,
 
     tmle_object = NULL,
     Psi = NULL,
     se_Psi = NULL,
     CI = NULL,
     EIC = NULL,
-    # verbose = FALSE,
+    verbose = NULL,
     lambda1 = NULL,
     lambda2 = NULL,
-    initialize = function(data) {
+    initialize = function(data, verbose = FALSE) {
       assert_that(class(data$W) == "data.frame")
       self$data <- data
+      self$verbose <- verbose
     },
-    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL, ...) {
+    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL, family_y, ...) {
       use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
       use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
-      if (use_penalized_mode & use_constrained_mode) {
-        stop("cannot do two modes!")
-      }
+      if (use_penalized_mode & use_constrained_mode) stop("cannot do two modes!")
       if (use_penalized_mode) {
-        self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2, ...)
+        self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2, family_y, ...)
       }
-      if (use_constrained_mode) {
-        stop("not implemented")
-      }
+      if (use_constrained_mode) stop("not implemented")
       if (!use_penalized_mode & !use_constrained_mode) {
         # when user have NULL for everything: default to CV
-        self$initial_fit_pen_likeli(NULL, NULL, ...)
+        self$initial_fit_pen_likeli(NULL, NULL, family_y, ...)
       }
 
-      # get Q_1W, Q_0W
-      self$Q_1W <- stats::predict(object = self$Q_fit, new_data = data.frame(1, self$data$W))
-      self$Q_0W <- stats::predict(object = self$Q_fit, new_data = data.frame(0, self$data$W))
-      # get g1_W
-      self$g1_W <- stats::predict(object = self$g_fit, new_data = data.frame(self$data$W))
+      # get Q1W, Q0W
+      self$QAW <- stats::predict(object = self$Q_fit, new_data = data.frame(self$data$A, self$data$W))
+      self$Q1W <- stats::predict(object = self$Q_fit, new_data = data.frame(1, self$data$W))
+      self$Q0W <- stats::predict(object = self$Q_fit, new_data = data.frame(0, self$data$W))
+      # get g1W
+      self$g1W <- stats::predict(object = self$g_fit, new_data = data.frame(self$data$W))
     },
-    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL, lambda_min_ratio = NULL, n_folds = 3, ...) {
+    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL, family_y, lambda_min_ratio = NULL, n_folds = 3, ...) {
       # lambda1 for Q fit
       # lambda2 for g fit
       self$lambda1 <- lambda1
@@ -60,7 +59,7 @@ ateTMLE <- R6Class("ateTMLE",
       self$Q_fit <- hal9001::fit_hal(
         X = data.frame(self$data$A, self$data$W),
         Y = self$data$Y,
-        family = "gaussian",
+        family = family_y,
         fit_type = "glmnet",
         lambda = lambda1,
         n_folds = n_folds,
@@ -82,7 +81,7 @@ ateTMLE <- R6Class("ateTMLE",
         self$Q_fit <- hal9001::fit_hal(
           X = data.frame(self$data$A, self$data$W),
           Y = self$data$Y,
-          family = "gaussian",
+          family = family_y,
           fit_type = "glmnet",
           lambda = lambda_grid_new,
           n_folds = n_folds,
@@ -112,7 +111,7 @@ ateTMLE <- R6Class("ateTMLE",
     },
     plot_Q1W = function(foo = NULL) {
       # plot the Q(1,W) function (optional: against a foo function)
-      plot(self$Q_1W ~ self$data$W[, 1], col = "blue")
+      plot(self$Q1W ~ self$data$W[, 1], col = "blue")
       if (!is.null(foo)) {
         curve(expr = foo, from = -10, to = 10, add = TRUE, lty = 2, n = 1e3)
       }
@@ -127,8 +126,8 @@ ateTMLE <- R6Class("ateTMLE",
         Y = self$data$Y,
         A = self$data$A,
         W = as.matrix(self$data$W),
-        Q = cbind(self$Q_0W, self$Q_1W),
-        g1W = self$g1_W,
+        Q = cbind(self$Q0W, self$Q1W),
+        g1W = self$g1W,
         family = "gaussian",
         fluctuation = "logistic",
         V = 3,
@@ -148,41 +147,41 @@ ateTMLE <- R6Class("ateTMLE",
       # input: data from `simulate_data`: named list with W, A, Y
       if (class(Q_fit) == "hal9001") {
         # if the Q is a hal9001 fit, do the prediction routine
-        Q_1W <- stats::predict(object = Q_fit, new_data = data.frame(1, data$W))
-        Q_0W <- stats::predict(object = Q_fit, new_data = data.frame(0, data$W))
+        Q1W <- stats::predict(object = Q_fit, new_data = data.frame(1, data$W))
+        Q0W <- stats::predict(object = Q_fit, new_data = data.frame(0, data$W))
       } else if (class(Q_fit) == "function") {
         # if the Q is the true fit (in function format). evaluate the true Q function
-        # Q_1W <- Q_fit(w = data$W$W, a = 1)
-        # Q_0W <- Q_fit(w = data$W$W, a = 0)
-        Q_1W <- Q_fit(w = data$W, a = 1) # WILSON HACK
-        Q_0W <- Q_fit(w = data$W, a = 0) # WILSON HACK
+        # Q1W <- Q_fit(w = data$W$W, a = 1)
+        # Q0W <- Q_fit(w = data$W$W, a = 0)
+        Q1W <- Q_fit(w = data$W, a = 1) # WILSON HACK
+        Q0W <- Q_fit(w = data$W, a = 0) # WILSON HACK
       } else if (is.null(Q_fit)) {
-        # if NULL, assume Q_1W has been manually input
-        Q_1W <- self$Q_1W
-        Q_0W <- self$Q_0W
+        # if NULL, assume Q1W has been manually input
+        Q1W <- self$Q1W
+        Q0W <- self$Q0W
       }
 
       if (class(g_fit) == "hal9001") {
         # if the g is a hal9001 fit, do the prediction routine
-        g1_W <- stats::predict(object = g_fit, new_data = data.frame(data$W))
+        g1W <- stats::predict(object = g_fit, new_data = data.frame(data$W))
       } else if (class(g_fit) == "function") {
         # if the g is the true fit (in function format). evaluate the true Q function
-        # g1_W <- g_fit(w = data$W$W)
-        g1_W <- g_fit(w = data$W) # WILSON HACK
+        # g1W <- g_fit(w = data$W$W)
+        g1W <- g_fit(w = data$W) # WILSON HACK
       } else if (is.null(g_fit)) {
-        # if NULL, assume g1_W has been manually input
-        g1_W <- self$g1_W
+        # if NULL, assume g1W has been manually input
+        g1W <- self$g1W
       }
       # apply parameter mapping without doing any targeting
       # A has to be 0/1 coding
-      Psi <- mean(Q_1W - Q_0W)
+      Psi <- mean(Q1W - Q0W)
       EIC <- self$compute_EIC(
         A = data$A,
-        gk = g1_W,
+        gk = g1W,
         Y = data$Y,
-        Qk = Q_1W * data$A + Q_0W * (1 - data$A),
-        Q1k = Q_1W,
-        Q0k = Q_0W,
+        Qk = Q1W * data$A + Q0W * (1 - data$A),
+        Q1k = Q1W,
+        Q0k = Q0W,
         psi = Psi
       )
       se_Psi <- sqrt(var(EIC) / length(EIC))

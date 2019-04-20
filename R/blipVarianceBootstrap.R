@@ -47,9 +47,9 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         hal9001_object = self$pointTMLE$Q_fit,
         family = stats::binomial()
       )
-      Q_AW_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(d$A, d$W))
-      Q_1W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(1, d$W))
-      Q_0W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(0, d$W))
+      QAW_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(d$A, d$W))
+      Q1W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(1, d$W))
+      Q0W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(0, d$W))
       # g fit
       g_HAL_boot <- fit_fixed_HAL(
         Y = d$A,
@@ -57,12 +57,12 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
         hal9001_object = self$pointTMLE$g_fit,
         family = stats::binomial()
       )
-      g_1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
+      g1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
       # plug into tmle
-      bootstrapTmleFit$g_1W <- g_1W_boot
-      bootstrapTmleFit$Q_AW <- Q_AW_boot
-      bootstrapTmleFit$Q_1W <- Q_1W_boot
-      bootstrapTmleFit$Q_0W <- Q_0W_boot
+      bootstrapTmleFit$g1W <- g1W_boot
+      bootstrapTmleFit$QAW <- QAW_boot
+      bootstrapTmleFit$Q1W <- Q1W_boot
+      bootstrapTmleFit$Q0W <- Q0W_boot
       bootstrapTmleFit$Q_fit <- Q_HAL_boot
       bootstrapTmleFit$g_fit <- g_HAL_boot
       if (self$targeting) {
@@ -79,9 +79,9 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
       # get R2 term
       term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi)^2
       # population_tmle$gentmle_object$tmledata$Q1k
-      term2 <- mean((population_tmle$Q_1W - population_tmle$Q_0W - B_pound)^2)
-      cross_prod <- (population_tmle$g_1W - g_pound_1) / g_pound_1 * (population_tmle$Q_1W - Q_pound_1) -
-        (1 - population_tmle$g_1W - (1 - g_pound_1)) / (1 - g_pound_1) * (population_tmle$Q_0W - Q_pound_0)
+      term2 <- mean((population_tmle$Q1W - population_tmle$Q0W - B_pound)^2)
+      cross_prod <- (population_tmle$g1W - g_pound_1) / g_pound_1 * (population_tmle$Q1W - Q_pound_1) -
+        (1 - population_tmle$g1W - (1 - g_pound_1)) / (1 - g_pound_1) * (population_tmle$Q0W - Q_pound_0)
       term3 <- mean(2 * (B_pound - bootstrapTmleFit$Psi) * cross_prod)
       # compute R2
       R2 <- term1 - term2 + term3
@@ -129,9 +129,8 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
 blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
   inherit = blipVarianceBootstrap,
   public = list(
-    Q_0W_rescale = NULL,
-    initialize = function(
-                              data,
+    Q0W_rescale = NULL,
+    initialize = function(data,
                               lambda1 = NULL,
                               lambda2 = NULL,
                               M1 = NULL,
@@ -179,9 +178,9 @@ blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
         hal9001_object = self$pointTMLE$Q_fit,
         family = stats::gaussian()
       )
-      Q_AW_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(d$A, d$W))
-      Q_1W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(1, d$W))
-      Q_0W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(0, d$W))
+      QAW_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(d$A, d$W))
+      Q1W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(1, d$W))
+      Q0W_boot <- predict.fixed_HAL(Q_HAL_boot, new_data = data.frame(0, d$W))
       # g fit
       g_HAL_boot <- fit_fixed_HAL(
         Y = d$A,
@@ -189,19 +188,19 @@ blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
         hal9001_object = self$pointTMLE$g_fit,
         family = stats::binomial()
       )
-      g_1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
+      g1W_boot <- predict.fixed_HAL(g_HAL_boot, new_data = data.frame(d$W))
 
       # plug into tmle
-      bootstrapTmleFit$g_1W <- g_1W_boot
+      bootstrapTmleFit$g1W <- g1W_boot
       # scale to (0,1) because continuous
-      bootstrapTmleFit$Q_AW_rescale <- self$pointTMLE$scale_Y$scale01(
-        newX = Q_AW_boot
+      bootstrapTmleFit$QAW_rescale <- self$pointTMLE$scale_Y$scale01(
+        newX = QAW_boot
       )
-      bootstrapTmleFit$Q_1W_rescale <- self$pointTMLE$scale_Y$scale01(
-        newX = Q_1W_boot
+      bootstrapTmleFit$Q1W_rescale <- self$pointTMLE$scale_Y$scale01(
+        newX = Q1W_boot
       )
-      bootstrapTmleFit$Q_0W_rescale <- self$pointTMLE$scale_Y$scale01(
-        newX = Q_0W_boot
+      bootstrapTmleFit$Q0W_rescale <- self$pointTMLE$scale_Y$scale01(
+        newX = Q0W_boot
       )
       bootstrapTmleFit$Q_fit <- Q_HAL_boot
       bootstrapTmleFit$g_fit <- g_HAL_boot
@@ -215,12 +214,12 @@ blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
       # the nuisance parameters need to be for continuous Y \in R
       PnDstar <- mean(self$pointTMLE$compute_EIC(
         A = d$A,
-        gk = g_1W_boot,
+        gk = g1W_boot,
         Y = d$Y,
-        Qk = Q_AW_boot,
-        Q1k = Q_1W_boot,
-        Q0k = Q_0W_boot,
-        psi = var(Q_1W_boot - Q_0W_boot)
+        Qk = QAW_boot,
+        Q1k = Q1W_boot,
+        Q0k = Q0W_boot,
+        psi = var(Q1W_boot - Q0W_boot)
       ))
       # predict Q#, g# on population data
       g_pound_1 <- predict.fixed_HAL(bootstrapTmleFit$g_fit, new_data = data.frame(data$W))
@@ -243,12 +242,12 @@ blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
       # get R2 term
       term1 <- (population_tmle$Psi - bootstrapTmleFit$Psi)^2
       term2 <- mean(
-        (population_tmle$Q_1W - population_tmle$Q_0W - B_pound)^2
+        (population_tmle$Q1W - population_tmle$Q0W - B_pound)^2
       )
-      cross_prod <- (population_tmle$g_1W - g_pound_1) / g_pound_1 *
-        (population_tmle$Q_1W - Q_pound_1) -
-        (1 - population_tmle$g_1W - (1 - g_pound_1)) / (1 - g_pound_1) *
-          (population_tmle$Q_0W - Q_pound_0)
+      cross_prod <- (population_tmle$g1W - g_pound_1) / g_pound_1 *
+        (population_tmle$Q1W - Q_pound_1) -
+        (1 - population_tmle$g1W - (1 - g_pound_1)) / (1 - g_pound_1) *
+          (population_tmle$Q0W - Q_pound_0)
       term3 <- mean(2 * (B_pound - bootstrapTmleFit$Psi) * cross_prod)
       # compute R2
       R2 <- term1 - term2 + term3

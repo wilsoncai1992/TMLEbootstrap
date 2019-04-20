@@ -10,6 +10,7 @@ ateBootstrap <- R6Class("ateBootstrap",
     psi_bootstrap = NULL,
     targeting = NULL,
     initialize = function(data,
+                          family_y,
                               lambda1 = NULL,
                               lambda2 = NULL,
                               M1 = NULL,
@@ -23,7 +24,7 @@ ateBootstrap <- R6Class("ateBootstrap",
       self$targeting <- targeting
       if (class(data$W) != "data.frame") message("W not data.frame")
       tmleOut <- ateTMLE$new(data = self$data)
-      tmleOut$initial_fit(lambda1 = lambda1, lambda2 = lambda2, M1 = M1, M2 = M2)
+      tmleOut$initial_fit(lambda1 = lambda1, lambda2 = lambda2, M1 = M1, M2 = M2, family_y = family_y)
       if (self$targeting) {
         tmleOut$target()
       } else {
@@ -56,9 +57,9 @@ ateBootstrap <- R6Class("ateBootstrap",
         hal9001_object = self$pointTMLE$Q_fit,
         family = stats::gaussian()
       )
-      Q_1W_boot <- predict.fixed_HAL(Q_boot, new_data = data.frame(1, d$W))
-      Q_0W_boot <- predict.fixed_HAL(Q_boot, new_data = data.frame(0, d$W))
-      Q_AW_boot <- predict.fixed_HAL(Q_boot, new_data = data.frame(d$A, d$W))
+      Q1W_boot <- predict.fixed_HAL(Q_boot, new_data = data.frame(1, d$W))
+      Q0W_boot <- predict.fixed_HAL(Q_boot, new_data = data.frame(0, d$W))
+      QAW_boot <- predict.fixed_HAL(Q_boot, new_data = data.frame(d$A, d$W))
       # fit new g
       g_boot <- fit_fixed_HAL(
         Y = d$A,
@@ -66,11 +67,11 @@ ateBootstrap <- R6Class("ateBootstrap",
         hal9001_object = self$pointTMLE$g_fit,
         family = stats::binomial()
       )
-      g1_W_boot <- predict.fixed_HAL(g_boot, new_data = data.frame(d$W))
+      g1W_boot <- predict.fixed_HAL(g_boot, new_data = data.frame(d$W))
       # plug into tmle object
-      bootstrapTMLEFit$Q_1W <- Q_1W_boot
-      bootstrapTMLEFit$Q_0W <- Q_0W_boot
-      bootstrapTMLEFit$g1_W <- g1_W_boot
+      bootstrapTMLEFit$Q1W <- Q1W_boot
+      bootstrapTMLEFit$Q0W <- Q0W_boot
+      bootstrapTMLEFit$g1W <- g1W_boot
       # target new fit
       if (self$targeting) {
         bootstrapTMLEFit$target()
@@ -80,12 +81,12 @@ ateBootstrap <- R6Class("ateBootstrap",
       # PnD*
       PnDstar <- mean(self$pointTMLE$compute_EIC(
         A = d$A,
-        gk = g1_W_boot,
+        gk = g1W_boot,
         Y = d$Y,
-        Qk = Q_AW_boot,
-        Q1k = Q_1W_boot,
-        Q0k = Q_0W_boot,
-        psi = mean(Q_1W_boot - Q_0W_boot)
+        Qk = QAW_boot,
+        Q1k = Q1W_boot,
+        Q0k = Q0W_boot,
+        psi = mean(Q1W_boot - Q0W_boot)
       ))
       # predict Q#, g# on population data
       g_pound_1 <- predict.fixed_HAL(g_boot, new_data = data.frame(data$W))
@@ -104,10 +105,10 @@ ateBootstrap <- R6Class("ateBootstrap",
         psi = mean(Q_pound_1 - Q_pound_0)
       ))
       # get R2 term
-      part1 <- (g_pound_1 - self$pointTMLE$g1_W) / g_pound_1 *
-        (Q_pound_1 - self$pointTMLE$Q_1W)
-      part0 <- (g_pound_0 - (1 - self$pointTMLE$g1_W)) / g_pound_0 *
-        (Q_pound_0 - self$pointTMLE$Q_0W)
+      part1 <- (g_pound_1 - self$pointTMLE$g1W) / g_pound_1 *
+        (Q_pound_1 - self$pointTMLE$Q1W)
+      part0 <- (g_pound_0 - (1 - self$pointTMLE$g1W)) / g_pound_0 *
+        (Q_pound_0 - self$pointTMLE$Q0W)
       R2 <- mean(part1 - part0)
       return(data.frame(
         reg = bootstrapTMLEFit$Psi - self$pointTMLE$Psi,

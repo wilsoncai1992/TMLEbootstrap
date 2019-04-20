@@ -5,104 +5,22 @@ library(gentmle2)
 #' @export
 #' @importFrom Matrix colMeans
 blipVarianceTMLE <- R6Class("blipVarianceTMLE",
+  # inherit the initial fit routine from ate
+  inherit = ateTMLE,
   public = list(
-    data = NULL,
-    # initial fit
-    Q_fit = NULL,
-    Q_AW = NULL,
-    Q_1W = NULL,
-    Q_0W = NULL,
-    g_fit = NULL,
-    # g_AW = NULL,
-    g_1W = NULL,
-
-    Psi = NULL,
     gentmle_object = NULL,
-    se_Psi = NULL,
-    CI = NULL,
-    EIC = NULL,
-    verbose = FALSE,
-    initialize = function(data, epsilon_step = NULL, verbose = NULL) {
-      # HAL initial fit for blip variance TMLE (iterative);
-      # targeting is done in gentmle2
-      self$data <- data
-      if (class(data$W) != "data.frame") message("W not data.frame")
-      if (!is.null(verbose)) self$verbose <- verbose
-    },
-    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {
-      use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
-      use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
-
-      assertthat::assert_that(!(use_penalized_mode & use_constrained_mode))
-      if (use_penalized_mode) {
-        self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2, family_y = "binomial")
-      }
-      if (use_constrained_mode) {
-        stop("not implemented")
-      }
-      if (!use_penalized_mode & !use_constrained_mode) {
-        # when user have NULL for everything: default to CV
-        self$initial_fit_pen_likeli(NULL, NULL, family_y = "binomial")
-      }
-
-      # get Q_1W, Q_0W
-      self$Q_AW <- hal9001:::predict.hal9001(
-        self$Q_fit,
-        new_data = data.frame(self$data$A, self$data$W)
-      )
-      self$Q_1W <- hal9001:::predict.hal9001(
-        self$Q_fit,
-        new_data = data.frame(1, self$data$W)
-      )
-      self$Q_0W <- hal9001:::predict.hal9001(
-        self$Q_fit,
-        new_data = data.frame(0, self$data$W)
-      )
-      # get g1_W
-      self$g_1W <- hal9001:::predict.hal9001(
-        self$g_fit,
-        new_data = data.frame(self$data$W)
-      )
-    },
-    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL, family_y) {
-      # Q fit
-      cv_select_Q <- is.null(lambda1)
-      self$Q_fit <- hal9001::fit_hal(
-        X = data.frame(self$data$A, self$data$W),
-        Y = self$data$Y,
-        fit_type = "glmnet",
-        family = family_y,
-        n_folds = 3,
-        lambda = lambda1,
-        cv_select = cv_select_Q,
-        return_lasso = TRUE,
-        return_x_basis = FALSE,
-        yolo = FALSE
-      )
-      # g fit
-      cv_select_g <- is.null(lambda2)
-      self$g_fit <- hal9001::fit_hal(
-        X = self$data$W,
-        Y = self$data$A,
-        fit_type = "glmnet",
-        family = "binomial",
-        n_folds = 3,
-        lambda = lambda2,
-        cv_select = cv_select_g,
-        return_lasso = TRUE,
-        return_x_basis = FALSE,
-        yolo = FALSE
-      )
+    initial_fit = function(family_y = "binomial", ...) {
+      super$initial_fit(family_y = family_y, ...)
     },
     target = function() {
       # use the logistic submodel to target blip variance; output Psi, EIC, CI
       initdata <- data.frame(
         A = self$data$A,
         Y = self$data$Y,
-        gk = self$g_1W,
-        Qk = self$Q_AW,
-        Q1k = self$Q_1W,
-        Q0k = self$Q_0W
+        gk = self$g1W,
+        Qk = self$QAW,
+        Q1k = self$Q1W,
+        Q0k = self$Q0W
       )
       self$gentmle_object <- gentmle2::gentmle(
         initdata = initdata,
@@ -124,14 +42,14 @@ blipVarianceTMLE <- R6Class("blipVarianceTMLE",
     },
     inference_without_target = function() {
       # apply parameter mapping without doing targeting step
-      self$Psi <- var(self$Q_1W - self$Q_0W)
+      self$Psi <- var(self$Q1W - self$Q0W)
       EIC <- self$compute_EIC(
         Y = self$data$Y,
         A = self$data$A,
-        Q1k = self$Q_1W,
-        Q0k = self$Q_0W,
-        Qk = self$Q_AW,
-        gk = self$g_1W,
+        Q1k = self$Q1W,
+        Q0k = self$Q0W,
+        Qk = self$QAW,
+        gk = self$g1W,
         psi = self$Psi
       )
       self$se_Psi <- sqrt(var(EIC) / length(EIC))
@@ -179,9 +97,9 @@ blipVarianceTMLEContinuousY <- R6Class("blipVarianceTMLEContinuousY",
     Y_rescale = NULL,
 
     scale_Q = NULL,
-    Q_AW_rescale = NULL,
-    Q_1W_rescale = NULL,
-    Q_0W_rescale = NULL,
+    QAW_rescale = NULL,
+    Q1W_rescale = NULL,
+    Q0W_rescale = NULL,
     scale_outcome = function() {
       # sub-class of `blipVarianceTMLE`;
       # replace initial fit with continuous hal9001;
@@ -198,59 +116,25 @@ blipVarianceTMLEContinuousY <- R6Class("blipVarianceTMLEContinuousY",
       self$se_Psi <- self$se_Psi * self$scale_Y$rangeX^2
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
     },
-    initial_fit = function(lambda1 = NULL, lambda2 = NULL, M1 = NULL, M2 = NULL) {
-      use_penalized_mode <- any(c(!is.null(lambda1), !is.null(lambda2)))
-      use_constrained_mode <- any(c(!is.null(M1), !is.null(M2)))
-
-      if (use_penalized_mode & use_constrained_mode) {
-        stop("cannot do two modes!")
-      }
-      if (use_penalized_mode) {
-        self$initial_fit_pen_likeli(lambda1 = lambda1, lambda2 = lambda2, family_y = "gaussian")
-      }
-      if (use_constrained_mode) {
-        stop("not implemented")
-      }
-      if (!use_penalized_mode & !use_constrained_mode) {
-        # when user have NULL for everything: default to CV
-        self$initial_fit_pen_likeli(NULL, NULL, family_y = "gaussian")
-      }
-
-      # get Q_1W, Q_0W
-      self$Q_AW <- hal9001:::predict.hal9001(
-        self$Q_fit,
-        new_data = data.frame(self$data$A, self$data$W)
-      )
-      self$Q_1W <- hal9001:::predict.hal9001(
-        self$Q_fit,
-        new_data = data.frame(1, self$data$W)
-      )
-      self$Q_0W <- hal9001:::predict.hal9001(
-        self$Q_fit,
-        new_data = data.frame(0, self$data$W)
-      )
-      # get g1_W
-      self$g_1W <- hal9001:::predict.hal9001(
-        self$g_fit,
-        new_data = data.frame(self$data$W)
-      )
+    initial_fit = function(...) {
+      super$initial_fit(family_y = "gaussian", ...)
       # scale Q to (0,1)
-      self$Q_AW_rescale <- self$scale_Y$scale01(newX = self$Q_AW)
-      self$Q_1W_rescale <- self$scale_Y$scale01(newX = self$Q_1W)
-      self$Q_0W_rescale <- self$scale_Y$scale01(newX = self$Q_0W)
-      # self$scale_Q <- scaleX$new(X = c(self$Q_1W, self$Q_0W))
-      # self$Q_AW_rescale <- self$scale_Q$scale01(newX = self$Q_AW)
-      # self$Q_1W_rescale <- self$scale_Q$scale01(newX = self$Q_1W)
-      # self$Q_0W_rescale <- self$scale_Q$scale01(newX = self$Q_0W)
+      self$QAW_rescale <- self$scale_Y$scale01(newX = self$QAW)
+      self$Q1W_rescale <- self$scale_Y$scale01(newX = self$Q1W)
+      self$Q0W_rescale <- self$scale_Y$scale01(newX = self$Q0W)
+      # self$scale_Q <- scaleX$new(X = c(self$Q1W, self$Q0W))
+      # self$QAW_rescale <- self$scale_Q$scale01(newX = self$QAW)
+      # self$Q1W_rescale <- self$scale_Q$scale01(newX = self$Q1W)
+      # self$Q0W_rescale <- self$scale_Q$scale01(newX = self$Q0W)
     },
     target = function() {
       initdata <- data.frame(
         A = self$data$A,
         Y = self$Y_rescale,
-        gk = self$g_1W,
-        Qk = self$Q_AW_rescale,
-        Q1k = self$Q_1W_rescale,
-        Q0k = self$Q_0W_rescale
+        gk = self$g1W,
+        Qk = self$QAW_rescale,
+        Q1k = self$Q1W_rescale,
+        Q0k = self$Q0W_rescale
       )
       self$gentmle_object <- gentmle2::gentmle(
         initdata = initdata,
@@ -264,14 +148,14 @@ blipVarianceTMLEContinuousY <- R6Class("blipVarianceTMLEContinuousY",
     },
     inference_without_target = function() {
       # apply parameter mapping without doing targeting step
-      self$Psi <- var(self$Q_1W_rescale - self$Q_0W_rescale)
+      self$Psi <- var(self$Q1W_rescale - self$Q0W_rescale)
       EIC <- self$compute_EIC(
         Y = self$Y_rescale,
         A = self$data$A,
-        Q1k = self$Q_1W_rescale,
-        Q0k = self$Q_0W_rescale,
-        Qk = self$Q_AW_rescale,
-        gk = self$g_1W,
+        Q1k = self$Q1W_rescale,
+        Q0k = self$Q0W_rescale,
+        Qk = self$QAW_rescale,
+        gk = self$g1W,
         psi = self$Psi
       )
       self$se_Psi <- sqrt(var(EIC) / length(EIC))
