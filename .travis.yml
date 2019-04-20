@@ -28,7 +28,7 @@ r_packages:
   - covr
 
 r_github_packages:
-  - r-lib/covr
+  # - r-lib/covr
   - r-lib/sessioninfo
   - tlverse/hal9001
   - tlverse/origami
