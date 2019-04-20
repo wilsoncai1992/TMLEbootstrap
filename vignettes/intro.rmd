@@ -1,0 +1,19 @@
+---
+title: "How to use TMLEbootstrap package"
+author: "[Weixin Cai](https://wilsoncai1992.github.io/)"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Model survival curves using TMLE}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# tl;dr
+
+
+## Session Information
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
