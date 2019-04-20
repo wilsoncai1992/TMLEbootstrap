@@ -19,5 +19,6 @@
 
 ^docs$
 ^paper$
+^sim$
 ^manuscript$
 ^sandbox$
