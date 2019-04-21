@@ -60,7 +60,7 @@ densityHAL <- R6Class("densityHAL",
 )
 
 #' @export
-cv_densityHAL <- R6Class("cv_densityHAL",
+cvDensityHAL <- R6Class("cvDensityHAL",
   # cross validate a grid of `densityHAL` with a grid of lambda
   public = list(
     longiData = NULL,

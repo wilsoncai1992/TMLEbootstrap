@@ -122,10 +122,6 @@ blipVarianceTMLEContinuousY <- R6Class("blipVarianceTMLEContinuousY",
       self$QAW_rescale <- self$scale_Y$scale01(newX = self$QAW)
       self$Q1W_rescale <- self$scale_Y$scale01(newX = self$Q1W)
       self$Q0W_rescale <- self$scale_Y$scale01(newX = self$Q0W)
-      # self$scale_Q <- scaleX$new(X = c(self$Q1W, self$Q0W))
-      # self$QAW_rescale <- self$scale_Q$scale01(newX = self$QAW)
-      # self$Q1W_rescale <- self$scale_Q$scale01(newX = self$Q1W)
-      # self$Q0W_rescale <- self$scale_Q$scale01(newX = self$Q0W)
     },
     target = function() {
       initdata <- data.frame(

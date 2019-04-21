@@ -23,7 +23,7 @@ fit_density_hal_one_setting <- function(n_sim, n_mode, bin_width) {
   lambda_grid <- 10^seq(-1, -5, by = -1)
   longDataOut <- longiData$new(x = data_out$x, bin_width = bin_width)
   # tune HAL for density
-  cvHAL_fit <- cv_densityHAL$new(x = data_out$x, longiData = longDataOut)
+  cvHAL_fit <- cvDensityHAL$new(x = data_out$x, longiData = longDataOut)
   cvHAL_fit$assign_fold(n_fold = 4)
   cvHAL_fit$cv_lambda_grid(lambda_grid = lambda_grid)
   hal_out <- cvHAL_fit$compute_model_full_data(cvHAL_fit$lambda.min)
