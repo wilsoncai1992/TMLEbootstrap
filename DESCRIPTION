@@ -21,6 +21,8 @@ Imports:
 Suggests:
     truncnorm,
     nnls,
+    ggplot2,
+    dplyr,
     testthat,
     knitr,
     rmarkdown,

@@ -92,8 +92,10 @@ tuneHyperparam <- R6Class("tuneHyperparam",
       # plot CIwidth v.s. log(lambda)
       if (is.null(type_CI)) type_CI <- unique(self$df_lambda_width$kindCI)
       library(ggplot2)
+      library(dplyr)
+      df_plot <- self$df_lambda_width
       p1 <- ggplot(
-        self$df_lambda_width[self$df_lambda_width$kindCI %in% type_CI, ],
+        df_plot %>% filter(kindCI %in% type_CI),
         aes(x = lambda, y = width, group = kindCI, color = kindCI)
       ) +
         geom_point() +
@@ -101,16 +103,16 @@ tuneHyperparam <- R6Class("tuneHyperparam",
         ylab("width of interval") +
         scale_x_log10() +
         theme_bw()
-      p2 <- ggplot(
-        self$df_lambda_width[self$df_lambda_width$kindCI %in% type_CI, ],
-        aes(x = l1, y = width, group = kindCI, color = kindCI)
-      ) +
-        geom_point() +
-        geom_line() +
-        ylab("width of interval") +
-        theme_bw()
-      # return(p1)
-      return(list(p1 = p1, p2 = p2))
+      # p2 <- ggplot(
+      #   df_plot %>% filter(kindCI %in% type_CI),
+      #   aes(x = l1, y = width, group = kindCI, color = kindCI)
+      # ) +
+      #   geom_point() +
+      #   geom_line() +
+      #   ylab("width of interval") +
+      #   theme_bw()
+      # return(list(p1 = p1, p2 = p2))
+      return(list(p1 = p1))
     },
     select_lambda_pleateau_wald = function(df_lambda_width) {
       # grab pleateau (when wald plateaus)
@@ -190,8 +192,7 @@ avgDensityTuneHyperparam <- R6Class("avgDensityTuneHyperparam",
         .combine = c,
         .inorder = TRUE,
         .errorhandling = "pass",
-        .export = c("self"),
-        .verbose = T
+        .export = c("self")
       ) %mydo% {
         boot_here <- comprehensiveBootstrap$new(
           parameter = avgDensityBootstrap,
@@ -215,8 +216,10 @@ ateTuneHyperparam <- R6Class("AteTuneHyperparam",
   inherit = tuneHyperparam,
   public = list(
     data = NULL,
-    initialize = function(...) {
+    family_y = NULL,
+    initialize = function(..., family_y) {
       super$initialize(...)
+      self$family_y <- family_y
       return(self)
     },
     add_lambda = function(lambda_grid = NULL, to_parallel = FALSE, ...) {
@@ -227,13 +230,13 @@ ateTuneHyperparam <- R6Class("AteTuneHyperparam",
         .combine = c,
         .inorder = TRUE,
         .errorhandling = "pass",
-        .export = c("self"),
-        .verbose = T
+        .export = c("self")
       ) %mydo% {
         boot_here <- comprehensiveBootstrap$new(
           parameter = ateBootstrap,
           data = self$data,
           lambda1 = lambda1,
+          family_y = self$family_y,
           ...
         )
         boot_here$compute_wald_width()
@@ -263,8 +266,7 @@ blipVarContinuousYTuneHyperparam <- R6Class("blipVarContinuousYTuneHyperparam",
         .combine = c,
         .inorder = TRUE,
         .errorhandling = "pass",
-        .export = c("self"),
-        .verbose = T
+        .export = c("self")
       ) %mydo% {
         boot_here <- comprehensiveBootstrap$new(
           parameter = blipVarianceBootstrapContinuousY,

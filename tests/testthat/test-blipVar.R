@@ -82,7 +82,6 @@ CVOut$bootstrap(2e1)
 CVOut$all_CI()
 
 
-################################################################################
 test_that("blipVarianceBoot results should not be NA", {
   expect_true(all(!sapply(out, is.na)))
 })
@@ -98,3 +97,15 @@ test_that("HALselect some beta", {
 test_that("comprehensiveBootstrap intervals working", {
   expect_true(all(!sapply(CVOut$CI_all, is.na)))
 })
+################################################################################
+tune_param_fit <- blipVarContinuousYTuneHyperparam$new(
+  data = df, n_bootstrap = 2e2
+)
+tune_param_fit$add_lambda(lambda_grid = 10 ^ seq(0, -3, length.out = 2))
+test_that("plateau tuning parameter is working", {
+  expect(!is.null(
+    tune_param_fit$select_lambda_pleateau_wald(tune_param_fit$get_lambda_df())
+  ))
+})
+# tune_param_fit$plot_CI()
+tune_param_fit$plot_width(type_CI = "wald")
