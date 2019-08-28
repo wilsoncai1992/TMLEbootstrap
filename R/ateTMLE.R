@@ -48,9 +48,8 @@ ateTMLE <- R6Class("ateTMLE",
       # get g1W
       self$g1W <- stats::predict(object = self$g_fit, new_data = data.frame(self$data$W))
     },
-    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL, family_y, lambda_min_ratio = NULL, n_folds = 3, ...) {
-      # lambda1 for Q fit
-      # lambda2 for g fit
+    initial_fit_pen_likeli = function(lambda1 = NULL, lambda2 = NULL, family_y, lambda_min_ratio = NULL, ...) {
+      # ... is only passed to Q
       self$lambda1 <- lambda1
       self$lambda2 <- lambda2
       cv_select_Q <- is.null(lambda1)
@@ -62,11 +61,10 @@ ateTMLE <- R6Class("ateTMLE",
         family = family_y,
         fit_type = "glmnet",
         lambda = lambda1,
-        n_folds = n_folds,
         cv_select = cv_select_Q,
         use_min = TRUE,
         return_lasso = TRUE,
-        return_x_basis = FALSE,
+        return_x_basis = TRUE,
         yolo = FALSE,
         ...
       )
@@ -84,11 +82,10 @@ ateTMLE <- R6Class("ateTMLE",
           family = family_y,
           fit_type = "glmnet",
           lambda = lambda_grid_new,
-          n_folds = n_folds,
           cv_select = cv_select_Q,
           use_min = TRUE,
           return_lasso = TRUE,
-          return_x_basis = FALSE,
+          return_x_basis = TRUE,
           yolo = FALSE,
           ...
         )
@@ -100,13 +97,11 @@ ateTMLE <- R6Class("ateTMLE",
         Y = self$data$A,
         fit_type = "glmnet",
         family = "binomial",
-        n_folds = n_folds,
         lambda = lambda2,
         cv_select = cv_select_g,
         return_lasso = TRUE,
-        return_x_basis = FALSE,
-        yolo = FALSE,
-        ...
+        return_x_basis = TRUE,
+        yolo = FALSE
       )
     },
     plot_Q1W = function(foo = NULL) {
@@ -125,7 +120,7 @@ ateTMLE <- R6Class("ateTMLE",
       self$tmle_object <- tmle::tmle(
         Y = self$data$Y,
         A = self$data$A,
-        W = as.matrix(self$data$W),
+        W = as.matrix(self$data$W), # USELESS
         Q = cbind(self$Q0W, self$Q1W),
         g1W = self$g1W,
         family = "gaussian",
