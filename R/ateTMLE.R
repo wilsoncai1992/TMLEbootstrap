@@ -1,10 +1,10 @@
-library(R6)
-library(tmle)
-library(hal9001)
+#' Compute TMLE on the ATE parameter
+#'
 #' @export
 #' @importFrom Matrix colMeans
 #' @importFrom assertthat assert_that
-ateTMLE <- R6Class("ateTMLE",
+#' @importFrom hal9001 fit_hal
+ateTMLE <- R6::R6Class("ateTMLE",
   public = list(
     data = NULL,
     # initial fit

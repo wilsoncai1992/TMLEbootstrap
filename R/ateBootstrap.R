@@ -1,3 +1,6 @@
+#' Compute bootstrap confidence intervals on the ATE parameter
+#'
+#' Output both the point estimate and the bootstrap confidence interval
 #' @export
 ateBootstrap <- R6Class("ateBootstrap",
   inherit = generalBootstrap,

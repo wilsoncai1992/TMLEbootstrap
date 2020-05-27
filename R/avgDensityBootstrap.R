@@ -1,20 +1,33 @@
+#' Compute bootstrap confidence intervals on the average squared density parameter
+#'
+#' Output both the point estimate and the bootstrap confidence interval
 #' @export
 avgDensityBootstrap <- R6Class("avgDensityBootstrap",
   inherit = generalBootstrap,
   public = list(
     x = NULL,
     pointTMLE = NULL,
-
     epsilon_step = 1e-2,
     psi_bootstrap = NULL,
     targeting = NULL,
+    #' @description
+    #' bootstrap average density parameter;
+    #'
+    #' @param x vector of random samples.
+    #' @param epsilon_step step size of the TMLE (one-step)
+    #' @param bin_width binning width for the density super learner
+    #' @param lambda_grid pre-specified grid of L1 penalization for the HAL
+    #' @param M alternative to "lambda_grid". Specify the max variation norm of the HAL
+    #' @param targeting bool. whether to perform targeting on the density estimator. If FALSE, the density super learner estimate will be returned
+    #'
+    #' @return NULL
     initialize = function(x,
-                              epsilon_step = NULL,
-                              bin_width = .3,
-                              lambda_grid = NULL,
-                              M = NULL,
-                              targeting = TRUE) {
-      # bootstrap average density parameter; first do a pointTMLE;
+                          epsilon_step = NULL,
+                          bin_width = .3,
+                          lambda_grid = NULL,
+                          M = NULL,
+                          targeting = TRUE) {
+      # first do a pointTMLE
       self$x <- x
       self$targeting <- targeting
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
@@ -34,12 +47,23 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       self$pointTMLE <- onestepFit
       self$Psi <- onestepFit$Psi
     },
+    #' @description
+    #' run one bootstrap sample
+    #'
+    #' @param self self
+    #' @param data input bootstrap data
+    #' @param population_x whole training data
+    #' @param population_tmle TMLE on the whole training data
+    #' @param inflate_lambda experimental. scalar to scale the L1 penalty during the bootstrap
+    #' @param epsilon_step step size of the TMLE (one-step)
+    #'
+    #' @return NULL
     bootstrap_once = function(self,
-                                  data,
-                                  epsilon_step = self$epsilon_step,
-                                  population_x = self$x,
-                                  population_tmle = self$pointTMLE,
-                                  inflate_lambda = 1) {
+                              data,
+                              epsilon_step = self$epsilon_step,
+                              population_x = self$x,
+                              population_tmle = self$pointTMLE,
+                              inflate_lambda = 1) {
       SAMPLE_PER_BOOTSTRAP <- length(self$x)
       # indices is the random indexes for the bootstrap sample
       indices <- sample(1:length(data), size = SAMPLE_PER_BOOTSTRAP, replace = TRUE)
@@ -100,12 +124,11 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
         sec_ord_paper = PnDstar - P0Dstar + R_2
       ))
     },
-    run_bootstrap = function(
-                                 n_bootstrap = 2e2,
-                                 alpha = 0.05,
-                                 kind = NULL,
-                                 inflate_lambda = 1,
-                                 to_parallel = FALSE) {
+    run_bootstrap = function(n_bootstrap = 2e2,
+                             alpha = 0.05,
+                             kind = NULL,
+                             inflate_lambda = 1,
+                             to_parallel = FALSE) {
       # all bootstrap
       library(foreach)
       `%mydo%` <- ifelse(to_parallel, `%dopar%`, `%do%`)

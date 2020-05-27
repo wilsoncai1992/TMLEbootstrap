@@ -1,3 +1,6 @@
+#' Abstract class of bootstrap
+#'
+#' Output both the point estimate and the bootstrap confidence interval
 #' @export
 generalBootstrap <- R6Class("generalBootstrap",
   # bootstrap modifications
@@ -7,21 +10,51 @@ generalBootstrap <- R6Class("generalBootstrap",
     CI_all = NULL,
     initialize = function() {
     },
+    #' @description
+    #' regular bootstrap
+    #'
+    #' @param n_bootstrap number of bootstrap samples
+    #' @param alpha significance level for CI
+    #' @param ... other passed to "run_bootstrap"
+    #'
+    #' @return NULL
     bootstrap = function(n_bootstrap, alpha = 0.05, ...) {
       self$run_bootstrap(
         n_bootstrap = n_bootstrap, alpha = alpha, kind = "reg", ...
       )
     },
+    #' @description
+    #' exact bootstrap
+    #'
+    #' @param n_bootstrap number of bootstrap samples
+    #' @param alpha significance level for CI
+    #' @param ... other passed to "run_bootstrap"
+    #'
+    #' @return NULL
     exact_bootstrap = function(n_bootstrap, alpha = 0.05, ...) {
       self$run_bootstrap(
         n_bootstrap = n_bootstrap, alpha = alpha, kind = "sec_ord", ...
       )
     },
+    #' @description
+    #' exact bootstrap on vdl paper
+    #'
+    #' @param n_bootstrap number of bootstrap samples
+    #' @param alpha significance level for CI
+    #' @param ... other passed to "run_bootstrap"
+    #'
+    #' @return NULL
     exact_bootstrap_paper = function(n_bootstrap, alpha = 0.05, ...) {
       self$run_bootstrap(
         n_bootstrap = n_bootstrap, alpha = alpha, kind = "sec_ord_paper", ...
       )
     },
+    #' @description
+    #' center the bootstrap CI on the point estimate
+    #'
+    #' @param bootCI the vector of CI
+    #'
+    #' @return NULL
     center_CI = function(bootCI = NULL) {
       # if user don't provide bootCI, use existing bootCI;
       if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
@@ -29,6 +62,12 @@ generalBootstrap <- R6Class("generalBootstrap",
       new_CI <- bootCI - mean(bootCI) + self$Psi
       return(new_CI)
     },
+    #' @description
+    #' scale the bootstrap CI to be wider than Wald CI
+    #'
+    #' @param bootCI the vector of CI
+    #'
+    #' @return NULL
     scale_adjust_CI = function(bootCI = NULL) {
       waldCI <- self$CI_all[[1]]
       # if user don't provide bootCI, use existing bootCI;
@@ -40,10 +79,16 @@ generalBootstrap <- R6Class("generalBootstrap",
       # keep center the same, increase the width of the bootCI
       return((bootCI - bootCenter) / r + bootCenter)
     },
+    #' @description
+    #' bias penalized bootstrap
+    #'
+    #' add abs(bias) to both sides of the bootstrap CI (wider)
+    #'
+    #' @param bootCI the vector of CI
+    #'
+    #' @return NULL
     penalized_CI = function(bootCI = NULL) {
-      # bias penalized bootstrap
       # if user input scale_adjust CI, this will output scale + penalized bootCI
-
       # if user don't provide bootCI, use existing bootCI;
       if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
       delta <- mean(bootCI) - self$Psi
@@ -51,6 +96,14 @@ generalBootstrap <- R6Class("generalBootstrap",
       bootCI[1] <- bootCI[1] - abs(delta)
       return(bootCI)
     },
+    #' @description
+    #' bias penalized bootstrap (half)
+    #'
+    #' add 0.5*abs(bias) to both sides of the bootstrap CI (wider)
+    #'
+    #' @param bootCI the vector of CI
+    #'
+    #' @return NULL
     penalized_CI_half = function(bootCI = NULL) {
       # bias penalized bootstrap
       # if user input scale_adjust CI, this will output scale + penalized bootCI
@@ -62,11 +115,25 @@ generalBootstrap <- R6Class("generalBootstrap",
       bootCI[1] <- bootCI[1] - abs(delta) / 2
       return(bootCI)
     },
+    #' @description
+    #' two bias shifted bootstrap
+    #'
+    #' shift the center of CI by two times the bias
+    #'
+    #' @param bootCI the vector of CI
+    #'
+    #' @return NULL
     shift2 = function(bootCI = NULL) {
       # bias-corrected bootstrap (shift 2 times)
       new_CI <- bootCI + 2 * (-mean(bootCI) + self$Psi)
       return(new_CI)
     },
+    #' @description
+    #' use the stddev of bootstrap samples, to put a Normal CI around point estimate
+    #'
+    #' @param bootCI the vector of CI
+    #'
+    #' @return CI
     sigma_mse = function(bootCI = NULL) {
       # if user don't provide bootCI, use existing bootCI;
       if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
@@ -81,6 +148,12 @@ generalBootstrap <- R6Class("generalBootstrap",
       ci_out <- c(psi_n - q_z[2] * sigma_star, psi_n - q_z[1] * sigma_star)
       return(ci_out)
     },
+    #' @description
+    #' use the z-quantiles of bootstrap samples, to put a Normal CI around point estimate
+    #'
+    #' @param bootCI the vector of CI
+    #'
+    #' @return CI
     spread = function(bootCI = NULL) {
       # if user don't provide bootCI, use existing bootCI;
       if (is.null(bootCI)) bootCI <- self$CI_all[[2]]
@@ -96,6 +169,10 @@ generalBootstrap <- R6Class("generalBootstrap",
       ci_out <- c(psi_n - q_z[2] * sigma_n, psi_n - q_z[1] * sigma_n)
       return(ci_out)
     },
+    #' @description
+    #' return all CI
+    #'
+    #' @return list of CI
     all_boot_CI = function() {
       # return a list of all kinds of modifications
       penalized <- self$penalized_CI()

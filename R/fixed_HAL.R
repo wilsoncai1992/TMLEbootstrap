@@ -1,7 +1,15 @@
-# fitting fixed_HAL. outputs an object of the fit
-# use the old basis
-# use the old lambda
-# OPTIONAL: if the old object is squashed, only use the non-zero basis
+#' fitting fixed_HAL. outputs an object of the fit
+#' use the old basis
+#' use the old lambda
+#' OPTIONAL: if the old object is squashed, only use the non-zero basis
+#'
+#' @param Y vector of target
+#' @param X data.frame of feature
+#' @param weights vector of weight
+#' @param hal9001_object hal9001 object
+#' @param family glm family Y
+#' @param inflate_lambda scale the penalty factor
+#' @importFrom stats glm
 #' @export
 fit_fixed_HAL <- function(
                           Y,
@@ -129,7 +137,7 @@ predict.fixed_HAL <- function(object, ..., new_data) {
   }
 
   if (object$family == "gaussian") {} # do nothing if gaussian glm
-  if (object$family == "binomial") preds <- plogis(preds) # transform if binomial glm
+  if (object$family == "binomial") preds <- stats::plogis(preds) # transform if binomial glm
   return(preds)
 }
 

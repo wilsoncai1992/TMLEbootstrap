@@ -21,9 +21,9 @@ simulate_data <- function(n_sim, n_mode) {
 ################################################################################
 # simulation
 ################################################################################
-n_sim <- 1e2
-n_mode <- 1
-bin_width <- 8e-1
+n_sim <- 5e2
+n_mode <- 2
+bin_width <- 5e-1
 
 data_out <- simulate_data(n_sim = n_sim, n_mode = n_mode)
 bootstrapFit <- avgDensityBootstrap$new(x = data_out$x, bin_width = bin_width)

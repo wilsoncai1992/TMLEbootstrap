@@ -1,4 +1,7 @@
-require(R6)
+#' Fit a 1-d density using HAL regression
+#'
+#' perform binning first then run a HAL classifier
+#' @import hal9001
 #' @export
 densityHAL <- R6Class("densityHAL",
   # for fixed lambda; fit a hal fit on longitudinal dataframe; outout density estimate
@@ -166,7 +169,7 @@ expit <- function(x) exp(x) / (1 + exp(x))
 
 #' @keywords internal
 create_lambda_grid_by_ratio <- function(lambda_grid, lambda_min_ratio) {
-  lambda_max <- max(cv_lambda_grid)
+  lambda_max <- max(lambda_grid)
   lambda_min <- lambda_max * lambda_min_ratio
   log_lambda_range <- log(c(lambda_min, lambda_max))
   lambda_grid_new <- exp(seq(
