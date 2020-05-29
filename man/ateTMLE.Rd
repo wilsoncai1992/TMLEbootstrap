@@ -2,11 +2,11 @@
 % Please edit documentation in R/ateTMLE.R
 \name{ateTMLE}
 \alias{ateTMLE}
-\title{Compute bootstrap confidence intervals on the ATE parameter}
+\title{Compute TMLE on the ATE parameter}
 \description{
-Compute bootstrap confidence intervals on the ATE parameter
+Compute TMLE on the ATE parameter
 
-Compute bootstrap confidence intervals on the ATE parameter
+Compute TMLE on the ATE parameter
 }
 \section{Methods}{
 \subsection{Public methods}{

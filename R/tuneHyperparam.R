@@ -1,3 +1,6 @@
+#' Use plateau method to choose the L1 penalty of HAL (abstract class)
+#'
+#' @import ggplot2
 #' @export
 tuneHyperparam <- R6Class("tuneHyperparam",
   # lambda plateau method
@@ -49,7 +52,6 @@ tuneHyperparam <- R6Class("tuneHyperparam",
       df2$logLambda <- log10(df2$lambda)
       df2$center <- (df2$CI_low + df2$CI_upp) / 2
 
-      library(ggplot2)
       p <- ggplot(df2, aes(
         x = logLambda,
         y = center,
@@ -103,15 +105,6 @@ tuneHyperparam <- R6Class("tuneHyperparam",
         ylab("width of interval") +
         scale_x_log10() +
         theme_bw()
-      # p2 <- ggplot(
-      #   df_plot %>% filter(kindCI %in% type_CI),
-      #   aes(x = l1, y = width, group = kindCI, color = kindCI)
-      # ) +
-      #   geom_point() +
-      #   geom_line() +
-      #   ylab("width of interval") +
-      #   theme_bw()
-      # return(list(p1 = p1, p2 = p2))
       return(list(p1 = p1))
     },
     select_lambda_pleateau_wald = function(df_lambda_width) {
@@ -172,6 +165,8 @@ tuneHyperparam <- R6Class("tuneHyperparam",
   )
 )
 
+#' Use plateau method to choose the L1 penalty of HAL (average squared density)
+#'
 #' @export
 avgDensityTuneHyperparam <- R6Class("avgDensityTuneHyperparam",
   inherit = tuneHyperparam,
@@ -211,6 +206,8 @@ avgDensityTuneHyperparam <- R6Class("avgDensityTuneHyperparam",
   )
 )
 
+#' Use plateau method to choose the L1 penalty of HAL (ATE)
+#'
 #' @export
 ateTuneHyperparam <- R6Class("AteTuneHyperparam",
   inherit = tuneHyperparam,
@@ -249,6 +246,8 @@ ateTuneHyperparam <- R6Class("AteTuneHyperparam",
   )
 )
 
+#' Use plateau method to choose the L1 penalty of HAL (blip variance)
+#'
 #' @export
 blipVarContinuousYTuneHyperparam <- R6Class("blipVarContinuousYTuneHyperparam",
   inherit = tuneHyperparam,
@@ -284,9 +283,10 @@ blipVarContinuousYTuneHyperparam <- R6Class("blipVarContinuousYTuneHyperparam",
   )
 )
 
+#' Grab a plateau of a function y = f(x)
+#'
 #' @export
 grabPlateau <- R6Class("grabPlateau",
-  # grab a plateau of a function y = f(x)
   public = list(
     x = NULL, # x needs to be sorted
     y = NULL,
