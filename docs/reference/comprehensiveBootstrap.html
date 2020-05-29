@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Authors • TMLEbootstrap</title>
+<title>Run `generalBootstrap` twice (regular + second-order bootstrap) — comprehensiveBootstrap • TMLEbootstrap</title>
 
 
 <!-- jquery -->
@@ -18,8 +18,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
-<link rel="stylesheet" href="bootstrap-toc.css">
-<script src="bootstrap-toc.js"></script>
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
@@ -33,13 +33,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
-<link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script>
+<link href="../pkgdown.css" rel="stylesheet">
+<script src="../pkgdown.js"></script>
 
 
 
 
-<meta property="og:title" content="Authors" />
+<meta property="og:title" content="Run `generalBootstrap` twice (regular + second-order bootstrap) — comprehensiveBootstrap" />
+<meta property="og:description" content="Run `generalBootstrap` twice (regular + second-order bootstrap)
+Run `generalBootstrap` twice (regular + second-order bootstrap)" />
 
 
 
@@ -58,7 +60,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-authors">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -70,7 +72,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="index.html">TMLEbootstrap</a>
+        <a class="navbar-link" href="../index.html">TMLEbootstrap</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.8.2</span>
       </span>
     </div>
@@ -78,13 +80,13 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="index.html">
+  <a href="../index.html">
     <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
 <li>
-  <a href="reference/index.html">Reference</a>
+  <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -94,7 +96,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="articles/intro.html">How to use TMLEbootstrap package</a>
+      <a href="../articles/intro.html">How to use TMLEbootstrap package</a>
     </li>
   </ul>
 </li>
@@ -117,22 +119,83 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Authors</h1>
+    <h1>Run `generalBootstrap` twice (regular + second-order bootstrap)</h1>
+    <small class="dont-index">Source: <a href='https://github.com/wilsoncai1992/TMLEbootstrap/blob/master/R/comprehensiveBootstrap.R'><code>R/comprehensiveBootstrap.R</code></a></small>
+    <div class="hidden name"><code>comprehensiveBootstrap.Rd</code></div>
     </div>
 
-    <ul class="list-unstyled">
-      <li>
-        <p><strong>Weixin Cai</strong>. Author, maintainer, copyright holder. <a href='https://orcid.org/0000-0003-2680-3066' target='orcid.widget' aria-label='ORCID'><span class='fab fa-orcid orcid' aria-hidden='true'></span></a>
-        </p>
-      </li>
-    </ul>
+    <div class="ref-description">
+    <p>Run `generalBootstrap` twice (regular + second-order bootstrap)</p>
+<p>Run `generalBootstrap` twice (regular + second-order bootstrap)</p>
+    </div>
+
+
+
+    <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
+
+    
+<h3>Public methods</h3>
+
+<ul>
+<li><p><a href='#method-new'><code>comprehensiveBootstrap$new()</code></a></p></li>
+<li><p><a href='#method-bootstrap'><code>comprehensiveBootstrap$bootstrap()</code></a></p></li>
+<li><p><a href='#method-all_CI'><code>comprehensiveBootstrap$all_CI()</code></a></p></li>
+<li><p><a href='#method-compute_width'><code>comprehensiveBootstrap$compute_width()</code></a></p></li>
+<li><p><a href='#method-compute_wald_width'><code>comprehensiveBootstrap$compute_wald_width()</code></a></p></li>
+<li><p><a href='#method-clone'><code>comprehensiveBootstrap$clone()</code></a></p></li>
+</ul>
+<p><hr>
+<a id="method-new"></a></p><h3>Method <code>new()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>comprehensiveBootstrap</span>$<span class='fu'>new</span>(<span class='kw'>parameter</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-bootstrap"></a></p><h3>Method <code>bootstrap()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>comprehensiveBootstrap</span>$<span class='fu'>bootstrap</span>(<span class='no'>...</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-all_CI"></a></p><h3>Method <code>all_CI()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>comprehensiveBootstrap</span>$<span class='fu'>all_CI</span>()</pre><p></div></p>
+
+<p><hr>
+<a id="method-compute_width"></a></p><h3>Method <code>compute_width()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>comprehensiveBootstrap</span>$<span class='fu'>compute_width</span>()</pre><p></div></p>
+
+<p><hr>
+<a id="method-compute_wald_width"></a></p><h3>Method <code>compute_wald_width()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>comprehensiveBootstrap</span>$<span class='fu'>compute_wald_width</span>()</pre><p></div></p>
+
+<p><hr>
+<a id="method-clone"></a></p><h3>Method <code>clone()</code></h3>
+<p>The objects of this class are cloneable with this method.</p><h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>comprehensiveBootstrap</span>$<span class='fu'>clone</span>(<span class='kw'>deep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl'>
+<dt><code>deep</code></dt><dd><p>Whether to make a deep clone.</p></dd>
+
+</dl><p></div></p>
+
+
 
   </div>
-
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
+  </div>
 </div>
-
 
 
       <footer>

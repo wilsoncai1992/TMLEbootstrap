@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Authors • TMLEbootstrap</title>
+<title>Fit a 1-d density using HAL regression; automatic tuning of L1 penalty — cvDensityHAL • TMLEbootstrap</title>
 
 
 <!-- jquery -->
@@ -18,8 +18,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
 
 <!-- bootstrap-toc -->
-<link rel="stylesheet" href="bootstrap-toc.css">
-<script src="bootstrap-toc.js"></script>
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
@@ -33,13 +33,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
-<link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script>
+<link href="../pkgdown.css" rel="stylesheet">
+<script src="../pkgdown.js"></script>
 
 
 
 
-<meta property="og:title" content="Authors" />
+<meta property="og:title" content="Fit a 1-d density using HAL regression; automatic tuning of L1 penalty — cvDensityHAL" />
+<meta property="og:description" content="perform binning first then run a HAL classifier" />
 
 
 
@@ -58,7 +59,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-authors">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -70,7 +71,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="index.html">TMLEbootstrap</a>
+        <a class="navbar-link" href="../index.html">TMLEbootstrap</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.8.2</span>
       </span>
     </div>
@@ -78,13 +79,13 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="index.html">
+  <a href="../index.html">
     <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
 <li>
-  <a href="reference/index.html">Reference</a>
+  <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -94,7 +95,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="articles/intro.html">How to use TMLEbootstrap package</a>
+      <a href="../articles/intro.html">How to use TMLEbootstrap package</a>
     </li>
   </ul>
 </li>
@@ -117,22 +118,82 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Authors</h1>
+    <h1>Fit a 1-d density using HAL regression; automatic tuning of L1 penalty</h1>
+    <small class="dont-index">Source: <a href='https://github.com/wilsoncai1992/TMLEbootstrap/blob/master/R/densityHAL.R'><code>R/densityHAL.R</code></a></small>
+    <div class="hidden name"><code>cvDensityHAL.Rd</code></div>
     </div>
 
-    <ul class="list-unstyled">
-      <li>
-        <p><strong>Weixin Cai</strong>. Author, maintainer, copyright holder. <a href='https://orcid.org/0000-0003-2680-3066' target='orcid.widget' aria-label='ORCID'><span class='fab fa-orcid orcid' aria-hidden='true'></span></a>
-        </p>
-      </li>
-    </ul>
+    <div class="ref-description">
+    <p>perform binning first then run a HAL classifier</p>
+    </div>
+
+
+
+    <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
+
+    
+<h3>Public methods</h3>
+
+<ul>
+<li><p><a href='#method-new'><code>cvDensityHAL$new()</code></a></p></li>
+<li><p><a href='#method-assign_fold'><code>cvDensityHAL$assign_fold()</code></a></p></li>
+<li><p><a href='#method-cv'><code>cvDensityHAL$cv()</code></a></p></li>
+<li><p><a href='#method-cv_lambda_grid'><code>cvDensityHAL$cv_lambda_grid()</code></a></p></li>
+<li><p><a href='#method-compute_model_full_data'><code>cvDensityHAL$compute_model_full_data()</code></a></p></li>
+<li><p><a href='#method-clone'><code>cvDensityHAL$clone()</code></a></p></li>
+</ul>
+<p><hr>
+<a id="method-new"></a></p><h3>Method <code>new()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>cvDensityHAL</span>$<span class='fu'>new</span>(<span class='no'>x</span>, <span class='no'>longiData</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-assign_fold"></a></p><h3>Method <code>assign_fold()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>cvDensityHAL</span>$<span class='fu'>assign_fold</span>(<span class='kw'>n_fold</span> <span class='kw'>=</span> <span class='fl'>3</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-cv"></a></p><h3>Method <code>cv()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>cvDensityHAL</span>$<span class='fu'>cv</span>(<span class='kw'>lambda</span> <span class='kw'>=</span> <span class='fl'>2e-05</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-cv_lambda_grid"></a></p><h3>Method <code>cv_lambda_grid()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>cvDensityHAL</span>$<span class='fu'>cv_lambda_grid</span>(<span class='kw'>lambda_grid</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>lambda_min_ratio</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-compute_model_full_data"></a></p><h3>Method <code>compute_model_full_data()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>cvDensityHAL</span>$<span class='fu'>compute_model_full_data</span>(<span class='no'>lambda</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-clone"></a></p><h3>Method <code>clone()</code></h3>
+<p>The objects of this class are cloneable with this method.</p><h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>cvDensityHAL</span>$<span class='fu'>clone</span>(<span class='kw'>deep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl'>
+<dt><code>deep</code></dt><dd><p>Whether to make a deep clone.</p></dd>
+
+</dl><p></div></p>
+
+
 
   </div>
-
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
+  </div>
 </div>
-
 
 
       <footer>

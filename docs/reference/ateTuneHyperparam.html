@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>prediciton function for fixed_HAL object — predict.fixed_HAL • TMLEbootstrap</title>
+<title>Use plateau method to choose the L1 penalty of HAL (ATE) — ateTuneHyperparam • TMLEbootstrap</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,9 @@
 
 
 
-<meta property="og:title" content="prediciton function for fixed_HAL object — predict.fixed_HAL" />
-<meta property="og:description" content="prediciton function for fixed_HAL object" />
+<meta property="og:title" content="Use plateau method to choose the L1 penalty of HAL (ATE) — ateTuneHyperparam" />
+<meta property="og:description" content="Use plateau method to choose the L1 penalty of HAL (ATE)
+Use plateau method to choose the L1 penalty of HAL (ATE)" />
 
 
 
@@ -120,38 +121,68 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>prediciton function for fixed_HAL object</h1>
-    <small class="dont-index">Source: <a href='https://github.com/wilsoncai1992/TMLEbootstrap/blob/master/R/fixed_HAL.R'><code>R/fixed_HAL.R</code></a></small>
-    <div class="hidden name"><code>predict.fixed_HAL.Rd</code></div>
+    <h1>Use plateau method to choose the L1 penalty of HAL (ATE)</h1>
+    <small class="dont-index">Source: <a href='https://github.com/wilsoncai1992/TMLEbootstrap/blob/master/R/tuneHyperparam.R'><code>R/tuneHyperparam.R</code></a></small>
+    <div class="hidden name"><code>ateTuneHyperparam.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>prediciton function for fixed_HAL object</p>
+    <p>Use plateau method to choose the L1 penalty of HAL (ATE)</p>
+<p>Use plateau method to choose the L1 penalty of HAL (ATE)</p>
     </div>
 
-    <pre class="usage"><span class='co'># S3 method for fixed_HAL</span>
-<span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span>(<span class='no'>object</span>, <span class='no'>...</span>, <span class='no'>new_data</span>)</pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>object</th>
-      <td><p>class `fixed_HAL``</p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>extra arguments into hal9001</p></td>
-    </tr>
-    <tr>
-      <th>new_data</th>
-      <td><p>matrix with the same number of columns as in training</p></td>
-    </tr>
-    </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+    <h2 class="hasAnchor" id="super-class"><a class="anchor" href="#super-class"></a>Super class</h2>
 
-    <p>a vector of predictions</p>
+    <p><code><a href='tuneHyperparam.html'>TMLEbootstrap::tuneHyperparam</a></code> -&gt; <code>AteTuneHyperparam</code></p>
+    <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
+
+    
+<h3>Public methods</h3>
+
+<ul>
+<li><p><a href='#method-new'><code>ateTuneHyperparam$new()</code></a></p></li>
+<li><p><a href='#method-add_lambda'><code>ateTuneHyperparam$add_lambda()</code></a></p></li>
+<li><p><a href='#method-clone'><code>ateTuneHyperparam$clone()</code></a></p></li>
+</ul>
+<p><details ><summary>Inherited methods</summary>
+<ul>
+<li><p><span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="get_lambda"><a href='../../TMLEbootstrap/html/tuneHyperparam.html#method-get_lambda'><code>TMLEbootstrap::tuneHyperparam$get_lambda()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="get_lambda_df"><a href='../../TMLEbootstrap/html/tuneHyperparam.html#method-get_lambda_df'><code>TMLEbootstrap::tuneHyperparam$get_lambda_df()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="get_Psi_df"><a href='../../TMLEbootstrap/html/tuneHyperparam.html#method-get_Psi_df'><code>TMLEbootstrap::tuneHyperparam$get_Psi_df()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="get_value"><a href='../../TMLEbootstrap/html/tuneHyperparam.html#method-get_value'><code>TMLEbootstrap::tuneHyperparam$get_value()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="plot_CI"><a href='../../TMLEbootstrap/html/tuneHyperparam.html#method-plot_CI'><code>TMLEbootstrap::tuneHyperparam$plot_CI()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="plot_width"><a href='../../TMLEbootstrap/html/tuneHyperparam.html#method-plot_width'><code>TMLEbootstrap::tuneHyperparam$plot_width()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="select_lambda_pleateau_wald"><a href='../../TMLEbootstrap/html/tuneHyperparam.html#method-select_lambda_pleateau_wald'><code>TMLEbootstrap::tuneHyperparam$select_lambda_pleateau_wald()</code></a></span></p></li>
+<li><p><span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="select_lambda_psi_grad"><a href='../../TMLEbootstrap/html/tuneHyperparam.html#method-select_lambda_psi_grad'><code>TMLEbootstrap::tuneHyperparam$select_lambda_psi_grad()</code></a></span></p></li>
+</ul>
+</details>
+
+<hr>
+<a id="method-new"></a></p><h3>Method <code>new()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>ateTuneHyperparam</span>$<span class='fu'>new</span>(<span class='no'>...</span>, <span class='no'>family_y</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-add_lambda"></a></p><h3>Method <code>add_lambda()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>ateTuneHyperparam</span>$<span class='fu'>add_lambda</span>(<span class='kw'>lambda_grid</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>to_parallel</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-clone"></a></p><h3>Method <code>clone()</code></h3>
+<p>The objects of this class are cloneable with this method.</p><h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>ateTuneHyperparam</span>$<span class='fu'>clone</span>(<span class='kw'>deep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl'>
+<dt><code>deep</code></dt><dd><p>Whether to make a deep clone.</p></dd>
+
+</dl><p></div></p>
+
+
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

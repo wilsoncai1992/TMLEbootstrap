@@ -8,21 +8,29 @@
 
 <title>onestep TMLE of average density parameter — avgDensityTMLE • TMLEbootstrap</title>
 
+
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
-<!-- sticky kit -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+<!-- headroom.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -30,10 +38,11 @@
 
 
 
-<meta property="og:title" content="onestep TMLE of average density parameter — avgDensityTMLE" />
 
-<meta property="og:description" content="onestep TMLE of average density parameter" />
-<meta name="twitter:card" content="summary" />
+<meta property="og:title" content="onestep TMLE of average density parameter — avgDensityTMLE" />
+<meta property="og:description" content="onestep TMLE of average density parameter
+onestep TMLE of average density parameter" />
+
 
 
 
@@ -47,9 +56,10 @@
 <![endif]-->
 
 
+
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -63,7 +73,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">TMLEbootstrap</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.8.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.8.2</span>
       </span>
     </div>
 
@@ -71,7 +81,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -91,11 +101,10 @@
   </ul>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/wilsoncai1992/TMLEbootstrap">
-    <span class="fa fa-github fa-lg"></span>
+  <a href="https://github.com/wilsoncai1992/TMLEbootstrap/">
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -106,6 +115,7 @@
 </div><!--/.navbar -->
 
       
+
       </header>
 
 <div class="row">
@@ -117,66 +127,156 @@
     </div>
 
     <div class="ref-description">
-    
     <p>onestep TMLE of average density parameter</p>
-    
+<p>onestep TMLE of average density parameter</p>
     </div>
 
-    <pre class="usage"><span class='no'>avgDensityTMLE</span></pre>
-        
+
+
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
     <p><code>R6Class</code> object.</p>
-    
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Object of <code>R6Class</code> with methods</p>
-    
-    <h2 class="hasAnchor" id="fields"><a class="anchor" href="#fields"></a>Fields</h2>
-
-    
-    <dl class='dl-horizontal'>
-<dt><code>x</code></dt><dd><p>random sample from distribution</p></dd>
-    <dt><code>p_hat</code></dt><dd><p>(<code>empiricalDensity</code>) containing density estimates</p></dd>
-    <dt><code>Psi</code></dt><dd><p>paramter value</p></dd>
-    <dt><code>EIC</code></dt><dd><p>vector of EIC</p></dd>
-    <dt><code>epsilon_step</code></dt><dd><p>step size for one-step targeting</p></dd>
-    <dt><code>CI</code></dt><dd><p>(numeric vector) length 2; lower + upper CI</p></dd>
-    <dt><code>longDataOut</code></dt><dd><p>(<code>longiData</code>) for transforming x into longitudinal format dataframe</p></dd>
-    <dt><code>HAL_tuned</code></dt><dd><p>(<code>hal9001</code>) generated by <code>cv_densityHAL</code> class.</p></dd>
-</dl>
-    
     <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
 
     
-    <dl class='dl-horizontal'>
+
+<dl'>
   <dt><code>new(x, epsilon_step = NULL, verbose = NULL)</code></dt><dd><p>specify data; define targeting step size</p></dd>
-  <dt><code>fit_density(bin_width = .1, lambda_grid)</code></dt><dd><p>use `cv_densityHAL` to fit density. bin_width for pre-binning of
+  <dt><code>fit_density(bin_width = .1, lambda_grid)</code></dt><dd><p>use `cvDensityHAL` to fit density. bin_width for pre-binning of
      continuous x; lambda_grid for grid search of lambda in HAL</p></dd>
+
 </dl>
+
+    <h2 class="hasAnchor" id="public-fields"><a class="anchor" href="#public-fields"></a>Public fields</h2>
+
+    <p><div class="r6-fields"></p><dl'>
+<dt><code>x</code></dt><dd><p>random sample from distribution</p></dd>
+
+<dt><code>p_hat</code></dt><dd><p>(<code>empiricalDensity</code>) containing density estimates</p></dd>
+
+<dt><code>Psi</code></dt><dd><p>paramter value</p></dd>
+
+<dt><code>EIC</code></dt><dd><p>vector of EIC</p></dd>
+
+<dt><code>epsilon_step</code></dt><dd><p>step size for one-step targeting</p></dd>
+
+<dt><code>CI</code></dt><dd><p>(numeric vector) length 2; lower + upper CI</p></dd>
+
+<dt><code>longDataOut</code></dt><dd><p>(<code>longiData</code>) for transforming x into longitudinal format dataframe</p></dd>
+
+<dt><code>HAL_tuned</code></dt><dd><p>(<code>hal9001</code>) generated by <code>cvDensityHAL</code> class.</p></dd>
+
+</dl><p></div></p>
+    <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
+
     
+<h3>Public methods</h3>
+
+<ul>
+<li><p><a href='#method-new'><code>avgDensityTMLE$new()</code></a></p></li>
+<li><p><a href='#method-fit_density'><code>avgDensityTMLE$fit_density()</code></a></p></li>
+<li><p><a href='#method-fit_density_pen_likeli'><code>avgDensityTMLE$fit_density_pen_likeli()</code></a></p></li>
+<li><p><a href='#method-compute_Psi'><code>avgDensityTMLE$compute_Psi()</code></a></p></li>
+<li><p><a href='#method-compute_EIC'><code>avgDensityTMLE$compute_EIC()</code></a></p></li>
+<li><p><a href='#method-update_once'><code>avgDensityTMLE$update_once()</code></a></p></li>
+<li><p><a href='#method-target_onestep'><code>avgDensityTMLE$target_onestep()</code></a></p></li>
+<li><p><a href='#method-inference'><code>avgDensityTMLE$inference()</code></a></p></li>
+<li><p><a href='#method-compute_min_phi_ratio'><code>avgDensityTMLE$compute_min_phi_ratio()</code></a></p></li>
+<li><p><a href='#method-clone'><code>avgDensityTMLE$clone()</code></a></p></li>
+</ul>
+<p><hr>
+<a id="method-new"></a></p><h3>Method <code>new()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>avgDensityTMLE</span>$<span class='fu'>new</span>(<span class='no'>x</span>, <span class='kw'>epsilon_step</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-fit_density"></a></p><h3>Method <code>fit_density()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>avgDensityTMLE</span>$<span class='fu'>fit_density</span>(
+  <span class='kw'>bin_width</span> <span class='kw'>=</span> <span class='fl'>0.1</span>,
+  <span class='kw'>lambda_grid</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>M</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>n_fold</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+  <span class='no'>...</span>
+)</pre><p></div></p>
+
+<p><hr>
+<a id="method-fit_density_pen_likeli"></a></p><h3>Method <code>fit_density_pen_likeli()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>avgDensityTMLE</span>$<span class='fu'>fit_density_pen_likeli</span>(
+  <span class='kw'>bin_width</span> <span class='kw'>=</span> <span class='fl'>0.1</span>,
+  <span class='kw'>lambda_grid</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>lambda_min_ratio</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>n_fold</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+  <span class='no'>...</span>
+)</pre><p></div></p>
+
+<p><hr>
+<a id="method-compute_Psi"></a></p><h3>Method <code>compute_Psi()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>avgDensityTMLE</span>$<span class='fu'>compute_Psi</span>(<span class='no'>p_hat</span>, <span class='kw'>to_return</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-compute_EIC"></a></p><h3>Method <code>compute_EIC()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>avgDensityTMLE</span>$<span class='fu'>compute_EIC</span>(<span class='no'>p_hat</span>, <span class='no'>Psi</span>, <span class='kw'>to_return</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-update_once"></a></p><h3>Method <code>update_once()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>avgDensityTMLE</span>$<span class='fu'>update_once</span>()</pre><p></div></p>
+
+<p><hr>
+<a id="method-target_onestep"></a></p><h3>Method <code>target_onestep()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>avgDensityTMLE</span>$<span class='fu'>target_onestep</span>(<span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-inference"></a></p><h3>Method <code>inference()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>avgDensityTMLE</span>$<span class='fu'>inference</span>()</pre><p></div></p>
+
+<p><hr>
+<a id="method-compute_min_phi_ratio"></a></p><h3>Method <code>compute_min_phi_ratio()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>avgDensityTMLE</span>$<span class='fu'>compute_min_phi_ratio</span>()</pre><p></div></p>
+
+<p><hr>
+<a id="method-clone"></a></p><h3>Method <code>clone()</code></h3>
+<p>The objects of this class are cloneable with this method.</p><h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>avgDensityTMLE</span>$<span class='fu'>clone</span>(<span class='kw'>deep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl'>
+<dt><code>deep</code></dt><dd><p>Whether to make a deep clone.</p></dd>
+
+</dl><p></div></p>
+
+
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'># avgDensityTMLE$new()
 </div></pre>
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      
-      <li><a href="#format">Format</a></li>
-
-      <li><a href="#value">Value</a></li>
-
-      <li><a href="#fields">Fields</a></li>
-
-      <li><a href="#methods">Methods</a></li>
-      
-      <li><a href="#examples">Examples</a></li>
-    </ul>
-
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
+
 
       <footer>
       <div class="copyright">
@@ -184,13 +284,16 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
+
       </footer>
    </div>
 
   
 
+
   </body>
 </html>
+
 

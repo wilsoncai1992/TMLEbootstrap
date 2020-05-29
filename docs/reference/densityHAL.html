@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>prediciton function for fixed_HAL object — predict.fixed_HAL • TMLEbootstrap</title>
+<title>Fit a 1-d density using HAL regression — densityHAL • TMLEbootstrap</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="prediciton function for fixed_HAL object — predict.fixed_HAL" />
-<meta property="og:description" content="prediciton function for fixed_HAL object" />
+<meta property="og:title" content="Fit a 1-d density using HAL regression — densityHAL" />
+<meta property="og:description" content="perform binning first then run a HAL classifier" />
 
 
 
@@ -120,38 +120,79 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>prediciton function for fixed_HAL object</h1>
-    <small class="dont-index">Source: <a href='https://github.com/wilsoncai1992/TMLEbootstrap/blob/master/R/fixed_HAL.R'><code>R/fixed_HAL.R</code></a></small>
-    <div class="hidden name"><code>predict.fixed_HAL.Rd</code></div>
+    <h1>Fit a 1-d density using HAL regression</h1>
+    <small class="dont-index">Source: <a href='https://github.com/wilsoncai1992/TMLEbootstrap/blob/master/R/densityHAL.R'><code>R/densityHAL.R</code></a></small>
+    <div class="hidden name"><code>densityHAL.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>prediciton function for fixed_HAL object</p>
+    <p>perform binning first then run a HAL classifier</p>
     </div>
 
-    <pre class="usage"><span class='co'># S3 method for fixed_HAL</span>
-<span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span>(<span class='no'>object</span>, <span class='no'>...</span>, <span class='no'>new_data</span>)</pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>object</th>
-      <td><p>class `fixed_HAL``</p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>extra arguments into hal9001</p></td>
-    </tr>
-    <tr>
-      <th>new_data</th>
-      <td><p>matrix with the same number of columns as in training</p></td>
-    </tr>
-    </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+    <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
 
-    <p>a vector of predictions</p>
+    
+<h3>Public methods</h3>
+
+<ul>
+<li><p><a href='#method-new'><code>densityHAL$new()</code></a></p></li>
+<li><p><a href='#method-fit'><code>densityHAL$fit()</code></a></p></li>
+<li><p><a href='#method-predict'><code>densityHAL$predict()</code></a></p></li>
+<li><p><a href='#method-predict_long'><code>densityHAL$predict_long()</code></a></p></li>
+<li><p><a href='#method-eval_misclass_loss'><code>densityHAL$eval_misclass_loss()</code></a></p></li>
+<li><p><a href='#method-eval_crossentropy_loss'><code>densityHAL$eval_crossentropy_loss()</code></a></p></li>
+<li><p><a href='#method-clone'><code>densityHAL$clone()</code></a></p></li>
+</ul>
+<p><hr>
+<a id="method-new"></a></p><h3>Method <code>new()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>densityHAL</span>$<span class='fu'>new</span>(<span class='no'>x</span>, <span class='no'>longiData</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-fit"></a></p><h3>Method <code>fit()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>densityHAL</span>$<span class='fu'>fit</span>(<span class='kw'>lambda</span> <span class='kw'>=</span> <span class='fl'>2e-05</span>, <span class='no'>...</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-predict"></a></p><h3>Method <code><a href='https://rdrr.io/r/stats/predict.html'>predict()</a></code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>densityHAL</span>$<span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span>(<span class='kw'>new_x</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-predict_long"></a></p><h3>Method <code>predict_long()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>densityHAL</span>$<span class='fu'>predict_long</span>(<span class='kw'>new_x</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-eval_misclass_loss"></a></p><h3>Method <code>eval_misclass_loss()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>densityHAL</span>$<span class='fu'>eval_misclass_loss</span>(<span class='kw'>new_x</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-eval_crossentropy_loss"></a></p><h3>Method <code>eval_crossentropy_loss()</code></h3>
+
+<h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>densityHAL</span>$<span class='fu'>eval_crossentropy_loss</span>(<span class='kw'>new_x</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre><p></div></p>
+
+<p><hr>
+<a id="method-clone"></a></p><h3>Method <code>clone()</code></h3>
+<p>The objects of this class are cloneable with this method.</p><h3>Usage</h3>
+<p><div class="r"></p><pre><span class='no'>densityHAL</span>$<span class='fu'>clone</span>(<span class='kw'>deep</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre><p></div></p>
+
+<h3>Arguments</h3>
+<p><div class="arguments"></p><dl'>
+<dt><code>deep</code></dt><dd><p>Whether to make a deep clone.</p></dd>
+
+</dl><p></div></p>
+
+
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -28,3 +28,9 @@ devtools::install_github('wilsoncai1992/TMLEbootstrap')
 ?TMLEbootstrap
 help(package = 'TMLEbootstrap')
 ```
+
+## Reference
+
+Cai, Weixin, and Mark van der Laan. “Nonparametric bootstrap inference
+for the targeted highly adaptive lasso estimator.” In-press (2020).
+<https://arxiv.org/abs/1905.10299>
