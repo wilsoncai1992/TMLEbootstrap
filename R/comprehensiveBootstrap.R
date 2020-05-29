@@ -1,6 +1,7 @@
+#' Run `generalBootstrap` twice (regular + second-order bootstrap)
+#'
 #' @export
 comprehensiveBootstrap <- R6Class("comprehensiveBootstrap",
-  # run `generalBootstrap` twice; one for reg bootstrap, one for secOrd bootstrap
   public = list(
     bootOut = NULL, # regular boot
     bootOutExact = NULL, # secOrd boot

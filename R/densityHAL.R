@@ -61,7 +61,9 @@ densityHAL <- R6Class("densityHAL",
     }
   )
 )
-
+#' Fit a 1-d density using HAL regression; automatic tuning of L1 penalty
+#'
+#' perform binning first then run a HAL classifier
 #' @export
 cvDensityHAL <- R6Class("cvDensityHAL",
   # cross validate a grid of `densityHAL` with a grid of lambda
@@ -158,12 +160,14 @@ cvDensityHAL <- R6Class("cvDensityHAL",
     }
   )
 )
-
-#' @export
+#' cross-entropy loss
+#'
+#' @keywords internal
 cross_entropy <- function(y, yhat) {
   -log(yhat) * as.numeric(y == 1) - log(1 - yhat) * as.numeric(y == 0)
 }
 
+#' @keywords internal
 expit <- function(x) exp(x) / (1 + exp(x))
 
 

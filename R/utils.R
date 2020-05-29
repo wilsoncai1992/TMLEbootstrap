@@ -1,3 +1,5 @@
+#' Store a 1-dimensional density function
+#'
 #' @export
 empiricalDensity <- R6Class("empiricalDensity",
   # helper for avgDens TMLE; hold univariate density and normalization
@@ -29,9 +31,11 @@ empiricalDensity <- R6Class("empiricalDensity",
   )
 )
 
+#' Convert univariate series to longitudinal format
+#'
+#' helper for avgDens TMLE.
 #' @export
 longiData <- R6Class("longiData",
-  # helper for avgDens TMLE. convert univariate series to longitudinal format
   public = list(
     x = NULL,
     bin_width = NULL,
@@ -75,10 +79,11 @@ longiData <- R6Class("longiData",
   )
 )
 
-#' @export
+#' Perform min/max standardization based on (x - min)/(max - min)
+#'
+#' helper for blipVarianceTMLEContinuousY
+#' @keywords internal
 scaleX <- R6Class("scaleX",
-  # perform standardization based on (x - min)/(max - min)
-  # helper for blipVarianceTMLEContinuousY
   public = list(
     X = NULL,
     minX = NULL,

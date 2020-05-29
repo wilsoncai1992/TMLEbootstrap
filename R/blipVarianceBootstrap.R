@@ -1,6 +1,6 @@
-library(R6)
-library(hal9001)
-library(foreach)
+#' Bootstrap confidence intervals for the blip variance parameter (binary Y)
+#'
+#' Output both the point estimate and the bootstrap confidence interval
 #' @export
 blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
   inherit = generalBootstrap,
@@ -125,6 +125,9 @@ blipVarianceBootstrap <- R6Class("blipVarianceBootstrap",
 
 
 
+#' Bootstrap confidence intervals for the blip variance parameter (continuous Y)
+#'
+#' Output both the point estimate and the bootstrap confidence interval
 #' @export
 blipVarianceBootstrapContinuousY <- R6Class("blipVarianceBootstrapContinuousY",
   inherit = blipVarianceBootstrap,

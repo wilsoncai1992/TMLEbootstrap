@@ -1,19 +1,20 @@
-library(R6)
-library(hal9001)
-library(gentmle2)
-
+#' Compute TMLE on the variance of CATE (binary Y)
+#'
+#' inherit the initial fit routine from ate
 #' @export
 #' @importFrom Matrix colMeans
 blipVarianceTMLE <- R6Class("blipVarianceTMLE",
-  # inherit the initial fit routine from ate
   inherit = ateTMLE,
   public = list(
     gentmle_object = NULL,
     initial_fit = function(family_y = "binomial", ...) {
       super$initial_fit(family_y = family_y, ...)
     },
+    #' @description
+    #' use the logistic submodel to target blip variance; output Psi, EIC, CI
+    #'
+    #' @return NULL
     target = function() {
-      # use the logistic submodel to target blip variance; output Psi, EIC, CI
       initdata <- data.frame(
         A = self$data$A,
         Y = self$data$Y,
@@ -34,6 +35,18 @@ blipVarianceTMLE <- R6Class("blipVarianceTMLE",
       self$se_Psi <- sd(self$gentmle_object$Dstar) / sqrt(length(self$data$A))
       self$CI <- self$Psi + c(-1.96, 1.96) * self$se_Psi
     },
+    #' @description
+    #' Compute EIC of blip variance
+    #'
+    #' @param Y continuous target variable
+    #' @param A binary treatment
+    #' @param Q1k E(Y|A=1,W)
+    #' @param Q0k E(Y|A=0,W)
+    #' @param Qk E(Y|A=a,W)
+    #' @param gk E(A=a|W)
+    #' @param psi var(E(Y|A=1,W) - E(Y|A=0,W))
+    #'
+    #' @return EIC vector
     compute_EIC = function(Y, A, Q1k, Q0k, Qk, gk, psi) {
       # helper function to compute EIC values. shared among blipVarianceTMLE class
       HA <- 2 * (Q1k - Q0k - mean(Q1k - Q0k)) * (A / gk - (1 - A) / (1 - gk))
@@ -88,6 +101,13 @@ blipVarianceTMLE <- R6Class("blipVarianceTMLE",
   )
 )
 
+#' Compute TMLE on the variance of CATE (continuous Y)
+#'
+#' inherit the initial fit routine from ateTMLE
+#' replace initial fit with continuous hal9001;
+#' rescales Y into (0,1) before TMLE;
+#' scales the Psi, EIC, CI back to the original scale after the TMLE
+#' scale Y to (0,1)
 #' @export
 blipVarianceTMLEContinuousY <- R6Class("blipVarianceTMLEContinuousY",
   inherit = blipVarianceTMLE,
@@ -101,11 +121,6 @@ blipVarianceTMLEContinuousY <- R6Class("blipVarianceTMLEContinuousY",
     Q1W_rescale = NULL,
     Q0W_rescale = NULL,
     scale_outcome = function() {
-      # sub-class of `blipVarianceTMLE`;
-      # replace initial fit with continuous hal9001;
-      # rescales Y into (0,1) before TMLE;
-      # scales the Psi, EIC, CI back to the original scale after the TMLE
-      # scale Y to (0,1)
       self$scale_Y <- scaleX$new(X = self$data$Y)
       self$Y_rescale <- self$scale_Y$scale01(newX = self$data$Y)
     },

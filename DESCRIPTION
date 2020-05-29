@@ -17,11 +17,11 @@ Imports:
     tmle,
     origami (>= 0.8.2),
     gentmle2,
+    ggplot2,
     assertthat
 Suggests:
     truncnorm,
     nnls,
-    ggplot2,
     dplyr,
     testthat,
     knitr,

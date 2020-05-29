@@ -145,8 +145,19 @@ predict.fixed_HAL <- function(object, ..., new_data) {
 # SL wrappers
 # ========================================================================
 
-# most general form of wrapper.
-# depend on an hal9001 object. which is the fit on the whole data.
+#' (Experimental) Super Learner wrapper for fixed HAL
+#'
+#' depend on an hal9001 object. which is the fit on the whole data.
+#'
+#' @param Y vector of target
+#' @param X data.frame of feature
+#' @param newX data.frame of features to generate prediction
+#' @param obsWeights vector of weight
+#' @param hal9001_object hal9001 object
+#' @param family glm family Y
+#' @param inflate_lambda scale the penalty factor
+#' @param ... other arguments
+#'
 #' @export
 basic_fixed_HAL <- function(Y,
                             X,
@@ -180,10 +191,12 @@ basic_fixed_HAL <- function(Y,
   return(out)
 }
 
-# generator of SL wrappers
-# outputs a SL wrapper, that no longer depend on the hal9001 object.
-# the output arguments conform with `SL` library convention
-#' @export
+#' Generator of SL wrappers
+#'
+#' outputs a SL wrapper, that no longer depend on the hal9001 object.
+#' the output arguments conform with `SL` library convention
+#'
+#' @keywords internal
 generate_SL.fixed_HAL <- function(hal9001_object = NULL, inflate_lambda = 1) {
   function(...) basic_fixed_HAL(
       ...,
@@ -191,8 +204,9 @@ generate_SL.fixed_HAL <- function(hal9001_object = NULL, inflate_lambda = 1) {
     )
 }
 
-# SL prediction function for the SL wrapper created
-#' @export
+#' SuperLearner prediction function for the SL wrapper
+#'
+#' @keywords internal
 predict.SL.fixed_HAL <- function(object, newX, ...) {
   # generate predictions and return
   pred <- predict.fixed_HAL(object$object, new_data = newX, ...)
