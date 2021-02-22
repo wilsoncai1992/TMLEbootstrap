@@ -41,7 +41,8 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
       onestepFit$compute_EIC(
         p_hat = onestepFit$p_hat, Psi = onestepFit$Psi, to_return = FALSE
       )
-      if (self$targeting) onestepFit$target_onestep()
+      if (as.integer(self$targeting) == 1) onestepFit$target_onestep()
+      if (as.integer(self$targeting) == 2) onestepFit$target_iterative()
       onestepFit$inference()
 
       self$pointTMLE <- onestepFit

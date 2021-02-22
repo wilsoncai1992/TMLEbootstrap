@@ -62,6 +62,7 @@ onestep TMLE of average density parameter
 \item \href{#method-compute_Psi}{\code{avgDensityTMLE$compute_Psi()}}
 \item \href{#method-compute_EIC}{\code{avgDensityTMLE$compute_EIC()}}
 \item \href{#method-update_once}{\code{avgDensityTMLE$update_once()}}
+\item \href{#method-target_iterative}{\code{avgDensityTMLE$target_iterative()}}
 \item \href{#method-target_onestep}{\code{avgDensityTMLE$target_onestep()}}
 \item \href{#method-inference}{\code{avgDensityTMLE$inference()}}
 \item \href{#method-compute_min_phi_ratio}{\code{avgDensityTMLE$compute_min_phi_ratio()}}
@@ -131,6 +132,15 @@ onestep TMLE of average density parameter
 \subsection{Method \code{update_once()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{avgDensityTMLE$update_once()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-target_iterative"></a>}}
+\if{latex}{\out{\hypertarget{method-target_iterative}{}}}
+\subsection{Method \code{target_iterative()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{avgDensityTMLE$target_iterative(verbose = FALSE)}\if{html}{\out{</div>}}
 }
 
 }

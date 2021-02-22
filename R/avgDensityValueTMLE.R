@@ -106,6 +106,67 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
       self$p_hat$p_density <- self$p_hat$p_density * exp(self$epsilon_step * self$EIC)
       self$p_hat$normalize()
     },
+    target_iterative = function(verbose = FALSE) {
+      self$max_iter = 1e3
+      n_iter <- 0
+      absmeanEIC_prev <- abs(mean(self$EIC))
+      absmeanEIC_current <- abs(mean(self$EIC))
+      # initiate the best one
+      meanEIC_best <- mean(self$EIC)
+      self$p_hat_best <- self$p_hat$clone(deep = TRUE)
+      while (absmeanEIC_current >= self$tol) {
+        if (self$verbose | verbose) {
+          df_debug <- data.frame(n_iter, mean(self$EIC), self$Psi)
+          colnames(df_debug) <- NULL
+          print(df_debug)
+        }
+
+        absmeanEIC_prev <- abs(mean(self$EIC))
+        self$compute_Psi(self$p_hat, to_return = FALSE)
+        self$compute_EIC(self$p_hat, self$Psi, to_return = FALSE)
+        # iterative update
+        # I(xi in box) - pn(xi) ~ D*(pn)(xi) * pn(xi) * epsilon  -  intercept
+        indicator_y = self$longDataOut$generate_df()$Y
+        pn_x = self$hal_best$predict(self$longDataOut$grids)
+        pn_x = rep(pn_x, length(self$x))
+        D_pn = 2 * (pn_x - self$Psi)
+        reg_var = D_pn * pn_x
+        ols_fit = lm(indicator_y -  pn_x ~ -1 + reg_var)
+        epsilon = ols_fit$coefficients
+        self$p_hat$p_density <- self$p_hat$p_density * (1 + epsilon * self$EIC)
+        self$p_hat$normalize()
+        #
+        absmeanEIC_current <- abs(mean(self$EIC))
+        n_iter <- n_iter + 1
+        if (absmeanEIC_current > absmeanEIC_prev) {
+          # the update caused PnEIC to increase, change direction
+          self$epsilon_step <- -self$epsilon_step
+        }
+        if (absmeanEIC_current < abs(meanEIC_best)) {
+          # the update caused PnEIC to beat the current best
+          # update our best candidate
+          self$p_hat_best <- self$p_hat$clone(deep = TRUE)
+          meanEIC_best <- mean(self$EIC)
+        }
+        if (n_iter >= self$max_iter) {
+          break()
+          message("max iteration number reached!")
+        }
+      }
+      # always output the best candidate for final result
+      self$p_hat <- self$p_hat_best
+      self$compute_Psi(self$p_hat, to_return = FALSE)
+      self$compute_EIC(self$p_hat, self$Psi, to_return = FALSE)
+      if (self$verbose | verbose) {
+        message(paste(
+          "Pn(EIC)=",
+          formatC(meanEIC_best, format = "e", digits = 2),
+          "Psi=",
+          formatC(self$Psi, format = "e", digits = 2)
+        ))
+      }
+
+    },
     target_onestep = function(verbose = FALSE) {
       # recursive targeting of onestep
       n_iter <- 0

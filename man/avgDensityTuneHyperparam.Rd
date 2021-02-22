@@ -22,9 +22,9 @@ Use plateau method to choose the L1 penalty of HAL (average squared density)
 \if{html}{
 \out{<details ><summary>Inherited methods</summary>}
 \itemize{
+\item \out{<span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="get_Psi_df">}\href{../../TMLEbootstrap/html/tuneHyperparam.html#method-get_Psi_df}{\code{TMLEbootstrap::tuneHyperparam$get_Psi_df()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="get_lambda">}\href{../../TMLEbootstrap/html/tuneHyperparam.html#method-get_lambda}{\code{TMLEbootstrap::tuneHyperparam$get_lambda()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="get_lambda_df">}\href{../../TMLEbootstrap/html/tuneHyperparam.html#method-get_lambda_df}{\code{TMLEbootstrap::tuneHyperparam$get_lambda_df()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="get_Psi_df">}\href{../../TMLEbootstrap/html/tuneHyperparam.html#method-get_Psi_df}{\code{TMLEbootstrap::tuneHyperparam$get_Psi_df()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="get_value">}\href{../../TMLEbootstrap/html/tuneHyperparam.html#method-get_value}{\code{TMLEbootstrap::tuneHyperparam$get_value()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="plot_CI">}\href{../../TMLEbootstrap/html/tuneHyperparam.html#method-plot_CI}{\code{TMLEbootstrap::tuneHyperparam$plot_CI()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="TMLEbootstrap" data-topic="tuneHyperparam" data-id="plot_width">}\href{../../TMLEbootstrap/html/tuneHyperparam.html#method-plot_width}{\code{TMLEbootstrap::tuneHyperparam$plot_width()}}\out{</span>}
