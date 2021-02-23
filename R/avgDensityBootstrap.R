@@ -26,13 +26,14 @@ avgDensityBootstrap <- R6Class("avgDensityBootstrap",
                           bin_width = .3,
                           lambda_grid = NULL,
                           M = NULL,
-                          targeting = TRUE) {
+                          targeting = TRUE,
+                          ...) {
       # first do a pointTMLE
       self$x <- x
       self$targeting <- targeting
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       onestepFit <- avgDensityTMLE$new(
-        x = self$x, epsilon_step = self$epsilon_step, verbose = TRUE
+        x = self$x, epsilon_step = self$epsilon_step, verbose = TRUE, ...
       )
       onestepFit$fit_density(
         bin_width = bin_width, lambda_grid = lambda_grid, M = M, n_fold = 3

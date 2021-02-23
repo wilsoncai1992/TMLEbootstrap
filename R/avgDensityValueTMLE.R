@@ -46,9 +46,10 @@ avgDensityTMLE <- R6Class("avgDensityTMLE",
     HAL_tuned = NULL,
 
     p_hat_best = NULL,
-    initialize = function(x, epsilon_step = NULL, verbose = NULL) {
+    initialize = function(x, epsilon_step = NULL, verbose = NULL, max_iter = 1e2) {
       self$x <- x
       self$tol <- 1e-3 / length(x)
+      self$max_iter <- max_iter
       if (!is.null(epsilon_step)) self$epsilon_step <- epsilon_step
       if (!is.null(verbose)) self$verbose <- verbose
     },

@@ -1,6 +1,6 @@
 Package: TMLEbootstrap
 Title: Bootstrap Confidence Intervals for Targeted Maximum Likelihood Estimators
-Version: 2.8.2
+Version: 2.8.3
 Authors@R: c(
     person("Weixin", "Cai", email = "wcai@berkeley.edu",
          role = c("aut", "cre", "cph"),

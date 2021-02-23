@@ -74,7 +74,7 @@ onestep TMLE of average density parameter
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{avgDensityTMLE$new(x, epsilon_step = NULL, verbose = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{avgDensityTMLE$new(x, epsilon_step = NULL, verbose = NULL, max_iter = 100)}\if{html}{\out{</div>}}
 }
 
 }

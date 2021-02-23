@@ -52,7 +52,8 @@ bootstrap average density parameter;
   bin_width = 0.3,
   lambda_grid = NULL,
   M = NULL,
-  targeting = TRUE
+  targeting = TRUE,
+  ...
 )}\if{html}{\out{</div>}}
 }
 
